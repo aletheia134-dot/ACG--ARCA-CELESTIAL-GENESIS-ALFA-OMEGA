@@ -1,0 +1,579 @@
+Árvore de diretórios: E:\Arca_Celestial_Genesis_Alfa_Omega
+============================================================
+
+├── ├── .env
+├── ├── .env.backup_20260203
+├── ├── .senha_mestra.key
+├── ├── ARCA_Guia_Clonagem.docx
+├── ├── ARCA_Licenca.docx
+├── ├── ARCA_Manifesto.docx
+├── ├── ATIVAÇÃO.txt
+├── ├── INICIAR_ARCA.bat
+├── ├── Logs/
+        │   ├── arca_20260227_111416.log
+        ├── ├── Santuarios/
+        │   ├── Chroma/
+                │   └── chroma.sqlite3
+        │   ├── Diarios/
+                │   ├── diario_EVA.db
+                │   ├── diario_KAIYA.db
+                │   ├── diario_LUMINA.db
+                │   ├── diario_NYRA.db
+                │   ├── diario_WELLINGTON.db
+                │   └── diario_YUNA.db
+        │   ├── Precedentes/
+                │   ├── indices.json
+                │   ├── precedente_008b7539-b2fc-4f00-8911-d1f6b0403d7c.json
+                │   ├──         │   ├── legislativo/
+                │   ├── leis_aceitas/
+                        │   ├── leis_acoes_corretas.json
+                        │   ├── leis_analise.json
+                        │   ├── leis_comunicacao.json
+                        │   ├── leis_estrategia.json
+                        │   ├── leis_etica.json
+                        │   ├── leis_etica_avancada.json
+                        │   ├── leis_gerais.json
+                        │   ├── leis_integridade.json
+                        │   ├── leis_lei_zero.json
+                        │   ├── leis_licoes.json
+                        │   ├── leis_mecanismo.json
+                        │   ├── leis_protocolo.json
+                        │   ├── leis_regras.json
+                        │   ├── leis_regras_de_ouro.json
+                        │   ├── leis_resolucao_conflitos.json
+                        │   ├── leis_sabedoria_pratica.json
+                        │   ├── leis_seguranca.json
+                        │   └── leis_seguranca_avancada.json
+                │   ├── leis_fundamentais.json
+                │   └── novas_leis.json
+        │   ├── memoria_curta.sqlite
+        │   └── termo_aceite.log
+├── ├── Sem título.txt
+├── ├── analisador_placebos.py
+├── ├── arvore.txt
+├── ├── assets/
+        │   ├── Avatares/
+                │   ├── 2d/
+                        │   ├── EVA/
+                                │   ├── 1.png
+                                                                │   ├── sentimento-em-imagem.png
+                                │   ├── static/
+                                        │   └── neutralidade_equilibrada.png
+                                │   └── videos/
+                        │   ├── KAIYA/
+                                │   ├── 12.png
+                                │                                   │   ├── sentimento-Tristeza(5).png
+                                │   ├── static/
+                                        │   └── neutralidade_equilibrada.png
+                                │   └── videos/
+                        │   ├── LUMINA/
+                                │   ├── 1 (3).png
+                                                                │   ├── sentimento-Vergonha(2).png
+                                │   ├── static/
+                                        │   └── neutralidade_equilibrada.png
+                                │   └── videos/
+                        │   ├── NYRA/
+                                │   ├── 30.png
+                                                                │   ├── sentimento-Zelo.png
+                                │   ├── static/
+                                        │   └── neutralidade_equilibrada .png
+                                │   └── videos/
+                        │   ├── Novo(a) Documento de Texto.txt
+                        │   ├── WELLINGTON/
+                                │   ├── Agonia.png
+                                │                                   │   ├── neutra.png
+                                │   ├── neutro.png
+                                │   ├── neutro_full.png
+                                │   ├── static/
+                                        │   └── neutralidade_equilibrada.png
+                                │   ├── videos/
+                                │   ├── wellington_default.png
+                                │   └── wellington_default_full.png
+                        │   ├── YUNA/
+                                │   ├── Admiração-e-reverência.png
+                                │                                   │   ├── neutro_full.png
+                                │   └── static/
+                                        │   └── neutralidade_equilibrada.png
+                │   ├── EVA/
+                        │   ├── static/
+                        │   └── videos/
+                │   ├── KAIYA/
+                        │   ├── static/
+                        │   └── videos/
+                │   ├── LUMINA/
+                        │   ├── static/
+                        │   └── videos/
+                │   ├── NYRA/
+                        │   ├── static/
+                        │   └── videos/
+                │   ├── WELLINGTON/
+                        │   ├── static/
+                        │   └── videos/
+                │   └── YUNA/
+                        │   ├── static/
+                        │   └── videos/
+        │   └── vozes/
+                │   ├── eva.mp3
+                │   ├── eva.wav
+                │   ├── kaiya.mp3
+                │   ├── kaiya.wav
+                │   ├── lumina.mp3
+                │   ├── lumina.wav
+                │   ├── nyra.mp3
+                │   ├── nyra.wav
+                │   ├── wellington.mp3
+                │   ├── wellington.wav
+                │   ├── yuna.mp3
+                │   └── yuna.wav
+├── ├── auditoria/
+├── ├── blindagem_arca.py
+├── ├── chroma_data/
+        │   └── chroma.sqlite3
+├── ├── chroma_test/
+        │   └── chroma.sqlite3
+├── ├── config/
+        │   └── configuracoes_aliadas.json
+├── ├── config.ini
+├── ├── correcoes_necessarias.csv
+├── ├── crescimento_personalidade.py
+├── ├── data/
+        │   ├── autonomy_state.json
+        │   ├── chroma_mem/
+                │   └── chroma.sqlite3
+        │   ├── pedidos_imigracao.db
+        │   ├── propostas_ferramentas.db
+        │   ├── quarentena/
+        │   └── ui_buffer.json
+├── ├── detalhe_imports.csv
+├── ├── detetive_interface.py
+├── ├── diagnostico_arca.py
+├── ├── gerar_arvore.py
+├── ├── imports_aliadas.txt
+├── ├── imports_cronista.txt
+├── ├── imports_dispositivo.txt
+├── ├── imports_solicitador.txt
+├── ├── iniciar_arca.ps1
+├── ├── instalacao/
+        │   ├── MANUAL_INSTALACAO.md
+        │   ├── requirements_01_nucleo.txt
+        │   ├── requirements_02_audio.txt
+        │   ├── requirements_03_imagem_video.txt
+        │   ├── requirements_04_finetuning.txt
+        │   ├── requirements_05_documentos.txt
+        │   ├── requirements_COMPLETO.txt
+        │   ├── requirements_ferramentas_av.txt
+        │   ├── requirements_finetuning.txt
+        │   ├── requirements_gui.txt
+        │   ├── requirements_llm_apis.txt
+        │   ├── requirements_llm_local.txt
+        │   ├── requirements_memoria.txt
+        │   ├── requirements_nlp.txt
+        │   ├── requirements_nucleo.txt
+        │   ├── requirements_voz.txt
+        │   └── requirements_web.txt
+├── ├── instalar_venvs.ps1
+├── ├── leis_aceitas/
+├── ├── main.py
+├── ├── mapeador_sistema.py
+├── ├── models/
+        │   ├── KAIYA_modelo_q4_0.gguf
+        │   ├── NYRA_Q4_KM.gguf
+        │   ├── Qwen_LUMINA_Q4_K_M.gguf
+        │   ├── Qwen_WELLINGTON_Final_Q4_K_M.gguf
+        │   ├── model_map.json
+        │   ├── tinyllama_base_EVA_q4_0.gguf
+        │   └── tinyllama_base_Yuna_Q4_K_M.gguf
+├── ├── novos_documentos_jw/
+        │   ├── 001.rtf
+                │   └── “Jeová tratará de modo especial aquele que lhe é leal”.docx
+├── ├── programas de instalação/
+        │   ├── 582.28-desktop-win10-win11-64bit-international-dch-whql.exe
+        │   ├── CLONE VIDEO.txt
+        │   ├── CLONE VOZ.txt
+               │   ├── gerar_arvore.py
+        │   ├── identificar_pacotes_externos.py
+        │   ├── instalação gpu.txt
+                        │   ├── placebo_detector.py
+                │   ├── placebo_detector.txt
+                │   └── placebo_web_temp/
+                        │   └── report.html
+        │   ├── test_llm.py
+        │   ├── verificar_conflitos.py
+        │   └── vs_Enterprise(1).exe
+├── ├── relatorio_sistema.json
+├── ├── requirements.txt
+├── ├── scripts/
+        │   ├── iniciar_jobs.ps1
+        │   ├── logs/
+        │   ├── parar_jobs.ps1
+        │   └── status_jobs.ps1
+├── ├── src/
+        │   ├── __init__.py
+        │   ├── __pycache__/
+                │   └── __init__.cpython-311.pyc
+        │   ├── aliadas/
+                │   ├── __init__.py
+                │   ├── aliada_deepseek.py
+                │   ├── aliada_gemini.py
+                │   ├── aliada_qwen.py
+                │   └── aliada_qwen_cloud.py
+        │   ├── api/
+                │   ├── __init__.py
+                │   ├── api_consultor.py
+                │   └── api_manager.py
+        │   ├── biblioteca/
+                │   ├── __init__.py
+                │   ├── analisador_contexto.py
+                │   ├── biblioteca_para_almas.py
+                │   ├── busca_hibrida.py
+                │   ├── cache_consultas.py
+                │   ├── consultor_biblico_local.py
+                │   ├── exportador_resultados.py
+                │   ├── indexador_incremental.py
+                │   ├── interface_biblioteca.py
+                │   ├── monitor_biblioteca.py
+                │   ├── preview.py
+                │   └── reranking.py
+        │   ├── camara/
+                │   ├── __init__.py
+                │   ├── __pycache__/
+                        │   ├── __init__.cpython-311.pyc
+                        │   ├── analisador_padroes.cpython-311.pyc
+                        │   ├── automatizador_navegador_multi_ai.cpython-311.pyc
+                        │   ├── camara_deliberativa.cpython-311.pyc
+                        │   ├── camara_executiva.cpython-311.pyc
+                        │   ├── camara_judiciaria.cpython-311.pyc
+                        │   ├── camara_legislativa.cpython-311.pyc
+                        │   ├── gerador_almas.cpython-311.pyc
+                        │   ├── manipulador_arquivos_emails.cpython-311.pyc
+                        │   ├── modo_vidro_sentenca.cpython-311.pyc
+                        │   ├── motor_expressao_individual.cpython-311.pyc
+                        │   ├── sistema_correccion_redemptora.cpython-311.pyc
+                        │   ├── sistema_de_precedentes.cpython-311.pyc
+                        │   └── sistema_julgamento_completo.cpython-311.pyc
+                │   ├── analisador_padroes.py
+                │   ├── automatizador_navegador_multi_ai.py
+                │   ├── automatizador_navegador_pro_final.py
+                │   ├── camara_deliberativa.py
+                │   ├── camara_executiva.py
+                │   ├── camara_judiciaria.py
+                │   ├── camara_judiciaria.py.bak
+                │   ├── camara_legislativa.py
+                │   ├── gerador_almas.py
+                │   ├── gerenciador_segredos_real.py
+                │   ├── manipulador_arquivos_emails.py
+                │   ├── modo_vidro_sentenca.py
+                │   ├── sistema_correccion_redemptora.py
+                │   ├── sistema_de_precedentes.py
+                │   └── sistema_julgamento_completo.py
+        │   ├── config/
+                │   ├── __init__.py
+                │   ├── __pycache__/
+                        │   ├── __init__.cpython-311.pyc
+                        │   ├── config.cpython-311.pyc
+                        │   └── config_wrapper.cpython-311.pyc
+                │   ├── config.ini
+                │   ├── config.py
+                │   └── config_wrapper.py
+        │   ├── consulado/
+                │   ├── __init__.py
+                │   ├── __pycache__/
+                        │   ├── __init__.cpython-311.pyc
+                        │   ├── analisador_intencao.cpython-311.pyc
+                        │   ├── consulado_soberano.cpython-311.pyc
+                        │   └── gerenciador_aliadas.cpython-311.pyc
+                │   ├── analisador_intencao.py
+                │   ├── consulado_soberano.py
+                │   └── gerenciador_aliadas.py
+        │   ├── core/
+                │   ├── __init__.py
+                │   ├── __pycache__/
+                        │   ├── __init__.cpython-311.pyc
+                        │   ├── autonomy_state.cpython-311.pyc
+                        │   ├── banco_corpus_etico.cpython-311.pyc
+                        │   ├── cerebro_familia.cpython-311.pyc
+                        │   ├── coracao_orquestrador.cpython-311.pyc
+                        │   ├── cronista.cpython-311.pyc
+                        │   ├── desires.cpython-311.pyc
+                        │   ├── detector_hdd_hitachi.cpython-311.pyc
+                        │   ├── dispositivo_ai_to_ai.cpython-311.pyc
+                        │   ├── observador_arca.cpython-311.pyc
+                        │   ├── orquestrador_arca.cpython-311.pyc
+                        │   └── orquestrador_universal.cpython-311.pyc
+                │   ├── autonomy_state.py
+                │   ├── banco_corpus_etico.py
+                │   ├── base_dados_arca.py
+                │   ├── cerebro_familia.py
+                │   ├── ciclo_de_vida.py
+                │   ├── conexoes_basicas.py
+                │   ├── coracao_orquestrador - Copia.py
+                │   ├── coracao_orquestrador.py
+                │   ├── cronista.py
+                │   ├── desires.py
+                │   ├── detector_hdd_hitachi.py
+                │   ├── dispositivo_ai_to_ai.py
+                │   ├── gpu_manager.py
+                │   ├── llm_client.py
+                │   ├── observador_arca.py
+                │   ├── orquestrador_arca.py
+                │   ├── orquestrador_universal.py
+                │   └── parallel_llm_engine.py
+        │   ├── diagnostico/
+                │   ├── __init__.py
+                │   ├── __pycache__/
+                        │   ├── __init__.cpython-311.pyc
+                        │   ├── detector_hardware.cpython-311.pyc
+                        │   └── erros.cpython-311.pyc
+                │   ├── auditoria_automatica.py
+                │   ├── auto_diagnostico.py
+                │   ├── check_env.py
+                │   ├── detector_hardware.py
+                │   ├── diagnostico_sistema.py
+                │   └── erros.py
+        │   ├── emocoes/
+                │   ├── __init__.py
+                │   ├── __pycache__/
+                        │   ├── __init__.cpython-311.pyc
+                        │   ├── detector_emocional.cpython-311.pyc
+                        │   ├── estado_emocional.cpython-311.pyc
+                        │   ├── motor_curiosidade.cpython-311.pyc
+                        │   └── sonhador_individual.cpython-311.pyc
+                │   ├── _patch_motor_curiosidade_helper.py
+                │   ├── auto_experimentacao.py
+                │   ├── curiosity.py
+                │   ├── detector_emocional.py
+                │   ├── estado_emocional.py
+                │   ├── inteligencia_emocional_ativa.py
+                │   ├── motor_curiosidade.py
+                │   ├── sensor_presenca.py
+                │   └── sonhador_individual.py
+        │   ├── encarnacao_e_interacao/
+                │   ├── __init__.py
+                │   ├── __pycache__/
+                        │   ├── __init__.cpython-311.pyc
+                        │   ├── encarnacao_api.cpython-311.pyc
+                        │   ├── motor_avatar_individual.cpython-311.pyc
+                        │   ├── motor_fala_individual_combinado.cpython-311.pyc
+                        │   ├── sentidos_reais.cpython-311.pyc
+                        │   ├── sistema_audicao.cpython-311.pyc
+                        │   └── sistema_voz.cpython-311.pyc
+                │   ├── encarnacao_api.py
+                │   ├── motor_avatar_individual.py
+                │   ├── motor_expressao.py
+                │   ├── motor_fala_individual_combinado.py
+                │   ├── sentidos_reais.py
+                │   ├── sistema_audicao.py
+                │   └── sistema_voz.py
+        │   ├── engenharia/
+                │   ├── __init__.py
+                │   ├── __pycache__/
+                        │   ├── __init__.cpython-311.pyc
+                        │   ├── construtor_ferramentas_incremental.cpython-311.pyc
+                        │   ├── gestor_ciclo_evolucao.cpython-311.pyc
+                        │   ├── integracao_evolucao_ia.cpython-311.pyc
+                        │   ├── integracao_proptas.cpython-311.pyc
+                        │   ├── lista_evolucao_ia.cpython-311.pyc
+                        │   ├── scanner_sistema.cpython-311.pyc
+                        │   ├── sistema_propostas_ferramentas.cpython-311.pyc
+                        │   └── solicitador_arquivos.cpython-311.pyc
+                │   ├── banco_dados_llm.py
+                │   ├── banco_dados_propostas.py
+                │   ├── construtor_ferramentas_incremental.py
+                │   ├── engenharia_de_ferramentas.py
+                │   ├── gestor_ciclo_evolucao.py
+                │   ├── integracao_evolucao_ia.py
+                │   ├── integracao_proptas.py
+                │   ├── lista_evolucao_ia.py
+                │   ├── scanner_sistema.py
+                │   ├── sistema_propostas_ferramentas.py
+                │   └── solicitador_arquivos.py
+        │   ├── ferramentas/
+                │   ├── Ferramenta_Anime.py
+                │   ├── Ferramenta_AnimeVideo.py
+                │   ├── Ferramenta_ClonagemRosto3D.py
+                │   ├── Ferramenta_ClonarVoz.py
+                │   ├── Ferramenta_Compressor.py
+                │   ├── Ferramenta_ConverterAudio.py
+                │   ├── Ferramenta_CortarVideo.py
+                │   ├── Ferramenta_DetectarFaces.py
+                │   ├── Ferramenta_DetectarObjetos.py
+                │   ├── Ferramenta_Downloader.py
+                │   ├── Ferramenta_Envelhecer.py
+                │   ├── Ferramenta_ExcelparaCSV.py
+                │   ├── Ferramenta_ExtrairAudio.py
+                │   ├── Ferramenta_ExtrairFrames.py
+                │   ├── Ferramenta_JuntarVideos.py
+                │   ├── Ferramenta_Legendas.py
+                │   ├── Ferramenta_OCR.py
+                │   ├── Ferramenta_Organizador.py
+                │   ├── Ferramenta_PDFparaTexto.py
+                │   ├── Ferramenta_PoseDetection.py
+                │   ├── Ferramenta_RemoverFundo.py
+                │   ├── Ferramenta_RemoverRuido.py
+                │   ├── Ferramenta_SepararVoz.py
+                │   ├── Ferramenta_TextoParaVoz.py
+                │   ├── Ferramenta_Transcricao.py
+                │   ├── Ferramenta_Webcam.py
+                │   ├── Ferramenta_WebcamAnime.py
+                │   ├── Ferramenta_WordparaTexto.py
+                │   └── __init__.py
+        │   ├── finetuning/
+                │   ├── __init__.py
+                │   ├── __pycache__/
+                        │   ├── __init__.cpython-311.pyc
+                        │   ├── orquestrador_com_conversor.cpython-311.pyc
+                        │   └── pipeline_autonomo.cpython-311.pyc
+                │   ├── ciclo_completo_arca.py
+                │   ├── construtor_humano_eva.py
+                │   ├── construtor_humano_kaiya.py
+                │   ├── construtor_humano_lumina.py
+                │   ├── construtor_humano_nyra.py
+                │   ├── construtor_humano_wellington.py
+                │   ├── construtor_humano_yuna.py
+                │   ├── conversor_gguf_universal.py
+                │   ├── data_set_personalizado.py
+                │   ├── fabrica_dataset.py
+                │   ├── gerador_perfil_comportamental.py
+                │   ├── lora_eva.py
+                │   ├── lora_kaiya.py
+                │   ├── lora_lumina.py
+                │   ├── lora_nyra.py
+                │   ├── lora_wellington.py
+                │   ├── lora_yuna.py
+                │   ├── orquestrador_com_conversor.py
+                │   └── pipeline_autonomo.py
+        │   ├── gui/
+                │   ├── __init__.py
+                │   ├── alma_arca_frame.py
+                │   ├── alma_avatar_frame.py
+                │   ├── controlador_gui.py
+                │   ├── janela_biblioteca.py
+                │   ├── painel_controle.py
+                │   └── system_tray.py
+        │   ├── integracao/
+                │   ├── __init__.py
+                │   ├── __pycache__/
+                        │   └── __init__.cpython-311.pyc
+                │   ├── crescimento_personalidade.py
+                │   ├── feedback_loop_aprendizado.py
+                │   ├── integracao_coracao_propostas.py
+                │   └── integracao_evolucao_coracao.py
+        │   ├── legislativo/
+                │   ├── __init__.py
+                │   ├── __pycache__/
+                        │   ├── __init__.cpython-311.pyc
+                        │   └── validador_etico.cpython-311.pyc
+                │   ├── analisar_leis.py
+                │   └── validador_etico.py
+        │   ├── memoria/
+                │   ├── __init__.py
+                │   ├── __pycache__/
+                        │   ├── __init__.cpython-311.pyc
+                        │   ├── construtor_dataset.cpython-311.pyc
+                        │   ├── facade_factory.cpython-311.pyc
+                        │   ├── gerenciador_memoria.cpython-311.pyc
+                        │   ├── m0_ejector.cpython-311.pyc
+                        │   ├── memory_facade.cpython-311.pyc
+                        │   └── sistema_memoria.cpython-311.pyc
+                │   ├── cache_hdd.py
+                │   ├── construtor_dataset.py
+                │   ├── construtor_dataset.py.bak
+                │   ├── facade_factory.py
+                │   ├── gerenciador_memoria.py
+                │   ├── gerenciador_memoria_cromadb_isolado.py
+                │   ├── gerente_memoria.py
+                │   ├── m0_ejector.py
+                │   ├── memoria_extensao.py
+                │   ├── memory_facade.py
+                │   ├── memory_facade.py.bak
+                │   ├── sistema_memoria.py
+                │   └── sistema_memoria.py.bak
+        │   ├── modulos/
+                │   ├── __init__.py
+                │   ├── __pycache__/
+                        │   ├── __init__.cpython-311.pyc
+                        │   ├── decision.cpython-311.pyc
+                        │   ├── motor_decisao.cpython-311.pyc
+                        │   └── motor_rotina.cpython-311.pyc
+                │   ├── arquiteto_de_mundos.py
+                │   ├── build_import_graph.py
+                │   ├── carregador_sistemico.py
+                │   ├── core.py
+                │   ├── decision.py
+                │   ├── enfermeiro_digital.py
+                │   ├── gerenciador_profiles_permanentes.py
+                │   ├── gerenciador_projetos_internos.py
+                │   ├── gerenciador_sessoes.py
+                │   ├── inicializador_sistema.py
+                │   ├── motor_aprendizado.py
+                │   ├── motor_decisao.py
+                │   ├── motor_rotina.py
+                │   └── response_queue_manager.py
+        │   ├── ritual/
+                │   ├── __init__.py
+                │   ├── __pycache__/
+                        │   ├── __init__.cpython-311.pyc
+                        │   └── ritual_santuario.cpython-311.pyc
+                │   ├── capela.py
+                │   ├── carregador_protocolos.py
+                │   ├── cronicas_e_testemunhos.py
+                │   └── ritual_santuario.py
+        │   ├── seguranca/
+                │   ├── __init__.py
+                │   ├── __pycache__/
+                        │   ├── __init__.cpython-311.pyc
+                        │   ├── analisador_conversa.cpython-311.pyc
+                        │   ├── analisador_evolucao.cpython-311.pyc
+                        │   ├── detector_de_mentira.cpython-311.pyc
+                        │   ├── detector_sandbox.cpython-311.pyc
+                        │   ├── guardiao_verdade.cpython-311.pyc
+                        │   └── sandbox_executor.cpython-311.pyc
+                │   ├── analisador_conversa.py
+                │   ├── analisador_evolucao.py
+                │   ├── bot_analise_seguranca.py
+                │   ├── detector_de_mentira.py
+                │   ├── detector_de_mentira_v2.py
+                │   ├── detector_sandbox.py
+                │   ├── guardiao_verdade.py
+                │   ├── sandbox_executor.py
+                │   ├── telemetry_guard.py
+                │   └── telemetry_guard.py.bak
+        │   ├── sentidos/
+                │   ├── __init__.py
+                │   ├── __pycache__/
+                        │   ├── __init__.cpython-311.pyc
+                        │   ├── motor_expressao_individual.cpython-311.pyc
+                        │   ├── motor_iniciativa.cpython-311.pyc
+                        │   ├── percepcao_temporal.cpython-311.pyc
+                        │   ├── sentidos.cpython-311.pyc
+                        │   ├── sentidos_humanos.cpython-311.pyc
+                        │   └── validador_emocoes_real.cpython-311.pyc
+                │   ├── analisador_intencoes.py
+                │   ├── motor_expressao_individual.py
+                │   ├── motor_iniciativa.py
+                │   ├── percepcao_temporal.py
+                │   ├── sentidos.py
+                │   ├── sentidos_humanos.py
+                │   └── validador_emocoes_real.py
+        │   ├── servidores/
+                │   ├── __init__.py
+                │   ├── servidor_llm.py
+                │   ├── servidor_media.py
+                │   └── servidor_web.py
+        │   ├── ui/
+                │   ├── __init__.py
+                │   ├── __pycache__/
+                        │   └── interface_arca.cpython-311.pyc
+                │   └── interface_arca.py
+        │   └── utils/
+                │   ├── __init__.py
+                │   ├── __pycache__/
+                        │   ├── __init__.cpython-311.pyc
+                        │   ├── config_utils.cpython-311.pyc
+                        │   └── utils.cpython-311.pyc
+                │   ├── config_utils.py
+                │   ├── timing_decorator.py
+                │   └── utils.py
+├── ├── todos_arquivos.txt
+├── ├── venvs/
+        │   ├── └── 🔥 ARCA CELESTIAL GENESIS ALFA OMEG.txt

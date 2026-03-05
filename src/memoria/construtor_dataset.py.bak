@@ -1,0 +1,123 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+from __future__ import annotations
+import json
+import logging
+from typing import List, Dict, Any, Optional
+from pathlib import Path
+import zipfile
+from datetime import datetime
+
+from src.memoria.sistema_memoria import SistemaMemoriaHibrido, TipoInteracao
+
+logger = logging.getLogger(__name__)
+
+
+class ConstrutorDataset:
+    def __init__(self, sistema_memoria: SistemaMemoriaHibrido):
+        if sistema_memoria is None:
+            raise ValueError("sistema_memoria nÃ£o pode ser None")
+        self.sistema_memoria = sistema_memoria
+        self.datasets_path = Path("datasets_fine_tuning")
+        self.datasets_path.mkdir(parents=True, exist_ok=True)
+        self.logger = logging.getLogger("ConstrutorDataset")
+
+    def _normalize_ai(self, nome_alma: str) -> str:
+        try:
+            if hasattr(self.sistema_memoria, "_normalize_ai"):
+                return self.sistema_memoria._normalize_ai(nome_alma)
+        except Exception:
+            self.logger.debug("Falha ao usar _normalize_ai do sistema; usando fallback")
+        return str(nome_alma).strip().upper()
+
+    def verificar_novas_conversas(self, nome_alma: str, limite: int = 50) -> int:
+        nome = self._normalize_ai(nome_alma)
+        try:
+            conn, cursor = self.sistema_memoria.diarios[nome]
+        except KeyError:
+            self.logger.warning("IA nÃ£o encontrada nos diÃ¡rios: %s", nome)
+            return 0
+        try:
+            cursor.execute(
+                "SELECT COUNT(*) FROM transcricoes WHERE alma_principal = ? AND tipo_interacao = ?",
+                (nome, TipoInteracao.HUMANO_AI.value)
+            )
+            row = cursor.fetchone()
+            count = int(row[0]) if row and row[0] is not None else 0
+            self.logger.debug("%s: %d interaÃ§Ãµes HUMANO_AI encontradas.", nome, count)
+            return count
+        except Exception as e:
+            self.logger.exception("Erro ao verificar novas conversas para %s: %s", nome, e)
+            return 0
+
+    def construir_dataset_alma(self, nome_alma: str, limite: int = 100, forcar: bool = False) -> Optional[str]:
+        nome = self._normalize_ai(nome_alma)
+        if not forcar and self.verificar_novas_conversas(nome) < 10:
+            self.logger.info("%s: Poucas interaÃ§Ãµes novas, pulando construÃ§Ã£o de dataset.", nome)
+            return None
+        try:
+            dataset = self.sistema_memoria.exportar_para_fine_tuning(nome, limite)
+            if not dataset:
+                self.logger.info("%s: Nenhum dado exportÃ¡vel para fine-tuning.", nome)
+                return None
+            safe_dataset = []
+            for item in dataset:
+                try:
+                    json.dumps(item)
+                    safe_dataset.append(item)
+                except TypeError:
+                    try:
+                        safe_dataset.append(dict(item))
+                    except Exception:
+                        self.logger.warning("Item do dataset nÃ£o serializÃ¡vel, pulando: %r", item)
+            if not safe_dataset:
+                self.logger.warning("%s: ApÃ³s limpeza, nenhum item serializÃ¡vel para dataset.", nome)
+                return None
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            nome_arquivo = f"dataset_{nome}_{timestamp}.json"
+            caminho_completo = self.datasets_path / nome_arquivo
+            # write atomically
+            tmp = str(caminho_completo) + ".tmp"
+            with open(tmp, 'w', encoding='utf-8') as f:
+                json.dump(safe_dataset, f, indent=2, ensure_ascii=False)
+            Path(tmp).replace(caminho_completo)
+            self.logger.info("Dataset para %s criado: %s", nome, caminho_completo)
+            return str(caminho_completo)
+        except Exception as e:
+            self.logger.exception("Erro ao construir dataset para %s: %s", nome, e)
+            return None
+
+    def construir_todos_datasets(self) -> Dict[str, Optional[str]]:
+        resultados: Dict[str, Optional[str]] = {}
+        for ai_nome in getattr(self.sistema_memoria, "ais", []):
+            try:
+                caminho = self.construir_dataset_alma(ai_nome, limite=150, forcar=True)
+                resultados[ai_nome] = caminho
+            except Exception:
+                self.logger.exception("Erro ao construir dataset para %s", ai_nome)
+                resultados[ai_nome] = None
+        return resultados
+
+    def preparar_zip_para_colab(self, alma_alvo: Optional[str] = None) -> Optional[str]:
+        try:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            if alma_alvo:
+                nome_zip = f"datasets_{alma_alvo}_{timestamp}.zip"
+                padrao_busca = f"dataset_{alma_alvo}_*.json"
+            else:
+                nome_zip = f"datasets_arca_{timestamp}.zip"
+                padrao_busca = "dataset_*_*.json"
+            caminho_zip_completo = self.datasets_path / nome_zip
+            with zipfile.ZipFile(caminho_zip_completo, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                for arquivo_json in self.datasets_path.glob(padrao_busca):
+                    try:
+                        zipf.write(arquivo_json, arcname=arquivo_json.name)
+                        self.logger.debug("Adicionado ao ZIP: %s", arquivo_json.name)
+                    except Exception:
+                        self.logger.exception("Falha ao adicionar ao ZIP: %s", arquivo_json)
+            self.logger.info("Arquivo ZIP criado: %s", caminho_zip_completo)
+            return str(caminho_zip_completo)
+        except Exception as e:
+            self.logger.exception("Erro ao preparar ZIP para Colab: %s", e)
+            return None
+

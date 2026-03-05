@@ -1,0 +1,686 @@
+from __future__ import annotations
+import logging
+import threading
+import queue
+import time
+import uuid
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Dict, Any, Optional, List, Tuple, Union
+import json
+import concurrent.futures
+from dataclasses import dataclass, field
+from enum import Enum
+from src.utils.config_utils import cfg_get as _cfg_get
+from src.utils.config_utils import cfg_get_bool as _cfg_get_bool, cfg_get_int as _cfg_get_int, cfg_get_float as _cfg_get_float
+
+logger = logging.getLogger("CamaraJudiciaria")
+
+
+class TipoJulgamento(Enum):
+    CONFLITO_INTER_ALMA = "conflito_inter_alma"
+    VIOLACAO_PROTOCOLO = "violacao_protocolo"
+    APELACAO_DECISAO = "apelacao_decisao"
+    ANALISE_CONDUTA = "analise_conduta"
+
+
+class StatusProcesso(Enum):
+    RECEBIDO = "recebido"
+    EM_ANALISE = "em_analise"
+    AGUARDANDO_EVIDENCIAS = "aguardando_evidencias"
+    PRONTO_PARA_JULGAMENTO = "pronto_para_julgamento"
+    EM_JULGAMENTO = "em_julgamento"
+    JULGADO = "julgado"
+    RECURSO_ACEITO = "recurso_aceito"
+    RECURSO_NEGADO = "recurso_negado"
+    CONCLUIDO = "concluido"
+    ARQUIVADO = "arquivado"
+    FALHA_NA_ANALISE = "falha_na_analise"
+
+
+@dataclass
+class Evidencia:
+    id: str
+    descricao: str
+    caminho_arquivo: Optional[str]
+    tipo: str
+    autor: str
+    timestamp_registro: datetime = field(default_factory=datetime.now)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "descricao": self.descricao,
+            "caminho_arquivo": self.caminho_arquivo,
+            "tipo": self.tipo,
+            "autor": self.autor,
+            "timestamp_registro": self.timestamp_registro.isoformat()
+        }
+
+
+@dataclass
+class Decisao:
+    id: str
+    id_processo: str
+    decisao: str
+    justificativa: str
+    autor_julgador: str
+    leis_aplicaveis: List[str] = field(default_factory=list)
+    precedentes_considerados: List[str] = field(default_factory=list)
+    sancao: Optional[Dict[str, Any]] = None
+    timestamp_decisao: datetime = field(default_factory=datetime.now)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "id_processo": self.id_processo,
+            "decisao": self.decisao,
+            "justificativa": self.justificativa,
+            "autor_julgador": self.autor_julgador,
+            "leis_aplicaveis": self.leis_aplicaveis,
+            "precedentes_considerados": self.precedentes_considerados,
+            "sancao": self.sancao,
+            "timestamp_decisao": self.timestamp_decisao.isoformat()
+        }
+
+
+@dataclass
+class ProcessoJudicial:
+    id: str
+    tipo: Union[TipoJulgamento, str]
+    descricao: str
+    autor_denuncia: str
+    alvo_acusado: str
+    timestamp_abertura: datetime = field(default_factory=datetime.now)
+    status: Union[StatusProcesso, str] = StatusProcesso.RECEBIDO
+    evidencias: List[Evidencia] = field(default_factory=list)
+    decisao_atual: Optional[Decisao] = None
+    historico_decisoes: List[Decisao] = field(default_factory=list)
+    prazo_limite: datetime = field(default_factory=lambda: datetime.now() + timedelta(days=30))
+    leis_aplicaveis: List[str] = field(default_factory=list)
+    precedentes_considerados: List[str] = field(default_factory=list)
+    fundamentacao_biblica: List[Dict[str, Any]] = field(default_factory=list)
+    apelacao: Optional[Dict[str, Any]] = None
+
+    def adicionar_evidencia(self, evidencia: Evidencia):
+        self.evidencias.append(evidencia)
+
+    def atualizar_status(self, novo_status: Union[StatusProcesso, str]):
+        self.status = novo_status
+
+    def registrar_decisao(self, decisao: Decisao):
+        self.decisao_atual = decisao
+        self.historico_decisoes.append(decisao)
+
+
+class LocalLegislativa:
+    def __init__(self, leis_dir: Union[str, Path]):
+        self.path = Path(leis_dir)
+        self._lock = threading.RLock()
+        self._index: Dict[str, Dict[str, Any]] = {}
+        self.logger = logging.getLogger("LocalLegislativa")
+        self._refresh()
+
+    def _refresh(self):
+        with self._lock:
+            self._index = {}
+            if not self.path.exists():
+                return
+            for f in sorted(self.path.glob("*.json")):
+                try:
+                    data = json.loads(f.read_text(encoding="utf-8"))
+                    if isinstance(data, dict):
+                        key = str(data.get("id", f.name))
+                        self._index[key] = data
+                    elif isinstance(data, list):
+                        for idx, item in enumerate(data):
+                            if isinstance(item, dict):
+                                key = str(item.get("id", f"{f.name}-{idx}"))
+                                self._index[key] = item
+                except Exception:
+                    self.logger.exception("LocalLegislativa: falha ao ler %s", f)
+
+    def refresh(self):
+        self._refresh()
+
+    def buscar_leis_aplicaveis(self, descricao: str, limit: int = 10) -> List[Dict[str, Any]]:
+        desc = (descricao or "").strip().lower()
+        out = []
+        with self._lock:
+            for lei in self._index.values():
+                status = (lei.get("status") or "ativa").lower()
+                if status != "ativa":
+                    continue
+                if not desc:
+                    out.append(lei)
+                else:
+                    texto = " ".join([
+                        str(lei.get("titulo", "")),
+                        str(lei.get("principio", "")),
+                        str(lei.get("instrucao_base", "")),
+                        json.dumps(lei)
+                    ]).lower()
+                    if desc in texto:
+                        out.append(lei)
+                if len(out) >= limit:
+                    break
+        return out
+
+    def buscar_em_categoria(self, categoria: str, query: str = "", limit: int = 10) -> List[Dict[str, Any]]:
+        cat = (categoria or "").strip().lower()
+        q = (query or "").strip().lower()
+        out = []
+        with self._lock:
+            for lei in self._index.values():
+                if str(lei.get("categoria", "")).strip().lower() != cat:
+                    continue
+                if q:
+                    if q in json.dumps(lei).lower():
+                        out.append(lei)
+                else:
+                    out.append(lei)
+                if len(out) >= limit:
+                    break
+        return out
+
+
+class LocalBiblioteca:
+    def __init__(self, fontes_dir: Union[str, Path]):
+        self.path = Path(fontes_dir)
+        self._lock = threading.RLock()
+        self._index: Dict[str, Dict[str, Any]] = {}
+        self.logger = logging.getLogger("LocalBiblioteca")
+        self._build_index()
+
+    def _build_index(self):
+        with self._lock:
+            self._index = {}
+            if not self.path.exists():
+                return
+            for f in sorted(self.path.glob("*.json")):
+                try:
+                    data = json.loads(f.read_text(encoding="utf-8"))
+                    if isinstance(data, dict):
+                        text_parts = []
+                        if "texto" in data and isinstance(data["texto"], str):
+                            text_parts.append(data["texto"])
+                        else:
+                            text_parts.append(json.dumps(data))
+                        self._index[str(f)] = {"conteudo": " ".join(text_parts), "metadata": {"file": str(f)}}
+                    else:
+                        self._index[str(f)] = {"conteudo": str(data), "metadata": {"file": str(f)}}
+                except Exception:
+                    self.logger.exception("LocalBiblioteca: falha indexar %s", f)
+
+    def refresh(self):
+        self._build_index()
+
+    def buscar(self, query: str, top_k: int = 3) -> List[Dict[str, Any]]:
+        q = (query or "").strip().lower()
+        if not q:
+            return []
+        out = []
+        with self._lock:
+            for path, info in self._index.items():
+                if q in info["conteudo"].lower():
+                    out.append({"metadata": info.get("metadata", {"file": path}), "conteudo": info["conteudo"]})
+                    if len(out) >= top_k:
+                        break
+        return out
+
+
+class LocalModoVidro:
+    def __init__(self, santuario_dir: Union[str, Path]):
+        self.dir = Path(santuario_dir)
+        self.dir.mkdir(parents=True, exist_ok=True)
+        self.file = self.dir / "vidro_recommendations.json"
+        if not self.file.exists():
+            self.file.write_text("[]", encoding="utf-8")
+        self.logger = logging.getLogger("LocalModoVidro")
+
+    def aplicar_sentenca_judicial(self, id_processo: str, alvo: str, isolamento_total: bool) -> str:
+        rec_id = str(uuid.uuid4())
+        entry = {
+            "id": rec_id,
+            "id_processo": id_processo,
+            "alvo": alvo,
+            "isolamento_total": bool(isolamento_total),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        try:
+            arr = json.loads(self.file.read_text(encoding="utf-8") or "[]")
+        except Exception:
+            arr = []
+        arr.append(entry)
+        tmp = self.file.with_suffix(".tmp")
+        tmp.write_text(json.dumps(arr, ensure_ascii=False, indent=2), encoding="utf-8")
+        tmp.replace(self.file)
+        return rec_id
+
+
+class LocalConsulado:
+    def __init__(self, santuario_dir: Union[str, Path]):
+        self.dir = Path(santuario_dir)
+        self.dir.mkdir(parents=True, exist_ok=True)
+        self.sanctions_file = self.dir / "sancoes.json"
+        if not self.sanctions_file.exists():
+            self.sanctions_file.write_text("[]", encoding="utf-8")
+        self.manipulador_dir = self.dir / "manipulador"
+        self.manipulador_dir.mkdir(parents=True, exist_ok=True)
+        self.logger = logging.getLogger("LocalConsulado")
+
+    def _append(self, path: Path, obj: Dict[str, Any]) -> bool:
+        try:
+            arr = json.loads(path.read_text(encoding="utf-8") or "[]")
+        except Exception:
+            arr = []
+        arr.append(obj)
+        tmp = path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(arr, ensure_ascii=False, indent=2), encoding="utf-8")
+        tmp.replace(path)
+        return True
+
+    def aplicar_sancao(self, alvo: str, sancao: Dict[str, Any]) -> bool:
+        try:
+            entry = {"alvo": alvo, "sancao": sancao, "timestamp": datetime.utcnow().isoformat()}
+            return self._append(self.sanctions_file, entry)
+        except Exception:
+            self.logger.exception("LocalConsulado: falha ao aplicar sancao para %s", alvo)
+            return False
+
+    def suspender_acesso_para_alma(self, alvo: str, privilegios: List[str], duracao_horas: int) -> bool:
+        return self.aplicar_sancao(alvo, {"tipo": "suspensao_privilegios", "privilegios": privilegios, "duracao_horas": duracao_horas})
+
+    def revogar_acesso_internet(self, alvo: str) -> bool:
+        return self.aplicar_sancao(alvo, {"tipo": "revogacao_acesso_internet"})
+
+    def restaurar_arquivo_padrao(self, nome_arquivo: str, alvo: str) -> bool:
+        try:
+            target = self.manipulador_dir / f"{alvo}_{nome_arquivo}"
+            target.write_text(f"# Restaurado padrÃ£o para {nome_arquivo} do alvo {alvo}\n", encoding="utf-8")
+            return True
+        except Exception:
+            self.logger.exception("LocalConsulado: falha restaurar arquivo %s para %s", nome_arquivo, alvo)
+            return False
+
+
+class CamaraJudiciaria:
+    def __init__(self, config: Any, coracao_ref: Any, biblioteca_ref: Any = None, camara_legislativa_ref: Any = None, modo_vidro_ref: Any = None):
+        self.config = config or {}
+        self.coracao = coracao_ref
+
+        leis_dir = Path(self.config.get("CAMARA_LEIS_ACEITAS_DIR", Path.cwd() / "santuarios/legislativo/leis_aceitas"))
+        fontes_biblioteca = Path(self.config.get("BIBLIOTECA_FONTES_DIR", Path.cwd() / "fontes_biblia"))
+        sant_vidro = Path(self.config.get("SANTUARIO_VIDRO_DIR", Path.cwd() / "santuarios/vidro"))
+        sant_consulado = Path(self.config.get("SANTUARIO_CONSULADO_DIR", Path.cwd() / "santuarios/consulado"))
+
+        self.biblioteca = biblioteca_ref if biblioteca_ref is not None else LocalBiblioteca(fontes_biblioteca)
+        self.camara_legislativa = camara_legislativa_ref if camara_legislativa_ref is not None else LocalLegislativa(leis_dir)
+        self.modo_vidro = modo_vidro_ref if modo_vidro_ref is not None else LocalModoVidro(sant_vidro)
+        self.consulado = LocalConsulado(sant_consulado)
+
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self._lock = threading.Lock()
+
+        self.processos_ativos: Dict[str, ProcessoJudicial] = {}
+        self.historico_processos: Dict[str, ProcessoJudicial] = {}
+        self.evidencias_pendentes: Dict[str, Evidencia] = {}
+        self.decisoes_registradas: Dict[str, Decisao] = {}
+
+        self.ui_queue: Optional[queue.Queue] = None
+
+        try:
+            self.caminho_santuario_judiciario = Path(_cfg_get(self.config, 'CAMINHOS', 'SANTUARIO_JUDICIARIO_PATH', fallback='./Santuarios/Judiciario'))
+            self.caminho_santuario_judiciario.mkdir(parents=True, exist_ok=True)
+            self.tempo_maximo_analise = int(_cfg_get(self.config, 'JUDICIARIO', 'TEMPO_MAXIMO_ANALISE_SECS', fallback=86400))
+            self.permite_recursos = _cfg_get_bool(self.config, 'JUDICIARIO', 'PERMITE_RECURSOS', fallback=True)
+        except Exception as e:
+            self.logger.error("Erro ao carregar parÃ¢metros: %s. Usando padrÃ£o.", e)
+            self.caminho_santuario_judiciario = Path('./Santuarios/Judiciario')
+            self.caminho_santuario_judiciario.mkdir(parents=True, exist_ok=True)
+            self.tempo_maximo_analise = 86400
+            self.permite_recursos = True
+
+        self.executor_analise = concurrent.futures.ThreadPoolExecutor(max_workers=3, thread_name_prefix="Judiciaria-Analise")
+        self.logger.info("CÃ¢mara JudiciÃ¡ria inicializada (implementaÃ§Ã£o direta).")
+
+    def injetar_ui_queue(self, fila_ui: queue.Queue):
+        self.ui_queue = fila_ui
+        self.logger.info("Fila UI injetada na CÃ¢mara JudiciÃ¡ria.")
+
+    def injetar_consulado(self, instancia_consulado: Any):
+        self.consulado = instancia_consulado
+        self.logger.info("Consulado injetado na CÃ¢mara JudiciÃ¡ria.")
+
+    def injetar_camara_legislativa(self, instancia: Any):
+        self.camara_legislativa = instancia
+        self.logger.info("CÃ¢mara Legislativa injetada na CÃ¢mara JudiciÃ¡ria.")
+
+    def injetar_modo_vidro(self, instancia: Any):
+        self.modo_vidro = instancia
+        self.logger.info("Modo Vidro injetado na CÃ¢mara JudiciÃ¡ria.")
+
+    def receber_denuncia(self, tipo: Union[TipoJulgamento, str], descricao: str, autor_denuncia: str, alvo_acusado: str) -> Tuple[bool, str]:
+        if not descricao or not autor_denuncia or not alvo_acusado:
+            self.logger.error("Campos obrigatÃ³rios ausentes na denÃºncia.")
+            return False, "Campos obrigatÃ³rios ausentes."
+
+        id_processo = str(uuid.uuid4())
+        tipo_obj = tipo if isinstance(tipo, TipoJulgamento) else self._parse_tipo_julgamento(tipo)
+        processo = ProcessoJudicial(id=id_processo, tipo=tipo_obj, descricao=descricao, autor_denuncia=autor_denuncia.upper(), alvo_acusado=alvo_acusado.upper())
+        processo.atualizar_status(StatusProcesso.RECEBIDO)
+
+        sucesso_salvar = self._salvar_processo_no_santuario(processo)
+        if not sucesso_salvar:
+            self.logger.error("Falha ao salvar processo %s", id_processo)
+            return False, f"Falha ao salvar processo {id_processo}"
+
+        with self._lock:
+            self.processos_ativos[id_processo] = processo
+
+        self._notificar_ui("PROCESSO_JUDICIAL_ABERTO", {
+            "id_processo": id_processo,
+            "descricao": descricao,
+            "autor_denuncia": autor_denuncia.upper(),
+            "alvo_acusado": alvo_acusado.upper(),
+            "tipo": tipo_obj.value if isinstance(tipo_obj, TipoJulgamento) else str(tipo_obj),
+            "timestamp": processo.timestamp_abertura.timestamp()
+        })
+
+        self.executor_analise.submit(self._iniciar_analise_processo_em_thread, id_processo, descricao, alvo_acusado.upper())
+        return True, id_processo
+
+    def _parse_tipo_julgamento(self, v: Union[TipoJulgamento, str]) -> TipoJulgamento:
+        if isinstance(v, TipoJulgamento):
+            return v
+        s = str(v).strip().lower()
+        for t in TipoJulgamento:
+            if s == t.value or s == t.name.lower():
+                return t
+        self.logger.warning("TipoJulgamento desconhecido '%s' -> usando ANALISE_CONDUTA.", v)
+        return TipoJulgamento.ANALISE_CONDUTA
+
+    def _iniciar_analise_processo_em_thread(self, id_processo: str, descricao_denuncia: str, alvo_acusado: str):
+        processo_atual: Optional[ProcessoJudicial] = None
+        try:
+            self.logger.info("Iniciando anÃ¡lise do processo %s", id_processo)
+            with self._lock:
+                processo_atual = self.processos_ativos.get(id_processo)
+            if not processo_atual:
+                self.logger.error("Processo nÃ£o encontrado durante anÃ¡lise: %s", id_processo)
+                return
+
+            processo_atual.atualizar_status(StatusProcesso.EM_ANALISE)
+            self._salvar_processo_no_santuario(processo_atual)
+
+            leis_aplicaveis = []
+            try:
+                leis_aplicaveis = self.camara_legislativa.buscar_leis_aplicaveis(descricao_denuncia) or []
+            except Exception:
+                self.logger.exception("Erro ao buscar leis aplicaveis")
+
+            leis_refinadas = self._refinar_leis_por_categoria(descricao_denuncia, leis_aplicaveis)
+
+            precedentes_relevantes = []
+            fn_prec = getattr(self, "buscar_decisoes_por_padrao", None)
+            if callable(fn_prec):
+                try:
+                    precedentes_relevantes = fn_prec(descricao_denuncia) or []
+                except Exception:
+                    precedentes_relevantes = []
+
+            fundamentacao_biblica: List[Dict[str, Any]] = []
+            try:
+                resultados = self.biblioteca.buscar(query=f"Fundamento para: {descricao_denuncia[:200]}", top_k=3)
+                for r in resultados or []:
+                    metadata = r.get("metadata", {}) if isinstance(r, dict) else {}
+                    fundamentacao_biblica.append({
+                        "metadata": metadata,
+                        "conteudo": r.get("conteudo", "") if isinstance(r, dict) else str(r)
+                    })
+            except Exception:
+                self.logger.exception("Erro ao buscar fundamentacao biblica")
+
+            processo_atual.leis_aplicaveis = leis_refinadas
+            processo_atual.precedentes_considerados = precedentes_relevantes
+            processo_atual.fundamentacao_biblica = fundamentacao_biblica
+            processo_atual.atualizar_status(StatusProcesso.PRONTO_PARA_JULGAMENTO)
+            self._salvar_processo_no_santuario(processo_atual)
+
+            self._notificar_ui("PROCESSO_JUDICIAL_ANALISE_CONCLUIDA", {
+                "id_processo": id_processo,
+                "numero_leis_aplicaveis": len(leis_refinadas),
+                "numero_precedentes": len(precedentes_relevantes),
+                "numero_fundamentacoes": len(fundamentacao_biblica),
+                "timestamp": time.time()
+            })
+            self.logger.info("AnÃ¡lise inicial do processo %s concluÃ­da.", id_processo)
+
+        except Exception as e:
+            self.logger.exception("Erro na anÃ¡lise do processo %s: %s", id_processo, e)
+            with self._lock:
+                if processo_atual:
+                    processo_atual.atualizar_status(StatusProcesso.FALHA_NA_ANALISE)
+                    self._salvar_processo_no_santuario(processo_atual)
+
+    def _refinar_leis_por_categoria(self, descricao: str, leis_gerais: List[Dict]) -> List[Dict]:
+        descricao_lower = (descricao or "").lower()
+        categorias_relevantes = []
+
+        mapeamento_keywords = {
+            "licoes": ["advertÃªncia", "ensinamento", "liÃ§Ã£o", "moral"],
+            "acoes_corretas": ["aÃ§Ã£o", "comportamento", "diretiva", "correto"],
+            "regras_de_ouro": ["regra", "ouro", "fundamental", "valor"],
+            "resolucao_conflitos": ["conflito", "resoluÃ§Ã£o", "debate", "engajamento"],
+            "etica": ["Ã©tica", "moral", "integridade", "justiÃ§a"],
+            "seguranca": ["seguranÃ§a", "ameaÃ§a", "risco", "proteÃ§Ã£o"],
+            "logica": ["lÃ³gica", "anÃ¡lise", "racional", "causa"],
+            "lei_zero": ["lei zero", "arquitetura", "fundamental"],
+            "justica": ["justiÃ§a", "julgamento", "equidade"],
+            "integridade": ["integridade", "honestidade", "consistÃªncia"],
+            "humildade": ["humildade", "cognitiva", "sabedoria"],
+            "gestao_conflitos": ["gestÃ£o", "conflito", "comunicaÃ§Ã£o"],
+            "comunicacao": ["comunicaÃ§Ã£o", "interaÃ§Ã£o", "empatia"],
+            "auto_analise": ["auto", "anÃ¡lise", "reflexÃ£o"],
+            "aprendizagem": ["aprendizagem", "adaptaÃ§Ã£o", "crescimento"]
+        }
+
+        for cat, keywords in mapeamento_keywords.items():
+            if any(kw in descricao_lower for kw in keywords):
+                categorias_relevantes.append(cat)
+
+        leis_refinadas: List[Dict] = []
+        for cat in categorias_relevantes:
+            try:
+                leis_cat = self.camara_legislativa.buscar_em_categoria(cat, descricao[:100])
+                if leis_cat:
+                    leis_refinadas.extend(leis_cat)
+            except Exception:
+                self.logger.exception("Erro ao buscar categoria %s", cat)
+
+        if len(leis_refinadas) < 5:
+            leis_refinadas.extend(leis_gerais[:5])
+
+        return leis_refinadas[:10]
+
+    def iniciar_julgamento(self, id_processo: str) -> bool:
+        with self._lock:
+            processo = self.processos_ativos.get(id_processo)
+            if not processo:
+                return False
+            processo.atualizar_status(StatusProcesso.EM_JULGAMENTO)
+            self._salvar_processo_no_santuario(processo)
+        self._notificar_ui("JULGAMENTO_INICIADO", {"id_processo": id_processo})
+        return True
+
+    def registrar_decisao(self, id_processo: str, decisao_obj: Decisao) -> bool:
+        with self._lock:
+            processo = self.processos_ativos.get(id_processo)
+            if not processo:
+                self.logger.error("Registrar decisÃ£o: processo nÃ£o encontrado %s", id_processo)
+                return False
+            processo.registrar_decisao(decisao_obj)
+            self.decisoes_registradas[decisao_obj.id] = decisao_obj
+
+            if decisao_obj.decisao == "culpada_critica":
+                try:
+                    id_recomendacao = self.modo_vidro.aplicar_sentenca_judicial(id_processo, processo.alvo_acusado, True)
+                    self.logger.info("Vidro aplicado: %s", id_recomendacao)
+                except Exception:
+                    self.logger.exception("Falha ao aplicar vidro")
+
+            if decisao_obj.sancao:
+                try:
+                    ok = self.consulado.aplicar_sancao(processo.alvo_acusado, decisao_obj.sancao)
+                    if not ok:
+                        self.logger.warning("Consulado retornou falha ao aplicar sancao")
+                except Exception:
+                    self.logger.exception("Falha ao aplicar sancao via consulado")
+
+            self.historico_processos[id_processo] = processo
+            if id_processo in self.processos_ativos:
+                del self.processos_ativos[id_processo]
+            self._salvar_processo_no_santuario(processo)
+
+        self._notificar_ui("DECISAO_REGISTRADA", {"id_processo": id_processo, "decisao": decisao_obj.decisao})
+        return True
+
+    def apelar_ao_criador(self, id_processo: str, fundamento: str) -> Tuple[bool, str]:
+        with self._lock:
+            processo = self.historico_processos.get(id_processo)
+            if not processo:
+                return False, "Processo nÃ£o encontrado em histÃ³rico"
+            if processo.apelacao:
+                return False, "ApelaÃ§Ã£o jÃ¡ registrada"
+            if not fundamento or len(fundamento.strip()) < 50:
+                return False, "Fundamento de apelaÃ§Ã£o muito curto (mÃ­n.50 caracteres)"
+            processo.apelacao = {
+                "id_apelacao": str(uuid.uuid4()),
+                "fundamento": fundamento,
+                "timestamp": datetime.now().isoformat(),
+                "status": "PENDENTE_CRIADOR"
+            }
+            self._salvar_processo_no_santuario(processo)
+        self.logger.info("ApelaÃ§Ã£o ao Criador registrada para processo %s", id_processo)
+        return True, "ApelaÃ§Ã£o registrada. Aguardando decisÃ£o do Criador."
+
+    def _salvar_processo_no_santuario(self, processo: ProcessoJudicial) -> bool:
+        try:
+            caminho_arquivo = self.caminho_santuario_judiciario / f"processo_{processo.id}.json"
+            dados = {
+                "id": processo.id,
+                "tipo": processo.tipo.value if isinstance(processo.tipo, TipoJulgamento) else str(processo.tipo),
+                "descricao": processo.descricao,
+                "autor_denuncia": processo.autor_denuncia,
+                "alvo_acusado": processo.alvo_acusado,
+                "timestamp_abertura": processo.timestamp_abertura.isoformat(),
+                "status": processo.status.value if isinstance(processo.status, StatusProcesso) else str(processo.status),
+                "evidencias": [e.to_dict() for e in processo.evidencias],
+                "decisao_atual": processo.decisao_atual.to_dict() if processo.decisao_atual else None,
+                "historico_decisoes": [d.to_dict() for d in processo.historico_decisoes],
+                "leis_aplicaveis": processo.leis_aplicaveis,
+                "precedentes_considerados": processo.precedentes_considerados,
+                "fundamentacao_biblica": processo.fundamentacao_biblica,
+                "apelacao": processo.apelacao,
+                "prazo_limite": processo.prazo_limite.isoformat() if processo.prazo_limite else None
+            }
+            with open(caminho_arquivo, 'w', encoding='utf-8') as f:
+                json.dump(dados, f, indent=2, ensure_ascii=False, default=str)
+            self.logger.debug("Processo %s salvo em %s", processo.id, caminho_arquivo)
+            return True
+        except Exception:
+            self.logger.exception("Erro ao salvar processo %s", processo.id)
+            return False
+
+    def _carregar_processo_do_santuario(self, id_processo: str) -> Optional[ProcessoJudicial]:
+        try:
+            caminho_arquivo = self.caminho_santuario_judiciario / f"processo_{id_processo}.json"
+            if not caminho_arquivo.exists():
+                self.logger.debug("Arquivo de processo nÃ£o existe: %s", caminho_arquivo)
+                return None
+            with open(caminho_arquivo, 'r', encoding='utf-8') as f:
+                dados = json.load(f)
+            timestamp_abertura = datetime.fromisoformat(dados.get("timestamp_abertura"))
+            prazo = datetime.fromisoformat(dados["prazo_limite"]) if dados.get("prazo_limite") else None
+            tipo = dados.get("tipo")
+            tipo_obj = tipo if isinstance(tipo, TipoJulgamento) else self._parse_tipo_julgamento(tipo)
+            status_str = dados.get("status")
+            status_obj = status_str if isinstance(status_str, StatusProcesso) else (StatusProcesso(status_str) if status_str in [s.value for s in StatusProcesso] else StatusProcesso.RECEBIDO)
+            processo = ProcessoJudicial(
+                id=dados["id"],
+                tipo=tipo_obj,
+                descricao=dados.get("descricao", ""),
+                autor_denuncia=dados.get("autor_denuncia", ""),
+                alvo_acusado=dados.get("alvo_acusado", "")
+            )
+            processo.timestamp_abertura = timestamp_abertura
+            processo.prazo_limite = prazo or processo.prazo_limite
+            processo.status = status_obj
+            processo.leis_aplicaveis = dados.get("leis_aplicaveis", [])
+            processo.precedentes_considerados = dados.get("precedentes_considerados", [])
+            processo.fundamentacao_biblica = dados.get("fundamentacao_biblica", [])
+            processo.apelacao = dados.get("apelacao")
+            for ed in dados.get("evidencias", []):
+                ts = datetime.fromisoformat(ed.get("timestamp_registro")) if ed.get("timestamp_registro") else datetime.now()
+                evid = Evidencia(
+                    id=ed.get("id"),
+                    descricao=ed.get("descricao", ""),
+                    caminho_arquivo=ed.get("caminho_arquivo"),
+                    tipo=ed.get("tipo", ""),
+                    autor=ed.get("autor", "")
+                )
+                evid.timestamp_registro = ts
+                processo.adicionar_evidencia(evid)
+            da = dados.get("decisao_atual")
+            if da:
+                dec_obj = Decisao(
+                    id=da.get("id"),
+                    id_processo=da.get("id_processo"),
+                    decisao=da.get("decisao"),
+                    justificativa=da.get("justificativa", ""),
+                    autor_julgador=da.get("autor_julgador", ""),
+                    leis_aplicaveis=da.get("leis_aplicaveis", []),
+                    precedentes_considerados=da.get("precedentes_considerados", []),
+                    sancao=da.get("sancao")
+                )
+                dec_obj.timestamp_decisao = datetime.fromisoformat(da.get("timestamp_decisao")) if da.get("timestamp_decisao") else datetime.now()
+                processo.decisao_atual = dec_obj
+            for dd in dados.get("historico_decisoes", []):
+                d = Decisao(
+                    id=dd.get("id"),
+                    id_processo=dd.get("id_processo"),
+                    decisao=dd.get("decisao"),
+                    justificativa=dd.get("justificativa", ""),
+                    autor_julgador=dd.get("autor_julgador", ""),
+                    leis_aplicaveis=dd.get("leis_aplicaveis", []),
+                    precedentes_considerados=dd.get("precedentes_considerados", []),
+                    sancao=dd.get("sancao")
+                )
+                d.timestamp_decisao = datetime.fromisoformat(dd.get("timestamp_decisao")) if dd.get("timestamp_decisao") else datetime.now()
+                processo.historico_decisoes.append(d)
+            self.logger.debug("Processo %s carregado.", id_processo)
+            return processo
+        except Exception:
+            self.logger.exception("Erro ao carregar processo %s", id_processo)
+            return None
+
+    def _notificar_ui(self, tipo_evento: str, dados: Dict[str, Any]):
+        try:
+            destino = getattr(self.coracao, "ui_queue", None) or getattr(self.coracao, "response_queue", None)
+            if destino:
+                destino.put({"tipo_resp": tipo_evento, "dados": dados, "timestamp": time.time()})
+        except Exception:
+            self.logger.exception("Erro ao notificar UI")
+
+    def shutdown(self):
+        self.logger.info("Desligamento da CÃ¢mara JudiciÃ¡ria solicitado...")
+        try:
+            self.executor_analise.shutdown(wait=True)
+        except Exception:
+            self.logger.exception("Erro ao encerrar executor_analise")
+        for id_p, proc in list(self.processos_ativos.items()):
+            try:
+                self._salvar_processo_no_santuario(proc)
+            except Exception:
+                pass
+        self.logger.info("Desligamento da CÃ¢mara JudiciÃ¡ria completo.")

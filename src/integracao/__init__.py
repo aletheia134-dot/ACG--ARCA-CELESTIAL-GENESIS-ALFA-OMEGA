@@ -1,0 +1,4 @@
+﻿from .crescimento_personalidade import CrescimentoPersonalidade
+from .feedback_loop_aprendizado import FeedbackLoopAprendizado
+
+
