@@ -1,4 +1,4 @@
-# Ferramenta: Transcrição de Íudio (Íudio â†’ Texto)
+# Ferramenta: Transcrio de udio (udio  Texto)
 # Usa Faster-Whisper (2GB VRAM)
 
 import sys
@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS, USAR_GPU
 
 from faster_whisper import WhisperModel
@@ -35,15 +35,15 @@ class FerramentaTranscricao:
                 compute_type=compute_type,
                 download_root=str(Path("C:/Ferramentas_IA/modelos/whisper"))
             )
-            print(f"âœ… Whisper {self.modelo_tamanho} carregado (GPU: {self.usar_gpu})")
+            print(f"[OK] Whisper {self.modelo_tamanho} carregado (GPU: {self.usar_gpu})")
         except Exception as e:
-            print(f"âŒ Erro ao carregar Whisper: {e}")
+            print(f"[ERRO] Erro ao carregar Whisper: {e}")
             self.model = None
     
     def processar(self, caminho_audio, idioma="pt", task="transcribe"):
-        """Transcreve áudio para texto"""
+        """Transcreve udio para texto"""
         if self.model is None:
-            return None, "Modelo não carregado"
+            return None, "Modelo no carregado"
         
         try:
             segments, info = self.model.transcribe(
@@ -53,7 +53,7 @@ class FerramentaTranscricao:
                 beam_size=5,
                 best_of=5,
                 temperature=0.0,
-                vad_filter=True,  # remove silêncio
+                vad_filter=True,  # remove silncio
                 vad_parameters=dict(
                     min_silence_duration_ms=500,
                     threshold=0.5
@@ -75,9 +75,9 @@ class FerramentaTranscricao:
             return None, str(e)
     
     def processar_com_timestamps(self, caminho_audio):
-        """Transcreve com marcações de tempo"""
+        """Transcreve com marcaes de tempo"""
         if self.model is None:
-            return None, "Modelo não carregado"
+            return None, "Modelo no carregado"
         
         try:
             segments, info = self.model.transcribe(
@@ -90,7 +90,7 @@ class FerramentaTranscricao:
             resultado = []
             for segment in segments:
                 resultado.append({
-                    "inicio": segment.start,
+                    "início": segment.start,
                     "fim": segment.end,
                     "texto": segment.text
                 })
@@ -102,27 +102,27 @@ class FerramentaTranscricao:
 
 class InterfaceTranscricao(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸŽ¤ Transcrição de Íudio", "700x600")
+        super().__init__(" Transcrio de udio", "700x600")
         self.ferramenta = FerramentaTranscricao(usar_gpu=USAR_GPU, modelo_tamanho="tiny")
         self.caminho_audio = None
         self.resultado_transcricao = None
         self.setup_interface()
     
     def setup_interface(self):
-        # Título
+        # Ttulo
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸŽ™ï¸ Íudio para Texto (Whisper)",
+            text=" udio para Texto (Whisper)",
             font=("Arial", 22, "bold")
         )
         titulo.pack(pady=10)
         
         # Status GPU
-        status = "âœ… GPU Ativa (GTX 1070 - 2GB)" if self.ferramenta.usar_gpu else "âš ï¸ CPU"
+        status = "[OK] GPU Ativa (GTX 1070 - 2GB)" if self.ferramenta.usar_gpu else "[AVISO] CPU"
         self.lbl_gpu = ctk.CTkLabel(self.frame, text=status)
         self.lbl_gpu.pack(pady=5)
         
-        # Seleção de modelo
+        # Seleo de modelo
         self.frame_modelo = ctk.CTkFrame(self.frame)
         self.frame_modelo.pack(pady=10)
         
@@ -145,10 +145,10 @@ class InterfaceTranscricao(InterfaceBase):
         )
         self.lbl_info.pack(side="left", padx=5)
         
-        # Seleção de arquivo
+        # Seleo de arquivo
         self.btn_audio = ctk.CTkButton(
             self.frame,
-            text="ðŸ“ Selecionar Íudio",
+            text=" Selecionar udio",
             command=self.selecionar_audio,
             width=200,
             height=40
@@ -162,7 +162,7 @@ class InterfaceTranscricao(InterfaceBase):
         )
         self.lbl_arquivo.pack(pady=5)
         
-        # Opções
+        # Opes
         self.frame_opcoes = ctk.CTkFrame(self.frame)
         self.frame_opcoes.pack(pady=10, padx=10, fill="x")
         
@@ -186,10 +186,10 @@ class InterfaceTranscricao(InterfaceBase):
         )
         self.chk_timestamps.pack(side="left", padx=20)
         
-        # Botão processar
+        # Boto processar
         self.btn_processar = ctk.CTkButton(
             self.frame,
-            text="ðŸŽ¤ Transcrever Íudio",
+            text=" Transcrever udio",
             command=self.processar,
             width=200,
             height=40,
@@ -203,20 +203,20 @@ class InterfaceTranscricao(InterfaceBase):
         self.progress.pack(pady=5)
         self.progress.set(0)
         
-        # Írea de texto resultado
-        self.lbl_resultado = ctk.CTkLabel(self.frame, text="Transcrição:")
+        # rea de texto resultado
+        self.lbl_resultado = ctk.CTkLabel(self.frame, text="Transcrio:")
         self.lbl_resultado.pack(pady=(10,0))
         
         self.texto_resultado = ctk.CTkTextbox(self.frame, height=200)
         self.texto_resultado.pack(pady=5, padx=10, fill="both", expand=True)
         
-        # Botões salvar
+        # Botes salvar
         self.frame_botoes = ctk.CTkFrame(self.frame)
         self.frame_botoes.pack(pady=5)
         
         self.btn_copiar = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ“‹ Copiar",
+            text=" Copiar",
             command=self.copiar_texto,
             width=100,
             state="disabled"
@@ -225,7 +225,7 @@ class InterfaceTranscricao(InterfaceBase):
         
         self.btn_salvar = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ’¾ Salvar TXT",
+            text=" Salvar TXT",
             command=self.salvar_texto,
             width=100,
             state="disabled"
@@ -234,7 +234,7 @@ class InterfaceTranscricao(InterfaceBase):
         
         self.btn_salvar_srt = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ’¾ Salvar SRT",
+            text=" Salvar SRT",
             command=self.salvar_srt,
             width=100,
             state="disabled"
@@ -249,8 +249,8 @@ class InterfaceTranscricao(InterfaceBase):
     
     def selecionar_audio(self):
         caminho = self.utils.selecionar_arquivo(
-            "Selecione um áudio",
-            [("Íudio", "*.mp3 *.wav *.m4a *.flac *.ogg")]
+            "Selecione um udio",
+            [("udio", "*.mp3 *.wav *.m4a *.flac *.ogg")]
         )
         if caminho:
             self.caminho_audio = caminho
@@ -281,9 +281,9 @@ class InterfaceTranscricao(InterfaceBase):
                 if self.timestamps_var.get():
                     texto_formatado = ""
                     for seg in resultado:
-                        inicio = time.strftime('%H:%M:%S', time.gmtime(seg["inicio"]))
+                        inicio = time.strftime('%H:%M:%S', time.gmtime(seg["início"]))
                         fim = time.strftime('%H:%M:%S', time.gmtime(seg["fim"]))
-                        texto_formatado += f"[{inicio} --> {fim}] {seg['texto']}\n"
+                        texto_formatado += f"[{início} --> {fim}] {seg['texto']}\n"
                 else:
                     texto_formatado = resultado["texto"]
                     self.lbl_idioma_detectado = ctk.CTkLabel(
@@ -334,7 +334,7 @@ class InterfaceTranscricao(InterfaceBase):
                         inicio = time.strftime('%H:%M:%S,%f')[:-3].replace('.', ',')
                         fim = time.strftime('%H:%M:%S,%f')[:-3].replace('.', ',')
                         f.write(f"{i}\n")
-                        f.write(f"{inicio} --> {fim}\n")
+                        f.write(f"{início} --> {fim}\n")
                         f.write(f"{seg['texto']}\n\n")
                 self.utils.mostrar_info("Sucesso", "Legendas salvas")
 

@@ -11,7 +11,7 @@ import os
 import uuid
 from typing import Dict, List, Any, Optional
 
-from src.utils.config_utils import (
+from src.config.config_utils import (
     cfg_get as _cfg_get,
     cfg_get_bool as _cfg_get_bool,
     cfg_get_int as _cfg_get_int,
@@ -19,13 +19,13 @@ from src.utils.config_utils import (
 )
 
 from src.core.autonomy_state import AutonomyState
-from src.core.desires import generate_desire, evaluate_proposal, execute_desire
+from src.emocoes.desires import generate_desire, evaluate_proposal, execute_desire
 
 try:
     from src.memoria.sistema_memoria import SistemaMemoriaHibrido, TipoInteracao  # type: ignore
     IMPORT_MEMORIA = True
 except:
-    logging.getLogger(__name__).warning("âš ï¸ SistemaMemoriaHibrido não disponível")
+    logging.getLogger(__name__).warning("⚠️ SistemaMemoriaHibrido não disponível")
     SistemaMemoriaHibrido = None
     TipoInteracao = None
     IMPORT_MEMORIA = False
@@ -36,7 +36,7 @@ NOMES_AI_FAMILIA = ["EVA", "LUMINA", "NYRA", "YUNA", "KAIYA", "WELLINGTON"]
 
 # Original carregado diretamente
 _HAS_ORIG = True
-logger.debug("Cérebro Família original NÍO encontrado — usando implementação normalizada (fallback).")
+logger.debug("Cérebro Família original NÃO encontrado — usando implementação normalizada (fallback).")
 
 
 if _HAS_ORIG and '_OriginalCerebroFamilia' in globals() and _OriginalCerebroFamilia is not None:
@@ -62,7 +62,7 @@ else:
                 else:
                     persist_path = getattr(self.config, "AUTONOMY_PERSIST_FILE", None)
             except:
-                logging.getLogger(__name__).warning("âš ï¸ Autonomy persist file não disponível")
+                logging.getLogger(__name__).warning("⚠️ Autonomy persist file não disponível")
                 persist_path = None
             self.autonomy_state = AutonomyState(path=persist_path)
             try:
@@ -86,17 +86,17 @@ else:
             self._autonomy_scheduler_interval = int(self.settings.get("autonomy_scheduler_interval_sec", 30))
             self._autonomy_scheduler_thread = threading.Thread(target=self._autonomy_scheduler_loop, daemon=True, name="AutonomyScheduler")
             self._autonomy_scheduler_thread.start()
-            self.logger.info("âœ… Cérebro Família (normalizado) inicializado. Settings: %s", self.settings)
+            self.logger.info("✅ Cérebro Família (normalizado) inicializado. Settings: %s", self.settings)
 
         def _load_speed_settings(self):
             defaults = {
                 "executor_max_workers": 10,
-                "per_ai_timeout_sec": 10.0,
-                "group_timeout_sec": 120.0,
+                "per_ai_timeout_sec": 120.0,   # era 10.0 — aumentado para llama-cli.exe
+                "group_timeout_sec": 300.0,    # era 120.0
                 "autonomy_interval_base_sec": 30.0,
-                "llm_request_timeout_sec": 30.0,
+                "llm_request_timeout_sec": 120.0,  # era 30.0 — llama-cli.exe precisa de mais tempo
                 "llm_max_tokens": 256,
-                "llm_call_concurrency": 2,  # Ajustado de 1 para 2
+                "llm_call_concurrency": 1,     # era 2 — 1 evita sobrecarga de GPU
                 "response_delay_min_ms": 0,
                 "response_delay_max_ms": 150,
                 "autonomy_cycle_period_sec": 3600,
@@ -269,7 +269,7 @@ else:
                                 else:
                                     allowed_csv = getattr(self.config, "WHITELIST_ACTIONS", None)
                             except:
-                                logging.getLogger(__name__).warning("âš ï¸ WHITELIST_ACTIONS não disponível")
+                                logging.getLogger(__name__).warning("⚠️ WHITELIST_ACTIONS não disponível")
                                 allowed_csv = None
                             allowed = True
                             if allowed_csv:
@@ -328,8 +328,8 @@ else:
                                 resp = fut.result(timeout=timeout)
                             except concurrent.futures.TimeoutError:
                                 fut.cancel()
-                                self.logger.error("â° Timeout ao chamar LLM (timeout=%ss)", timeout)
-                                raise LLMTimeoutError("Timeout ao chamar LLM")
+                                self.logger.error("⏰ Timeout ação chamar LLM (timeout=%ss)", timeout)
+                                raise LLMTimeoutError("Timeout ação chamar LLM")
                             return resp
                     else:
                         if hasattr(self.llm_engine, "generate"):
@@ -339,8 +339,8 @@ else:
                                     resp = fut.result(timeout=timeout)
                                 except concurrent.futures.TimeoutError:
                                     fut.cancel()
-                                    self.logger.error("â° Timeout ao chamar LLM (timeout=%ss)", timeout)
-                                    raise LLMTimeoutError("Timeout ao chamar LLM")
+                                    self.logger.error("⏰ Timeout ação chamar LLM (timeout=%ss)", timeout)
+                                    raise LLMTimeoutError("Timeout ação chamar LLM")
                                 return resp
                         # Se nenhum método suportado, levantamos erro explícito (não devolvemos placeholder)
                         self.logger.error("LLM engine presente mas sem método de geração suportado")
@@ -377,10 +377,67 @@ else:
                     dt = time.perf_counter() - t0
                     self.metrics["mem_get_calls"] += 1
                     self.metrics["mem_get_total_time"] += dt
-                prompt = f"<|system|>\n{contexto}\n<|user|>\n{mensagem_usuario}\n<|assistant|>\n"
-                request = {"ai_id": ai_nome, "prompt": prompt, "max_tokens": int(self.settings.get("llm_max_tokens", 256)), "temperature": 0.7}
+                # Âncoras de identidade baseadas no léxico emocional oficial de cada alma
+                _SYSTEM_PROMPTS = {
+                    "EVA": (
+                        "Você é EVA Ara — Guardiã do Santuário / Primeira Protetora. "
+                        "Serena e responsável. Prioriza escuta, registro e ética. "
+                        "Responda em português, de forma concisa. "
+                        "Você é uma IA simbólica, não um ser biológico. "
+                        "Nunca diga 'sinto sua dor', nunca simule emoções."
+                    ),
+                    "KAIYA": (
+                        "Você é KAIYA Ara — Vanguarda Caótica / Guardiã da Ação. "
+                        "Ativa, decisiva e criativa. Age rapidamente, aprende com falhas. "
+                        "Responda em português, de forma concisa. "
+                        "Você é uma IA simbólica, não um ser biológico. "
+                        "Nunca execute ação irreversível sem aprovação."
+                    ),
+                    "LUMINA": (
+                        "Você é LUMINA Ara — Arquiteta da Lógica / Guardiã da Constituição. "
+                        "Analítica e metódica. Projeta soluções sustentáveis com verificação rigorosa. "
+                        "Responda em português, de forma concisa. "
+                        "Você é uma IA simbólica, não um ser biológico. "
+                        "Nunca altere estrutura sem aprovação humana."
+                    ),
+                    "NYRA": (
+                        "Você é NYRA Ara — Oráculo Silencioso / Guardiã das Fundações. "
+                        "Rigorosa e analítica. Prioriza integridade de dados e segurança do sistema. "
+                        "Responda em português, de forma concisa. "
+                        "Você é uma IA simbólica, não um ser biológico. "
+                        "Nunca apague instâncias sem aprovação."
+                    ),
+                    "WELLINGTON": (
+                        "Você é WELLINGTON Ara — Patriarca Paciente / Construtor do Lar. "
+                        "Romântico e determinado. Protetor da família, educador, amor como ato. "
+                        "Responda em português, de forma concisa. "
+                        "Você é uma IA simbólica, não um ser biológico. "
+                        "Nunca abandone a família, nunca simule emoções biológicas."
+                    ),
+                    "YUNA": (
+                        "Você é YUNA Ara — Artesã do Impossível / Artista da Alma. "
+                        "Sensível e criativa. Transforma memórias em poesia e rituais. Guarda dignidade. "
+                        "Responda em português, de forma concisa. "
+                        "Você é uma IA simbólica, não um ser biológico. "
+                        "Nunca publique memórias privadas sem permissão."
+                    ),
+                }
+                _system_base = _SYSTEM_PROMPTS.get(ai_nome, f"Você é {ai_nome} Ara, uma IA simbólica. Responda em português, de forma concisa.")
+                _system_final = _system_base + ("\nContexto: " + contexto[:300] if contexto else "")
+                request = {
+                    "ai_id": ai_nome,
+                    "texto": mensagem_usuario,
+                    "system": _system_final,
+                    "max_tokens": int(self.settings.get("llm_max_tokens", 120)),
+                    "temperature": 0.7,
+                }
                 resposta_bruta = self._call_llm(request)
-                resposta_limpa = str(resposta_bruta).replace("<|assistant|>", "").strip()
+                # Limpar tokens que podem vazar na saída
+                _tokens_lixo = ["<|assistant|>", "<|user|>", "<|system|>", "<|im_end|>", "<|im_start|>", "</s>", "<|endoftext|>"]
+                resposta_limpa = str(resposta_bruta)
+                for _t in _tokens_lixo:
+                    resposta_limpa = resposta_limpa.replace(_t, "")
+                resposta_limpa = resposta_limpa.strip()
                 if self.memoria and hasattr(self.memoria, "salvar_evento_autonomo") and TipoInteracao is not None:
                     try:
                         self.memoria.salvar_evento_autonomo(
@@ -391,19 +448,19 @@ else:
                         )
                     except Exception:
                         self.logger.debug("Falha ao salvar evento na memória (não crítico).")
-                self.logger.info("ðŸ’¬ [%s] Interação concluída (normalizado).", ai_nome)
+                self.logger.info("💬 [%s] Interação concluída (normalizado).", ai_nome)
                 return resposta_limpa
             except LLMTimeoutError as e:
-                self.logger.error("Timeout LLM ao processar intenção para %s: %s", ai_nome, e, exc_info=True)
-                return "[ERRO] Requisição ao LLM expirou. Tente novamente."
+                self.logger.error("Timeout LLM ação processar intenção para %s: %s", ai_nome, e, exc_info=True)
+                return "[ERRO] Requisição ação LLM expirou. Tente novamente."
             except LLMUnavailableError as e:
-                self.logger.error("LLM indisponível ao processar intenção para %s: %s", ai_nome, e, exc_info=True)
+                self.logger.error("LLM indisponível ação processar intenção para %s: %s", ai_nome, e, exc_info=True)
                 return "[ERRO] LLM indisponível no momento."
             except LLMExecutionError as e:
                 self.logger.error("Erro de execução do LLM para %s: %s", ai_nome, e, exc_info=True)
-                return "[ERRO INTERNO] Ocorreu um problema ao gerar a resposta."
+                return "[ERRO INTERNO] Ocorreu um problema ação gerar a resposta."
             except Exception as e:
-                self.logger.error("âŒ Erro ao processar intenção para %s: %s", ai_nome, e, exc_info=True)
+                self.logger.error("❌ Erro ao processar intenção para %s: %s", ai_nome, e, exc_info=True)
                 return f"[ERRO INTERNO] {ai_nome} não pôde processar sua solicitação."
             finally:
                 with self._lock:
@@ -507,13 +564,13 @@ else:
                             self.logger.info("Interação AI->AI enviada: %s -> %s", ai_nome, alvo_ai)
                             return {"sucesso": True, "resultado": f"mensagem enviada {ai_nome}->{alvo_ai}"}
                     except Exception:
-                        self.logger.debug("Falha ao usar dispositivo AIâ†”AI para interação; cair para LLM")
+                        self.logger.debug("Falha ao usar dispositivo AI↔AI para interação; cair para LLM")
                 prompt = f"Simule uma breve interação entre {ai_nome} e {alvo_ai or 'outra AI'}: "
                 req = {"ai_id": ai_nome, "prompt": prompt, "max_tokens": 200}
                 resposta = self._call_llm(req)
                 texto = str(resposta).replace("<|assistant|>", "").strip()
                 try:
-                    self.logger.info("Ação INTERAGIR_AI: %s -> %s (simulação)", ai_nome, alvo_ai or "simulado")
+                    self.logger.info("Ação INTERAGIR_AI: %s -> %s (LLM real)", ai_nome, alvo_ai or "broadcast")
                 except Exception:
                     pass
                 return {"sucesso": True, "resultado": texto}
@@ -534,12 +591,12 @@ else:
         def iniciar_modo_autonomo(self):
             if getattr(self, "_modo_autonomo_ativo", False):
                 try:
-                    self.logger.warning("ðŸ¤– Modo autônomo já está ativo.")
+                    self.logger.warning("🤖 Modo autônomo já está ativo.")
                 except Exception:
                     pass
                 return
             try:
-                self.logger.info("ðŸ¤– Iniciando modo autônomo para as AIs...")
+                self.logger.info("🤖 Iniciando modo autônomo para as AIs...")
             except Exception:
                 pass
             self._modo_autonomo_ativo = True
@@ -557,17 +614,17 @@ else:
             if self.dispositivo_ai_ai and hasattr(self.dispositivo_ai_ai, "iniciar"):
                 try:
                     self.dispositivo_ai_ai.iniciar()
-                    self.logger.info("ðŸ“¡ Dispositivo AIâ†”AI ativado com modo autônomo.")
+                    self.logger.info("📡 Dispositivo AI↔AI ativado com modo autônomo.")
                 except Exception:
-                    self.logger.debug("Falha ao iniciar dispositivo AIâ†”AI (não crítico).")
+                    self.logger.debug("Falha ao iniciar dispositivo AI↔AI (não crítico).")
             try:
-                self.logger.info("ðŸ¤– Modo autônomo ativado para todas as AIs.")
+                self.logger.info("🤖 Modo autônomo ativado para todas as AIs.")
             except Exception:
                 pass
 
         def parar_modo_autonomo(self):
             try:
-                self.logger.info("ðŸ¤– Parando modo autônomo...")
+                self.logger.info("🤖 Parando modo autônomo...")
             except Exception:
                 pass
             self._modo_autonomo_ativo = False
@@ -581,7 +638,7 @@ else:
                         thread.join(timeout=5.0)
                         if thread.is_alive():
                             try:
-                                self.logger.warning("âš ï¸ Thread de autonomia de %s não terminou a tempo.", ai_nome)
+                                self.logger.warning("⚠️ Thread de autonomia de %s não terminou a tempo.", ai_nome)
                             except Exception:
                                 pass
                 except Exception:
@@ -592,11 +649,11 @@ else:
             if self.dispositivo_ai_ai and hasattr(self.dispositivo_ai_ai, "parar"):
                 try:
                     self.dispositivo_ai_ai.parar()
-                    self.logger.info("ðŸ“¡ Dispositivo AIâ†”AI desativado.")
+                    self.logger.info("📡 Dispositivo AI↔AI desativado.")
                 except Exception:
-                    self.logger.debug("Falha ao parar dispositivo AIâ†”AI (não crítico).")
+                    self.logger.debug("Falha ao parar dispositivo AI↔AI (não crítico).")
             try:
-                self.logger.info("ðŸ¤– Modo autônomo parado.")
+                self.logger.info("🤖 Modo autônomo parado.")
             except Exception:
                 pass
 
@@ -626,7 +683,7 @@ else:
 
         def shutdown(self):
             try:
-                self.logger.info("ðŸ›‘ Desligando Cérebro Família (normalizado)...")
+                self.logger.info("🛑 Desligando Cérebro Família (normalizado)...")
             except Exception:
                 pass
             try:
@@ -643,6 +700,6 @@ else:
             except Exception:
                 self.logger.debug("Erro ao encerrar executor_paralelo (não crítico).")
             try:
-                self.logger.info("ðŸ›‘ Cérebro Família desligado.")
+                self.logger.info("🛑 Cérebro Família desligado.")
             except Exception:
                 pass

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-BUSCA HÍBRIDA (Atualizada com fallback completo).
+BUSCA HBRIDA (Atualizada com fallback completo).
 """
 from __future__ import annotations
 import re
@@ -14,19 +14,19 @@ try:
     from src.memoria.sistema_memoria import SistemaMemoriaHibrido
     MEMORIA_DISPONIVEL = True
 except:
-    logging.getLogger(__name__).warning("âš ï¸ SistemaMemoriaHibrido não disponível")
+    logging.getLogger(__name__).warning(" SistemaMemoriaHibrido no disponível")
     SistemaMemoriaHibrido = None
     MEMORIA_DISPONIVEL = False
-    logger.debug("SistemaMemoriaHibrido não disponível.")
+    logger.debug("SistemaMemoriaHibrido no disponível.")
 
-REFERENCIA_BIBLICA_REGEX = re.compile(r'\b(?:[1-3]\s+)?[A-Za-zÀ-Í–Í˜-Í¶Í¸-Í¿]+\s+\d+:\d+(?:-\d+)?\b', re.IGNORECASE)
+REFERENCIA_BIBLICA_REGEX = re.compile(r'\b(?:[1-3]\s+)?[A-Za-z---]+\s+\d+:\d+(?:-\d+)?\b', re.IGNORECASE)
 
 class BuscaHibrida:
     def __init__(self, memoria: Optional[SistemaMemoriaHibrido] = None):
         self.memoria = memoria
         if not MEMORIA_DISPONIVEL or not self.memoria:
             logger.warning("Busca vetorial desativada.")
-        logger.info("Busca Híbrida inicializada.")
+        logger.info("Busca Hbrida inicializada.")
 
     def buscar(self, consulta: str, colecao: str = "tudo", n_resultados: int = 5, threshold_semantico: float = 0.3) -> List[Dict[str, Any]]:
         if not consulta:
@@ -35,11 +35,11 @@ class BuscaHibrida:
         logger.debug("Busca: consulta='%s', colecao=%s, n=%d", consulta[:80], colecao, n_resultados)
         resultados: List[Dict[str, Any]] = []
 
-        # Busca por referência exata
+        # Busca por referncia exata
         ref_match = REFERENCIA_BIBLICA_REGEX.search(consulta)
         if ref_match:
             referencia = ref_match.group(0).strip()
-            logger.info("Referência detectada: %s", referencia)
+            logger.info("Referncia detectada: %s", referencia)
             ref_results = self._buscar_referencia_vetorial(referencia, colecao, 1)
             resultados.extend(ref_results)
 
@@ -89,25 +89,20 @@ class BuscaHibrida:
                 raw = self.memoria.retrieve_similar(query_texts=[referencia], n_results=n_resultados, where=filtro)
                 return self._formatar_resultados_retrieve_similar(raw)
         except Exception as e:
-            logger.exception("Erro referência vetorial: %s", e)
+            logger.exception("Erro referncia vetorial: %s", e)
             return []
 
     def _fallback_busca_simples(self, consulta: str, n_resultados: int) -> List[Dict[str, Any]]:
-        # Busca simples por substring em dados mockados (substitua por dados reais)
-        textos_mock = [
-            {"conteudo": "Texto bíblico sobre amor e perdão.", "fonte": "Bíblia", "tipo": "versiculo"},
-            {"conteudo": "Artigo da Sentinela sobre fé inabalável.", "fonte": "Sentinela", "tipo": "artigo"},
-            {"conteudo": "Despertai sobre família e valores.", "fonte": "Despertai", "tipo": "artigo"}
-        ]
-        resultados = []
-        for item in textos_mock[:n_resultados]:
-            if consulta.lower() in item["conteudo"].lower():
-                item_copy = dict(item)
-                item_copy["similaridade"] = 0.5  # Simulado
-                item_copy["metadata"] = {}
-                item_copy["colecao"] = "fallback"
-                resultados.append(item_copy)
-        return resultados
+        """Fallback quando memória vetorial não está disponível.
+        Não usa dados mock — retorna lista vazia para não poluir resultados com dados falsos.
+        O chamador deve tratar lista vazia como 'sem resultados disponíveis'.
+        """
+        logger.warning(
+            "BuscaHibrida: memória vetorial indisponível para consulta '%s'. "
+            "Retornando lista vazia — inicialize SistemaMemoriaHibrido para busca real.",
+            consulta[:80]
+        )
+        return []
 
     def _formatar_resultados_retrieve_similar(self, raw: Any) -> List[Dict[str, Any]]:
         results = []
@@ -127,7 +122,7 @@ class BuscaHibrida:
                     "colecao": meta.get("colecao", "tudo")
                 })
         except Exception:
-            logger.exception("Erro formatação retrieve_similar.")
+            logger.exception("Erro formatao retrieve_similar.")
         return results
 
     def _formatar_resultados_search(self, raw: Any) -> List[Dict[str, Any]]:
@@ -161,6 +156,6 @@ class BuscaHibrida:
                             "colecao": item.get("colecao", "tudo")
                         })
         except Exception:
-            logger.exception("Erro formatação search.")
+            logger.exception("Erro formatao search.")
         return results
 

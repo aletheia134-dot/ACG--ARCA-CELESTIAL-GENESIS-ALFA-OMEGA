@@ -1,5 +1,5 @@
-# src/aliadas/aliada_deepseek.py
 from __future__ import annotations
+# src/aliadas/aliada_deepseek.py
 import os
 import time
 import logging
@@ -23,12 +23,12 @@ MAX_BACKOFF = 10.0
 
 class AliadaDeepSeek:
     """
-    Cliente mínimo e robusto para o serviço DeepSeek.
+    Cliente mínimo e robusto para o servio DeepSeek.
 
     - Usa requests.Session para pooling de conexões.
-    - Retry exponencial com jitter para timeouts/erros transitórios.
+    - Retry exponencial com jitter para timeouts/erros transitrios.
     - Tenta extrair campos comuns de resposta (output, result, text, choices, data).
-    - Métodos públicos:
+    - Métodos pblicos:
       - processar(comando, contexto) -> (ok: bool, texto_or_none: Optional[str], status: str)
       - health_check() -> bool
       - shutdown()
@@ -49,7 +49,7 @@ class AliadaDeepSeek:
 
         if not self.endpoint:
             raise LLMUnavailableError(
-                "AliadaDeepSeek: endpoint não configurado (cfg['endpoint'] or DEEPSEEK_API_URL)"
+                "AliadaDeepSeek: endpoint no configurado (cfg['endpoint'] or DEEPSEEK_API_URL)"
             )
 
         # Session para reaproveitar conexões
@@ -65,7 +65,7 @@ class AliadaDeepSeek:
 
     def _extract_text(self, data: Any) -> Optional[str]:
         """
-        Tenta extrair texto útil da resposta JSON.
+        Tenta extrair texto til da resposta JSON.
         Procura por chaves comuns: output, result, text, generated_text, prediction, choices[0].text, data[0].text, etc.
         """
         if data is None:
@@ -107,7 +107,7 @@ class AliadaDeepSeek:
     def _call_api(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """
         Faz POST para o endpoint com retries/backoff.
-        Lança LLMTimeoutError ou LLMExecutionError nas condições finais de falha.
+        Lana LLMTimeoutError ou LLMExecutionError nas condies finais de falha.
         """
         headers = self._build_headers()
         attempt = 0
@@ -123,7 +123,7 @@ class AliadaDeepSeek:
                 try:
                     return resp.json()
                 except ValueError:
-                    # Resposta não-JSON: devolve um object com texto bruto
+                    # Resposta no-JSON: devolve um object com texto bruto
                     return {"raw_text": resp.text}
             except Timeout as e:
                 last_exc = e
@@ -132,7 +132,7 @@ class AliadaDeepSeek:
                     raise LLMTimeoutError("DeepSeek timeout") from e
             except RequestException as e:
                 last_exc = e
-                # HTTP error ou conexão
+                # HTTP error ou conexo
                 status = getattr(e.response, "status_code", None) if hasattr(e, "response") else None
                 logger.warning("AliadaDeepSeek request error (attempt %d/%d) status=%s: %s", attempt, self.retries + 1, status, e)
                 if attempt > self.retries:
@@ -142,7 +142,7 @@ class AliadaDeepSeek:
             time.sleep(sleep_for)
             backoff *= 2
 
-        # se saiu do loop sem return, raise com última exceção
+        # se saiu do loop sem return, raise com ltima exceo
         if last_exc:
             raise LLMExecutionError("DeepSeek request failed (exceeded retries)") from last_exc
         raise LLMExecutionError("DeepSeek request failed (unknown reason)")
@@ -150,10 +150,10 @@ class AliadaDeepSeek:
     def processar(self, comando: str, contexto: Optional[Dict[str, Any]] = None) -> Tuple[bool, Optional[str], str]:
         """
         Interface principal.
-        Retorna (ok, texto|None, status) onde status é "ok" ou "error".
+        Retorna (ok, texto|None, status) onde status  "ok" ou "error".
         """
         if self._closed:
-            logger.error("AliadaDeepSeek chamada após shutdown")
+            logger.error("AliadaDeepSeek chamada aps shutdown")
             return False, None, "error:shutdown"
 
         payload: Dict[str, Any] = {"input": comando}
@@ -165,7 +165,7 @@ class AliadaDeepSeek:
             texto = self._extract_text(data)
             if texto is not None:
                 return True, texto, "ok"
-            # se não extraiu texto, devolve representação segura
+            # se no extraiu texto, devolve representao segura
             return True, str(data), "ok"
         except LLMTimeoutError as e:
             logger.warning("DeepSeek timeout: %s", e)

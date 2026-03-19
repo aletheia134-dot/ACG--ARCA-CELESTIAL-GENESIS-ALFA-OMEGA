@@ -15,13 +15,13 @@ class ManipuladorArquivosEmails:
         self.mail = None
 
         if not self.usuario or not self.senha:
-            logger.warning("Credenciais de email não fornecidas. Configure no config.")
+            logger.warning("Credenciais de email no fornecidas. Configure no config.")
 
     def conectar(self) -> bool:
         try:
             self.mail = imaplib.IMAP4_SSL(self.servidor_imap, self.porta)
             self.mail.login(self.usuario, self.senha)
-            logger.info("âœ… Conectado ao servidor IMAP")
+            logger.info("[OK] Conectado ao servidor IMAP")
             return True
         except Exception as e:
             logger.exception(f"Erro ao conectar IMAP: {e}")
@@ -31,7 +31,7 @@ class ManipuladorArquivosEmails:
         if self.mail:
             self.mail.logout()
             self.mail = None
-            logger.info("âœ… Desconectado do IMAP")
+            logger.info("[OK] Desconectado do IMAP")
 
     def ler_emails(self, caixa: str = "INBOX", limite: int = 10) -> List[Dict[str, str]]:
         if not self.mail:

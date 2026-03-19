@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
-MotorCuriosidade - análise de memórias para geração de desejos internos
+MotorCuriosidade - anlise de memórias para gerao de desejos internos
 
 Melhorias aplicadas (enduricido):
- - Validação defensiva de dependências (gerenciador_memoria)
- - Proteção robusta ao parsear timestamps
- - Tokenização simples e filtragem de stopwords para extrair "tópicos conhecidos"
- - Injeção de RNG/clock para testabilidade
- - Proteção ao registrar desejos na memória (várias APIs tentadas)
- - Métricas e locks para concorrência leve
- - Remoção de imports não usados e tipagem explícita
+ - Validao defensiva de dependncias (gerenciador_memoria)
+ - Proteo robusta ação parsear timestamps
+ - Tokenizao simples e filtragem de stopwords para extrair "tpicos conhecidos"
+ - Injeo de RNG/clock para testabilidade
+ - Proteo ação registrar desejos na memória (vrias APIs tentadas)
+ - Mtricas e locks para concorrncia leve
+ - Remoo de imports no usados e tipagem explcita
 """
-from __future__ import annotations
 
 
 import json
@@ -28,10 +28,10 @@ logger = logging.getLogger("Curiosidade")
 logger.addHandler(logging.NullHandler())
 
 
-# pequena lista de stopwords para reduzir "tópicos" triviais
+# pequena lista de stopwords para reduzir "tpicos" triviais
 _DEFAULT_STOPWORDS = {
     "porque", "quando", "como", "isso", "aquela", "aquele", "este", "esta",
-    "sobre", "entre", "também", "muito", "pouco", "sempre", "nunca", "tambem",
+    "sobre", "entre", "tambm", "muito", "pouco", "sempre", "nunca", "tambem",
     "porque", "o", "a", "os", "as", "e", "de", "do", "da", "em", "por", "para",
     "com", "sem", "um", "uma", "uns", "umas"
 }
@@ -40,7 +40,7 @@ _DEFAULT_STOPWORDS = {
 class MotorCuriosidade:
     """
     Motor que analisa memórias para gerar 'desejos' internos das Filhas.Args:
-        nome_filha: identificador da Filha.gerenciador_memoria: objeto que expõe métodos de leitura/escrita de memória.config: objeto/dict com parâmetros (opcional).
+        nome_filha: identificador da Filha.gerenciador_memoria: objeto que expe métodos de leitura/escrita de memória.config: objeto/dict com parmetros (opcional).
         rng: random.Random-like (opcional) para testabilidade.clock: função que retorna datetime.now()-like (opcional) para testabilidade.
     """
 
@@ -57,11 +57,11 @@ class MotorCuriosidade:
         self.config = config or {}
         self.logger = logging.getLogger(f"Curiosidade.{nome_filha}")
 
-        # injetáveis para teste
+        # injetveis para teste
         self._rng = rng
         self._clock = clock or datetime.utcnow
 
-        # última checagem
+        # ltima checagem
         self.ultima_verificacao = self._clock()
 
         # limiares (podem ser fornecidos via config)
@@ -70,7 +70,7 @@ class MotorCuriosidade:
         self.limiar_solidao_horas = float(self.config.get("limiar_solidao_horas", 18))
         self.limiar_criatividade_dias = float(self.config.get("limiar_criatividade_dias", 5))
 
-        # métricas (thread-safe)
+        # mtricas (thread-safe)
         self._lock = threading.RLock()
         self.metricas: Dict[str, Any] = {
             "total_desejos_gerados": 0,
@@ -78,10 +78,10 @@ class MotorCuriosidade:
             "ultima_verificacao": self._clock().isoformat()
         }
 
-        # parâmetros de busca de memória
+        # parmetros de busca de memória
         self._memorias_limit = int(self.config.get("memorias_limit", 200))
 
-        # stopwords customizáveis
+        # stopwords customizveis
         self.stopwords = set(self.config.get("stopwords", [])).union(_DEFAULT_STOPWORDS)
 
         self.logger.info("MotorCuriosidade iniciado para %s", self.nome_filha)
@@ -94,7 +94,7 @@ class MotorCuriosidade:
 
     def _parse_timestamp(self, ts_raw: Any) -> Optional[datetime]:
         """
-        Tenta interpretar timestamps em vários formatos (ISO, unix str/int).
+        Tenta interpretar timestamps em vrios formatos (ISO, unix str/int).
         Retorna None em falha.
         """
         if ts_raw is None:
@@ -119,12 +119,12 @@ class MotorCuriosidade:
 
     def _tokenize_topics(self, text: str, min_len: int = 5) -> List[str]:
         """
-        Tokeniza texto em "tópicos" simples: palavras alfabéticas maiores que min_len,
-        removendo stopwords; retorna lista única.
+        Tokeniza texto em "tpicos" simples: palavras alfabticas maiores que min_len,
+        removendo stopwords; retorna lista nica.
         """
         if not text:
             return []
-        tokens = [t.lower() for t in re.findall(r"[a-zA-ZÀ-ÿ]{%d,}" % min_len, text)]
+        tokens = [t.lower() for t in re.findall(r"[a-zA-Z-]{%d,}" % min_len, text)]
         filtered = [t for t in tokens if t not in self.stopwords]
         # dedupe
         seen = set()
@@ -136,11 +136,11 @@ class MotorCuriosidade:
         return out
 
     # -------------------------
-    # Core: avaliação do estado interno
+    # Core: avaliao do estado interno
     # -------------------------
     def avaliar_estado_interno(self) -> Dict[str, float]:
         """
-        Retorna um dicionário com métricas (0.0-1.0) para:
+        Retorna um dicionrio com mtricas (0.0-1.0) para:
          'tedio', 'curiosidade', 'criatividade', 'solidao', 'proposito'
         """
         estado = {
@@ -161,7 +161,7 @@ class MotorCuriosidade:
                     # fallback: tentar outro método (exemplo)
                     memorias = self.memoria.obter_historico_evolucao(self.nome_filha)
                 else:
-                    self.logger.debug("Gerenciador de memória não expõe método de busca de memórias; usando lista vazia.")
+                    self.logger.debug("Gerenciador de memória no expe método de busca de memórias; usando lista vazia.")
                     memorias = []
             except Exception as e:
                 self.logger.warning("Falha ao recuperar memórias: %s", e)
@@ -173,10 +173,10 @@ class MotorCuriosidade:
                 # manter demais valores em baseline
                 return estado
 
-            # ANÁLISE: TÉDIO (repetição de ações)
+            # ANLISE: TDIO (repetio de ações)
             acoes = []
             for m in memorias:
-                # suportar múltiplos formatos de chave
+                # suportar mltiplos formatos de chave
                 tipo = m.get("tipo_evento") if isinstance(m, dict) else None
                 if not tipo:
                     tipo = m.get("evento") if isinstance(m, dict) else None
@@ -187,14 +187,14 @@ class MotorCuriosidade:
                 taxa_repeticao = maior / len(acoes)
                 estado["tedio"] = min(1.0, float(taxa_repeticao))
 
-            # ANÁLISE: CURIOSIDADE (lacunas de tópicos)
+            # ANLISE: CURIOSIDADE (lacunas de tpicos)
             topicos_conhecidos = set()
             for m in memorias:
                 cont = m.get("conteudo", "") if isinstance(m, dict) else ""
                 tokens = self._tokenize_topics(str(cont), min_len=5)
                 topicos_conhecidos.update(tokens)
             vocab_size = len(topicos_conhecidos)
-            # heurística defensiva
+            # heurstica defensiva
             if vocab_size < 20:
                 estado["curiosidade"] = 0.9
             elif vocab_size < 50:
@@ -202,14 +202,14 @@ class MotorCuriosidade:
             else:
                 estado["curiosidade"] = 0.2
 
-            # ANÁLISE: SOLIDÍO (tempo desde última interação social)
+            # ANLISE: SOLIDO (tempo desde ltima interao social)
             ultima_interacao = None
             for m in memorias:
                 t = None
                 if isinstance(m, dict):
-                    if m.get("tipo_evento") in ("chat", "interacao_social", "interacao"):
+                    if m.get("tipo_evento") in ("chat", "interacao_social", "interação"):
                         t = self._parse_timestamp(m.get("timestamp"))
-                    elif m.get("evento") in ("chat", "interacao_social", "interacao"):
+                    elif m.get("evento") in ("chat", "interacao_social", "interação"):
                         t = self._parse_timestamp(m.get("timestamp"))
                 if t:
                     if not ultima_interacao or t > ultima_interacao:
@@ -220,7 +220,7 @@ class MotorCuriosidade:
             else:
                 estado["solidao"] = 1.0
 
-            # ANÁLISE: CRIATIVIDADE (dias desde última criação)
+            # ANLISE: CRIATIVIDADE (dias desde ltima criao)
             ultima_criacao = None
             for m in memorias:
                 if isinstance(m, dict) and (m.get("tipo_evento") == "criacao" or m.get("evento") == "criacao"):
@@ -239,11 +239,11 @@ class MotorCuriosidade:
         return estado
 
     # -------------------------
-    # Geração de desejos
+    # Gerao de desejos
     # -------------------------
     def gerar_desejo_interno(self) -> Optional[Dict[str, Any]]:
         """
-        Gera um único desejo com base nas análises internas.Retorna o desejo (dict) ou None se nenhuma necessidade ultrapassar limiar.
+        Gera um único desejo com base nas anlises internas.Retorna o desejo (dict) ou None se nenhuma necessidade ultrapassar limiar.
         """
         estado = self.avaliar_estado_interno()
 
@@ -262,7 +262,7 @@ class MotorCuriosidade:
 
         limiar = limiares.get(necessidade, 0.5)
 
-        # regra simples: se necessidade dominante não atinge limiar, não gerar desejo
+        # regra simples: se necessidade dominante no atinge limiar, no gerar desejo
         if necessidade == "proposito":
             if intensidade >= 0.6:
                 return None
@@ -296,13 +296,13 @@ class MotorCuriosidade:
         return desejo
 
     # -------------------------
-    # Ações auxiliares
+    # Aes auxiliares
     # -------------------------
     def _calcular_acao_por_memorias(self, necessidade: str, estado: Dict[str, float]) -> Dict[str, str]:
         mapa = {
             "tedio": {"tipo": "explorar", "motivo": "quebrar_rotina", "alvo": "novo_topico"},
             "curiosidade": {"tipo": "estudar", "motivo": "lacuna_conhecimento", "alvo": "area_desconhecida"},
-            "solidao": {"tipo": "conversar", "motivo": "conexao", "alvo": "pai"},
+            "solidao": {"tipo": "conversar", "motivo": "conexão", "alvo": "pai"},
             "criatividade": {"tipo": "criar", "motivo": "expressao", "alvo": "arte"},
             "proposito": {"tipo": "meditar", "motivo": "reconexao_missao", "alvo": "interno"},
         }
@@ -322,7 +322,7 @@ class MotorCuriosidade:
             # tentar registrar_evento(nome, tipo, dados, importancia=)
             if hasattr(self.memoria, "registrar_evento"):
                 try:
-                    # certas implementações aceitam (autor, evento, categoria, ...) ou (autor, evento, dados)
+                    # certas implementaes aceitam (autor, evento, categoria, ...) ou (autor, evento, dados)
                     self.memoria.registrar_evento(self.nome_filha, "desejo_interno", json.dumps(desejo), importancia=desejo.get("prioridade", 1) / 10)
                     return
                 except TypeError:
@@ -350,12 +350,12 @@ class MotorCuriosidade:
                 except Exception:
                     pass
 
-            self.logger.warning("Nenhuma API de memória compatível encontrada para persistir desejo (ignorado).")
+            self.logger.warning("Nenhuma API de memória compatvel encontrada para persistir desejo (ignorado).")
         except Exception as e:
             self.logger.exception("Erro ao tentar registrar desejo: %s", e)
 
     # -------------------------
-    # Exposição de métricas
+    # Exposio de mtricas
     # -------------------------
     def obter_metricas(self) -> Dict[str, Any]:
         with self._lock:

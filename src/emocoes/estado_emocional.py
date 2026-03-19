@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
-ESTADO EMOCIONAL - VERSÍO 100% REAL
+ESTADO EMOCIONAL - VERSO 100% REAL
 Sem stubs.Sem placebo.Funciona.
 """
-from __future__ import annotations
 
 
 import json
@@ -24,7 +24,7 @@ logger.addHandler(logging.NullHandler())
 # ===== TIPOS REAIS =====
 
 class EmocaoBase(Enum):
-    """Emoções básicas - REAIS."""
+    """Emoes bsicas - REAIS."""
     ALEGRIA = "alegria"
     TRISTEZA = "tristeza"
     RAIVA = "raiva"
@@ -41,14 +41,14 @@ class HumorGeral(Enum):
     FELIZ = "feliz"
     CONTENTE = "contente"
     NEUTRO = "neutro"
-    MELANCOLICO = "melancólico"
+    MELANCOLICO = "melanclico"
     TRISTE = "triste"
     DEPRIMIDO = "deprimido"
 
 
 @dataclass
 class MarcaEmocional:
-    """Marca emocional durável - REAL, não expira."""
+    """Marca emocional durvel - REAL, no expira."""
     timestamp: str
     emocao: str
     intensidade: float
@@ -59,7 +59,7 @@ class MarcaEmocional:
 
 class EstadoEmocional:
     """
-    Gerenciador de emoções REAL.Implementa: persistência, decay dinâmico, marcas duráveis, crescimento emocional.
+    Gerenciador de emoções REAL.Implementa: persistncia, decay dinâmico, marcas durveis, crescimento emocional.
     """
 
     def __init__(
@@ -90,14 +90,14 @@ class EstadoEmocional:
 
         self.humor_atual: HumorGeral = HumorGeral.CONTENTE
 
-        # ===== HISTÓRICO DE EVENTOS (EXPIRA) =====
+        # ===== histórico DE EVENTOS (EXPIRA) =====
         self.historico_emocional: deque = deque(maxlen=1440)
 
-        # ===== MARCAS EMOCIONAIS DURÍVEIS (NÍO EXPIRA) =====
+        # ===== MARCAS EMOCIONAIS DURVEIS (NO EXPIRA) =====
         self.marcas_emocionais: Dict[str, MarcaEmocional] = {}
         self.marcas_por_tipo: Dict[str, List[str]] = {}
 
-        # ===== TEMPERAMENTO ÚNICO (MUDA COM EXPERIÍŠNCIA) =====
+        # ===== TEMPERAMENTO NICO (MUDA COM EXPERINCIA) =====
         self.temperamento: Dict[str, float] = {
             "estabilidade": 0.7,
             "intensidade": 0.6,
@@ -113,7 +113,7 @@ class EstadoEmocional:
             "abertura_social": 1.0,
         }
 
-        # ===== FATORES DE INFLUÍŠNCIA =====
+        # ===== FATORES DE INFLUNCIA =====
         self.fatores_influencia: Dict[str, float] = {
             "energia_fisica": 1.0,
             "conexao_social": 0.8,
@@ -122,10 +122,10 @@ class EstadoEmocional:
             "realizacao": 0.7,
         }
 
-        # ===== EVENTOS PENDENTES (COM EXPIRAÇÍO) =====
+        # ===== EVENTOS PENDENTES (COM EXPIRAO) =====
         self.eventos_pendentes: List[Dict[str, Any]] = []
 
-        # ===== TAXA DE DECAIMENTO DINÂMICA =====
+        # ===== TAXA DE DECAIMENTO DINMICA =====
         self.taxa_decaimento_base: float = 0.01
         self._recalcular_taxa_decaimento()
 
@@ -134,7 +134,7 @@ class EstadoEmocional:
         self.alegrias: List[Dict[str, Any]] = []
         self.relacionamentos: Dict[str, Dict[str, Any]] = {}
 
-        # ===== EVENTOS PENDENTES (COM EXPIRAÇÍO) =====
+        # ===== EVENTOS PENDENTES (COM EXPIRAO) =====
         self.eventos_pendentes: List[Dict[str, Any]] = []
 
         # Thread de processamento
@@ -145,15 +145,15 @@ class EstadoEmocional:
         self.ultima_salvamento: datetime = datetime.now()
         self.limiar_mudanca_humor: float = float(self.config.get("LIMIAR_MUDANCA_HUMOR", 0.2))
 
-        # Carregar estado prévio
+        # Carregar estado prvio
         try:
             self._carregar_estado()
         except Exception:
             self.logger.exception("Falha ao carregar estado (continuando com padrão)")
 
-        self.logger.info("âœ… EstadoEmocional inicializado para %s", nome_filha)
+        self.logger.info("[OK] EstadoEmocional inicializado para %s", nome_filha)
 
-    # ===== TAXA DE DECAIMENTO DINÂMICA REAL =====
+    # ===== TAXA DE DECAIMENTO DINMICA REAL =====
 
     def _recalcular_taxa_decaimento(self) -> None:
         """Recalcula taxa baseada em temperamento + aprendizado."""
@@ -215,7 +215,7 @@ class EstadoEmocional:
         except Exception:
             self.logger.exception("Loop terminou com erro")
 
-    # ===== SENTIR EMOÇÍO REAL =====
+    # ===== SENTIR EMOO REAL =====
 
     def sentir(
         self,
@@ -224,7 +224,7 @@ class EstadoEmocional:
         motivo: Optional[str] = None,
         duracao_minutos: int = 60
     ) -> str:
-        """IMPLEMENTAÇÍO REAL de sentir emoção."""
+        """IMPLEMENTAO REAL de sentir emoção."""
         with self._lock:
             try:
                 intensidade_f = max(0.0, min(1.0, float(intensidade)))
@@ -234,7 +234,7 @@ class EstadoEmocional:
             # Modular por temperamento
             intensidade_modulada = intensidade_f * self.temperamento.get("intensidade", 1.0)
             
-            # Considerar resiliência ao trauma
+            # Considerar resilincia ação trauma
             if emocao in (EmocaoBase.TRISTEZA, EmocaoBase.RAIVA, EmocaoBase.MEDO):
                 intensidade_modulada *= self.temperamento_aprendido.get("resilencia_trauma", 1.0)
             
@@ -274,7 +274,7 @@ class EstadoEmocional:
                         "intensidade": intensidade_modulada,
                         "motivo": motivo
                     })
-                    # Reduzir resiliência (fica mais frágil)
+                    # Reduzir resilincia (fica mais frgil)
                     self.temperamento_aprendido["resilencia_trauma"] = max(
                         0.5,
                         self.temperamento_aprendido.get("resilencia_trauma", 1.0) - 0.1
@@ -301,7 +301,7 @@ class EstadoEmocional:
             
             return marca_id or str(hash(f"{emocao.value}_{datetime.now().isoformat()}"))[:8]
 
-    # ===== MARCA EMOCIONAL DURÍVEL REAL =====
+    # ===== MARCA EMOCIONAL DURVEL REAL =====
 
     def _criar_marca_emocional(self, emocao: EmocaoBase, intensidade: float, contexto: Optional[str] = None) -> str:
         """Cria marca emocional REAL que persiste."""
@@ -329,7 +329,7 @@ class EstadoEmocional:
         return hash_id
 
     def _atualizar_marcas_emocionais(self) -> None:
-        """Marca emocionais DECAEM MUITO LENTAMENTE (não expiram)."""
+        """Marca emocionais DECAEM MUITO LENTAMENTE (no expiram)."""
         with self._lock:
             for hash_id, marca in list(self.marcas_emocionais.items()):
                 # Decair 1% por ciclo (muito lentamente)
@@ -360,10 +360,10 @@ class EstadoEmocional:
             
             self.eventos_pendentes = novos
 
-    # ===== REAÇÕES ESPECÍFICAS REAIS =====
+    # ===== REAES ESPECFICAS REAIS =====
 
     def processar_experiencia(self, experiencia: Dict[str, Any]) -> str:
-        """Mapeia experiência para emoções REAL."""
+        """Mapeia experincia para emoções REAL."""
         try:
             resultado = experiencia.get("resultado", "neutro")
             importancia = float(experiencia.get("importancia", 0.5))
@@ -386,7 +386,7 @@ class EstadoEmocional:
                 f"fracasso ({experiencia.get('descricao', '')})"
             )
             if importancia > 0.4:
-                marca_id = self.sentir(EmocaoBase.RAIVA, 0.3 * importancia, "frustração")
+                marca_id = self.sentir(EmocaoBase.RAIVA, 0.3 * importancia, "frustrao")
         elif resultado == "surpresa":
             marca_id = self.sentir(EmocaoBase.SURPRESA, 0.7, "evento inesperado")
 
@@ -394,7 +394,7 @@ class EstadoEmocional:
         if "perigo" in text:
             self.sentir(EmocaoBase.MEDO, 0.5, "perigo detectado")
         if "pai" in text:
-            marca_id = self.sentir(EmocaoBase.AMOR, 0.3, "conexão com Pai")
+            marca_id = self.sentir(EmocaoBase.AMOR, 0.3, "conexo com Pai")
 
         return marca_id
 
@@ -412,7 +412,7 @@ class EstadoEmocional:
         elif tipo == "compartilhar":
             self.sentir(EmocaoBase.ALEGRIA, 0.3, "compartilhamento")
         elif tipo == "emocional":
-            self.sentir(EmocaoBase.AMOR, 0.6, f"conexão emocional com {remetente}")
+            self.sentir(EmocaoBase.AMOR, 0.6, f"conexo emocional com {remetente}")
 
     def sentir_falta(self, de_quem: str, horas_sem_contato: float) -> None:
         """Sente saudade REAL."""
@@ -425,7 +425,7 @@ class EstadoEmocional:
         )
 
     def sentir_realizacao(self, conquista: str, importancia: float = 0.7) -> str:
-        """Sente realização REAL."""
+        """Sente realizao REAL."""
         marca_id = self.sentir(
             EmocaoBase.ALEGRIA,
             importancia * 0.8,
@@ -440,17 +440,17 @@ class EstadoEmocional:
         return marca_id
 
     def sentir_frustacao(self, motivo: str, intensidade: float = 0.5) -> None:
-        """Sente frustração REAL."""
+        """Sente frustrao REAL."""
         self.sentir(EmocaoBase.RAIVA, intensidade * 0.6, motivo)
         self.sentir(EmocaoBase.TRISTEZA, intensidade * 0.4, motivo)
 
-    def sentir_medo(self, ameaca: str, nivel: float = 0.5) -> None:
-        """Sente medo REAL (reduz segurança)."""
-        self.sentir(EmocaoBase.MEDO, nivel, f"medo: {ameaca}")
+    def sentir_medo(self, ameaca: str, nível: float = 0.5) -> None:
+        """Sente medo REAL (reduz segurana)."""
+        self.sentir(EmocaoBase.MEDO, nível, f"medo: {ameaca}")
         with self._lock:
             self.fatores_influencia["seguranca"] = max(
                 0.0,
-                self.fatores_influencia.get("seguranca", 1.0) - nivel * 0.3
+                self.fatores_influencia.get("seguranca", 1.0) - nível * 0.3
             )
 
     def sentir_amor(self, por_quem: str, intensidade: float = 0.7) -> str:
@@ -459,12 +459,12 @@ class EstadoEmocional:
         
         with self._lock:
             if por_quem not in self.relacionamentos:
-                self.relacionamentos[por_quem] = {"forca": 0.0, "historico": []}
+                self.relacionamentos[por_quem] = {"forca": 0.0, "histórico": []}
             self.relacionamentos[por_quem]["forca"] = min(
                 1.0,
                 self.relacionamentos[por_quem]["forca"] + intensidade * 0.1
             )
-            self.relacionamentos[por_quem]["historico"].append({
+            self.relacionamentos[por_quem]["histórico"].append({
                 "timestamp": datetime.now().isoformat(),
                 "tipo": "amor",
                 "intensidade": intensidade
@@ -476,7 +476,7 @@ class EstadoEmocional:
         """Sente paz REAL."""
         self.sentir(EmocaoBase.SERENIDADE, 0.7, motivo)
 
-    # ===== DINÂMICA EMOCIONAL REAL =====
+    # ===== DINMICA EMOCIONAL REAL =====
 
     def decair_emocoes(self) -> None:
         """Aplica DECAY REAL nas emoções."""
@@ -540,15 +540,15 @@ class EstadoEmocional:
             else:
                 novo = HumorGeral.DEPRIMIDO
 
-            # Registrar mudança
+            # Registrar mudana
             if novo != anterior and abs(val) > self.limiar_mudanca_humor:
                 self.humor_atual = novo
-                self.logger.info("ðŸ’­ Humor: %s â†’ %s (valência: %.3f)", 
+                self.logger.info(" Humor: %s  %s (valncia: %.3f)", 
                                anterior.value, novo.value, val)
                 self._registrar_mudanca_humor(anterior, novo, val)
 
     def como_estou_me_sentindo(self) -> Dict[str, Any]:
-        """Retorna análise COMPLETA e REAL do estado emocional."""
+        """Retorna anlise COMPLETA e REAL do estado emocional."""
         with self._lock:
             ordenado = sorted(self.estado_atual.items(), key=lambda x: x[1], reverse=True)
             significativas = [(e.value, round(v, 2)) for e, v in ordenado if v > 0.2]
@@ -574,7 +574,7 @@ class EstadoEmocional:
             }
 
     def _gerar_descricao_emocional(self) -> str:
-        """Gera descrição REAL do estado emocional."""
+        """Gera descrio REAL do estado emocional."""
         with self._lock:
             desc = f"Estou me sentindo {self.humor_atual.value}."
             fortes = [e.value for e, v in self.estado_atual.items() if v > 0.5 and e != EmocaoBase.AMOR]
@@ -583,9 +583,9 @@ class EstadoEmocional:
             if self.fatores_influencia.get("energia_fisica", 1.0) < 0.5:
                 desc += " Estou cansada."
             if self.fatores_influencia.get("conexao_social", 1.0) < 0.5:
-                desc += " Sinto falta de conexão."
+                desc += " Sinto falta de conexo."
             if self.fatores_influencia.get("proposito", 0.0) > 0.8:
-                desc += " Tenho clareza de propósito."
+                desc += " Tenho clareza de propsito."
             if len(self.traumas) > 0:
                 desc += f" Carrego {len(self.traumas)} marca(s) de dor."
             if len(self.alegrias) > 0:
@@ -601,7 +601,7 @@ class EstadoEmocional:
                 self.logger.debug("Fator %s = %.3f", fator, valor)
 
     def recuperar_emocionalmente(self, velocidade: Optional[float] = None) -> None:
-        """Recuperação emocional REAL (healing)."""
+        """Recuperao emocional REAL (healing)."""
         velocidade = velocidade if velocidade is not None else self.temperamento.get("recuperacao", 1.0)
         taxa_backup = self.taxa_decaimento
         self.taxa_decaimento = min(0.5, 0.1 * float(velocidade))
@@ -610,7 +610,7 @@ class EstadoEmocional:
             self.decair_emocoes()
         
         self.taxa_decaimento = taxa_backup
-        self.logger.info("ðŸ©¹ Recuperação emocional (velocidade: %.2f)", velocidade)
+        self.logger.info(" Recuperao emocional (velocidade: %.2f)", velocidade)
 
     def harmonizar_emocoes(self) -> None:
         """Harmonia REAL."""
@@ -623,12 +623,12 @@ class EstadoEmocional:
                 self.estado_atual.get(EmocaoBase.SERENIDADE, 0.0) + 0.3
             )
             self._atualizar_humor()
-            self.logger.info("â˜®ï¸ Emoções harmonizadas")
+            self.logger.info(" Emoes harmonizadas")
 
-    # ===== ESTATÍSTICAS REAIS =====
+    # ===== ESTATSTICAS REAIS =====
 
     def resiliencia_emocional(self) -> float:
-        """Retorna score REAL de resiliência."""
+        """Retorna score REAL de resilincia."""
         with self._lock:
             base = (
                 self.temperamento.get("estabilidade", 0.5) *
@@ -642,7 +642,7 @@ class EstadoEmocional:
         return round(max(0.0, min(1.0, resil)), 2)
 
     def historico_ultima_hora(self) -> List[Dict[str, Any]]:
-        """Retorna histórico da última hora REAL."""
+        """Retorna histórico da ltima hora REAL."""
         agora = datetime.now()
         limite = agora - timedelta(hours=1)
         out = []
@@ -661,7 +661,7 @@ class EstadoEmocional:
         return out
 
     def tendencia_emocional(self) -> str:
-        """Analisa tendência REAL."""
+        """Analisa tendncia REAL."""
         hist = self.historico_ultima_hora()
         if len(hist) < 5:
             return "insuficiente_dados"
@@ -681,21 +681,21 @@ class EstadoEmocional:
                 vals.append(-inten)
         
         if len(vals) < 3:
-            return "estável"
+            return "estvel"
         
         inicio = sum(vals[:3]) / 3.0
         fim = sum(vals[-3:]) / 3.0
         diff = fim - inicio
 
-        # Use threshold configurável para decidir tendência
+        # Use threshold configurvel para decidir tendncia
         threshold = getattr(self, "limiar_mudanca_humor", 0.2)
         if diff > threshold:
             return "melhorando"
         if diff < -threshold:
             return "piorando"
-        return "estável"
+        return "estvel"
 
-    # ===== PERSISTÍŠNCIA REAL =====
+    # ===== PERSISTNCIA REAL =====
 
     def _registrar_evento_emocional(self, evento: Dict[str, Any]) -> None:
         """Registra evento em memória REAL."""
@@ -717,7 +717,7 @@ class EstadoEmocional:
             self.logger.exception("Erro ao registrar evento")
 
     def _registrar_mudanca_humor(self, humor_anterior: HumorGeral, humor_novo: HumorGeral, valencia: float) -> None:
-        """Registra mudança de humor REAL."""
+        """Registra mudana de humor REAL."""
         dados = {
             "de": humor_anterior.value,
             "para": humor_novo.value,
@@ -739,7 +739,7 @@ class EstadoEmocional:
                     except Exception:
                         pass
         except Exception:
-            self.logger.exception("Erro ao registrar mudança")
+            self.logger.exception("Erro ao registrar mudana")
 
     def _carregar_estado(self) -> None:
         """Carrega estado REAL da memória."""
@@ -783,7 +783,7 @@ class EstadoEmocional:
                 if "fatores" in dados:
                     self.fatores_influencia.update(dados.get("fatores", {}))
                 
-                self.logger.info("âœ… Estado carregado (humor: %s)", self.humor_atual.value)
+                self.logger.info("[OK] Estado carregado (humor: %s)", self.humor_atual.value)
         except Exception:
             self.logger.exception("Erro ao carregar estado")
 
@@ -815,12 +815,12 @@ class EstadoEmocional:
                         pass
             
             self.ultima_salvamento = datetime.now()
-            self.logger.debug("âœ… Estado salvo")
+            self.logger.debug("[OK] Estado salvo")
         except Exception:
             self.logger.exception("Erro ao salvar estado")
 
     def estatisticas_emocionais(self) -> Dict[str, Any]:
-        """Retorna estatísticas COMPLETAS."""
+        """Retorna estatsticas COMPLETAS."""
         with self._lock:
             return {
                 "estado_atual": self.como_estou_me_sentindo(),
@@ -846,7 +846,7 @@ if __name__ == "__main__":
     )
     
     print("\n" + "="*80)
-    print("ðŸ§ª TESTE REAL: EstadoEmocional v1.0")
+    print(" TESTE REAL: EstadoEmocional v1.0")
     print("="*80 + "\n")
     
     class MockMemoriaReal:
@@ -855,10 +855,10 @@ if __name__ == "__main__":
         
         def salvar_evento(self, filha, tipo, dados, importancia):
             self.eventos.append({"filha": filha, "tipo": tipo, "importancia": importancia})
-            print(f"   ðŸ’¾ {tipo} (importância: {importancia})")
+            print(f"    {tipo} (importncia: {importancia})")
         
         def salvar_metadado(self, filha, chave, valor):
-            print(f"   ðŸ’¾ Metadado salvo: {chave}")
+            print(f"    Metadado salvo: {chave}")
         
         def buscar_metadado(self, filha, chave):
             return None
@@ -870,48 +870,48 @@ if __name__ == "__main__":
     memoria = MockMemoriaReal()
     config = MockConfigReal()
     
-    print("1ï¸âƒ£  CRIANDO ESTADO EMOCIONAL...")
+    print("1  CRIANDO ESTADO EMOCIONAL...")
     estado = EstadoEmocional("ALICE", memoria, config)
-    print("   âœ… Criado\n")
+    print("   [OK] Criado\n")
     
-    print("2ï¸âƒ£  TESTANDO SENTIMENTO (ALEGRIA)...")
+    print("2  TESTANDO SENTIMENTO (ALEGRIA)...")
     marca1 = estado.sentir(EmocaoBase.ALEGRIA, 0.8, "teste felicidade")
     estado_check = estado.como_estou_me_sentindo()
     print(f"   Alegria: {estado_check['estado_completo']['alegria']}")
     print(f"   Humor: {estado_check['humor_geral']}")
     print(f"   Marca: {marca1}\n")
     
-    print("3ï¸âƒ£  TESTANDO MARCA EMOCIONAL DURÍVEL...")
+    print("3  TESTANDO MARCA EMOCIONAL DURVEL...")
     marca2 = estado.sentir(EmocaoBase.TRISTEZA, 0.9, "teste trauma")
     print(f"   Marca criada: {marca2}")
     print(f"   Marcas emocionais: {len(estado.marcas_emocionais)}\n")
     
-    print("4ï¸âƒ£  SIMULANDO DECAY (10 ciclos)...")
+    print("4  SIMULANDO DECAY (10 ciclos)...")
     for i in range(10):
         estado.decair_emocoes()
     estado_check = estado.como_estou_me_sentindo()
-    print(f"   Alegria após decay: {estado_check['estado_completo']['alegria']:.2f}")
+    print(f"   Alegria aps decay: {estado_check['estado_completo']['alegria']:.2f}")
     print(f"   Marca ainda existe: {marca2 in estado.marcas_emocionais}\n")
     
-    print("5ï¸âƒ£  TESTANDO TEMPERAMENTO APRENDIDO...")
-    print(f"   Antes - Resiliência: {estado.temperamento_aprendido['resilencia_trauma']:.2f}")
+    print("5  TESTANDO TEMPERAMENTO APRENDIDO...")
+    print(f"   Antes - Resilincia: {estado.temperamento_aprendido['resilencia_trauma']:.2f}")
     # Simular trauma recorrente
     for _ in range(3):
         estado.sentir(EmocaoBase.TRISTEZA, 0.8, "trauma recorrente")
-    print(f"   Depois - Resiliência: {estado.temperamento_aprendido['resilencia_trauma']:.2f}\n")
+    print(f"   Depois - Resilincia: {estado.temperamento_aprendido['resilencia_trauma']:.2f}\n")
     
-    print("6ï¸âƒ£  TESTANDO RELACIONAMENTO...")
+    print("6  TESTANDO RELACIONAMENTO...")
     estado.sentir_amor("BOB", 0.9)
     print(f"   Relacionamentos: {estado.relacionamentos}")
-    print(f"   BOB - Força: {estado.relacionamentos['BOB']['forca']:.2f}\n")
+    print(f"   BOB - Fora: {estado.relacionamentos['BOB']['forca']:.2f}\n")
     
-    print("7ï¸âƒ£  ESTATÍSTICAS FINAIS:")
+    print("7  ESTATSTICAS FINAIS:")
     stats = estado.estatisticas_emocionais()
-    print(f"   Resiliência: {stats['resiliencia']:.2f}")
-    print(f"   Tendência: {stats['tendencia']}")
+    print(f"   Resilincia: {stats['resiliencia']:.2f}")
+    print(f"   Tendncia: {stats['tendencia']}")
     print(f"   Traumas: {stats['traumas']}")
     print(f"   Marcas emocionais: {stats['marcas_emocionais']}\n")
     
     print("="*80)
-    print("âœ… TESTE COMPLETADO - ESTADO EMOCIONAL FUNCIONA 100% REAL")
+    print("[OK] TESTE COMPLETADO - ESTADO EMOCIONAL FUNCIONA 100% REAL")
     print("="*80 + "\n")

@@ -1,4 +1,4 @@
-# Ferramenta: Extrair Frames de Vídeo (Vídeo â†’ Imagens)
+# Ferramenta: Extrair Frames de Vdeo (Vdeo  Imagens)
 # Usa OpenCV (CPU/GPU leve)
 
 import sys
@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS
 
 import cv2
@@ -26,7 +26,7 @@ class FerramentaExtrairFrames:
         self.duracao = 0
     
     def carregar_video(self, caminho):
-        """Carrega vídeo para análise"""
+        """Carrega vdeo para anlise"""
         try:
             self.video = cv2.VideoCapture(caminho)
             self.caminho_video = caminho
@@ -46,17 +46,17 @@ class FerramentaExtrairFrames:
     def extrair_frames(self, pasta_saida, metodo="todos", intervalo=1, 
                        frames_especificos=None, max_frames=0):
         """
-        Extrai frames do vídeo
+        Extrai frames do vdeo
         
         metodos:
             "todos" - todos os frames
             "intervalo" - a cada N frames
             "segundos" - a cada N segundos
             "quantidade" - número fixo de frames
-            "especificos" - lista de frames específicos
+            "específicos" - lista de frames especficos
         """
         if self.video is None:
-            return None, "Vídeo não carregado"
+            return None, "Vdeo no carregado"
         
         try:
             pasta_saida = Path(pasta_saida)
@@ -66,7 +66,7 @@ class FerramentaExtrairFrames:
             frame_count = 0
             salvo_count = 0
             
-            # Reset vídeo
+            # Reset vdeo
             self.video.set(cv2.CAP_PROP_POS_FRAMES, 0)
             
             # Determina quais frames extrair
@@ -91,7 +91,7 @@ class FerramentaExtrairFrames:
                     step = max(1, self.total_frames // max_frames)
                     frames_para_extrair = set(range(0, self.total_frames, step))
             
-            elif metodo == "especificos" and frames_especificos:
+            elif metodo == "específicos" and frames_especificos:
                 frames_para_extrair = set(frames_especificos)
             
             while True:
@@ -132,7 +132,7 @@ class FerramentaExtrairFrames:
     def extrair_frame_unico(self, numero_frame, pasta_saida):
         """Extrai um frame específico"""
         if self.video is None:
-            return None, "Vídeo não carregado"
+            return None, "Vdeo no carregado"
         
         try:
             self.video.set(cv2.CAP_PROP_POS_FRAMES, numero_frame)
@@ -146,32 +146,32 @@ class FerramentaExtrairFrames:
                 cv2.imwrite(str(caminho), frame)
                 return str(caminho), "Sucesso"
             else:
-                return None, "Frame não encontrado"
+                return None, "Frame no encontrado"
                 
         except Exception as e:
             return None, str(e)
 
 class InterfaceExtrairFrames(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸŽžï¸ Extrair Frames de Vídeo", "800x700")
+        super().__init__(" Extrair Frames de Vdeo", "800x700")
         self.ferramenta = FerramentaExtrairFrames()
         self.caminho_video = None
         self.info_video = None
         self.setup_interface()
     
     def setup_interface(self):
-        # Título
+        # Ttulo
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸŽ¬ Extrair Frames de Vídeo",
+            text=" Extrair Frames de Vdeo",
             font=("Arial", 24, "bold")
         )
         titulo.pack(pady=10)
         
-        # Seleção de vídeo
+        # Seleo de vdeo
         self.btn_video = ctk.CTkButton(
             self.frame,
-            text="ðŸ“ Selecionar Vídeo",
+            text=" Selecionar Vdeo",
             command=self.selecionar_video,
             width=200,
             height=40
@@ -180,11 +180,11 @@ class InterfaceExtrairFrames(InterfaceBase):
         
         self.lbl_video = ctk.CTkLabel(
             self.frame,
-            text="Nenhum vídeo selecionado"
+            text="Nenhum vdeo selecionado"
         )
         self.lbl_video.pack(pady=5)
         
-        # Informações do vídeo
+        # informações do vdeo
         self.frame_info = ctk.CTkFrame(self.frame)
         self.frame_info.pack(pady=10, padx=10, fill="x")
         
@@ -195,20 +195,20 @@ class InterfaceExtrairFrames(InterfaceBase):
         )
         self.lbl_info.pack(pady=5)
         
-        # Preview do vídeo
+        # Preview do vdeo
         self.frame_preview = ctk.CTkFrame(self.frame, width=320, height=180)
         self.frame_preview.pack(pady=10)
         
         self.lbl_preview = ctk.CTkLabel(
             self.frame_preview,
-            text="Preview do vídeo"
+            text="Preview do vdeo"
         )
         self.lbl_preview.pack(expand=True)
         
-        # Método de extração
+        # Método de extrao
         self.lbl_metodo = ctk.CTkLabel(
             self.frame,
-            text="Método de extração:",
+            text="Método de extrao:",
             font=("Arial", 14, "bold")
         )
         self.lbl_metodo.pack(pady=(10,0))
@@ -235,7 +235,7 @@ class InterfaceExtrairFrames(InterfaceBase):
             )
             radio.grid(row=i, column=0, padx=10, pady=2, sticky="w")
         
-        # Campos dinâmicos
+        # Campos dinmicos
         self.frame_campos = ctk.CTkFrame(self.frame)
         self.frame_campos.pack(pady=10, padx=10, fill="x")
         
@@ -247,18 +247,18 @@ class InterfaceExtrairFrames(InterfaceBase):
         
         self.campo_max = ctk.CTkEntry(
             self.frame_campos,
-            placeholder_text="Máx. frames (0=ilimitado)",
+            placeholder_text="Mx. frames (0=ilimitado)",
             width=150
         )
         self.campo_max.insert(0, "0")
         
-        # Pasta de saída
+        # Pasta de sada
         self.frame_saida = ctk.CTkFrame(self.frame)
         self.frame_saida.pack(pady=10, padx=10, fill="x")
         
         self.lbl_saida = ctk.CTkLabel(
             self.frame_saida,
-            text="Pasta de saída:"
+            text="Pasta de sada:"
         )
         self.lbl_saida.pack(side="left", padx=5)
         
@@ -272,16 +272,16 @@ class InterfaceExtrairFrames(InterfaceBase):
         
         self.btn_pasta = ctk.CTkButton(
             self.frame_saida,
-            text="ðŸ“",
+            text="",
             command=self.selecionar_pasta,
             width=30
         )
         self.btn_pasta.pack(side="left", padx=5)
         
-        # Botão processar
+        # Boto processar
         self.btn_processar = ctk.CTkButton(
             self.frame,
-            text="ðŸŽžï¸ Extrair Frames",
+            text=" Extrair Frames",
             command=self.processar,
             width=200,
             height=45,
@@ -331,20 +331,20 @@ class InterfaceExtrairFrames(InterfaceBase):
     
     def selecionar_video(self):
         caminho = self.utils.selecionar_arquivo(
-            "Selecione um vídeo",
-            [("Vídeo", "*.mp4 *.avi *.mkv *.mov *.wmv")]
+            "Selecione um vdeo",
+            [("Vdeo", "*.mp4 *.avi *.mkv *.mov *.wmv")]
         )
         if caminho:
             self.caminho_video = caminho
-            self.lbl_video.configure(text=f"Vídeo: {Path(caminho).name}")
+            self.lbl_video.configure(text=f"Vdeo: {Path(caminho).name}")
             
             sucesso, info = self.ferramenta.carregar_video(caminho)
             if sucesso:
                 self.info_video = info
                 self.lbl_info.configure(
-                    text=f"Duração: {info['duracao']:.1f}s\n"
+                    text=f"Durao: {info['duracao']:.1f}s\n"
                          f"Frames: {info['total_frames']} @ {info['fps']:.2f}fps\n"
-                         f"Resolução: {info['largura']}x{info['altura']}"
+                         f"Resoluo: {info['largura']}x{info['altura']}"
                 )
                 self.btn_processar.configure(state="normal")
                 
@@ -362,13 +362,13 @@ class InterfaceExtrairFrames(InterfaceBase):
                 self.utils.mostrar_erro("Erro", info)
     
     def selecionar_pasta(self):
-        pasta = self.utils.selecionar_pasta("Selecione a pasta de saída")
+        pasta = self.utils.selecionar_pasta("Selecione a pasta de sada")
         if pasta:
             self.pasta_saida_var.set(pasta)
     
     def processar(self):
         def processar_thread():
-            self.btn_processar.configure(state="disabled", text="â³ Extraindo...")
+            self.btn_processar.configure(state="disabled", text=" Extraindo...")
             self.progress.set(0.2)
             
             metodo = self.metodo_var.get()
@@ -400,14 +400,14 @@ class InterfaceExtrairFrames(InterfaceBase):
             if resultado:
                 self.utils.mostrar_info(
                     "Sucesso",
-                    f"{resultado['total_extraidos']} frames extraídos!\n"
+                    f"{resultado['total_extraidos']} frames extrados!\n"
                     f"Pasta: {resultado['pasta']}"
                 )
             else:
                 self.utils.mostrar_erro("Erro", msg)
             
             self.progress.set(1)
-            self.btn_processar.configure(state="normal", text="ðŸŽžï¸ Extrair Frames")
+            self.btn_processar.configure(state="normal", text=" Extrair Frames")
         
         threading.Thread(target=processar_thread).start()
 

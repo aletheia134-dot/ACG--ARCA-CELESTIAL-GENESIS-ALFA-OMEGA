@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # tools/build_import_graph.py
-# Constrói grafo leve de imports (arquivos -> módulos importados) para achar padrões e ciclos.
-# Melhorias: detecção de ciclos, visualização graphviz, filtragem builtins, relatórios, CLI.import ast
+# Constri grafo leve de imports (arquivos -> módulos importados) para achar padrões e ciclos.
+# Melhorias: deteco de ciclos, visualizao graphviz, filtragem builtins, relatrios, CLI.import ast
 import json
 import sys
 from pathlib import Path
@@ -15,7 +15,7 @@ BUILTINS = {
 }
 
 def parse_imports(code: str) -> set[str]:
-    """Extrai imports do código usando AST."""
+    """Extrai imports do cdigo usando AST."""
     try:
         tree = ast.parse(code)
         imports = set()
@@ -34,7 +34,7 @@ def parse_imports(code: str) -> set[str]:
         return set()
 
 def build_graph(src_path: Path, filter_builtins: bool = True) -> dict[str, list[str]]:
-    """Constrói grafo de arquivos -> módulos importados."""
+    """Constri grafo de arquivos -> módulos importados."""
     files = list(src_path.rglob("*.py"))
     graph = {}
     for p in files:
@@ -82,7 +82,7 @@ def detect_cycles(graph: dict[str, list[str]]) -> list[list[str]]:
     return cycles
 
 def generate_report(graph: dict[str, list[str]]) -> dict[str, any]:
-    """Gera relatório com estatísticas."""
+    """Gera relatrio com estatsticas."""
     import_counts = defaultdict(int)
     file_counts = defaultdict(int)
 
@@ -100,7 +100,7 @@ def generate_report(graph: dict[str, list[str]]) -> dict[str, any]:
     }
 
 def visualize_graph(graph: dict[str, list[str]], output_file: Path):
-    """Gera visualização com graphviz (se instalado)."""
+    """Gera visualizao com graphviz (se instalado)."""
     try:
         from graphviz import Digraph  # type: ignore
         dot = Digraph(comment="Import Graph")
@@ -110,19 +110,19 @@ def visualize_graph(graph: dict[str, list[str]], output_file: Path):
             for imp in imports[:5]:  # limita para legibilidade
                 dot.edge(short_file, imp)
         dot.render(output_file.with_suffix(""), format="png", cleanup=True)
-        print(f"Visualização salva em {output_file.with_suffix('.png')}")
+        print(f"Visualizao salva em {output_file.with_suffix('.png')}")
     except ImportError:
-        print("graphviz não instalado; pule visualização.")
+        print("graphviz no instalado; pule visualizao.")
     except Exception as e:
-        print(f"Erro na visualização: {e}")
+        print(f"Erro na visualizao: {e}")
 
 def main():
-    parser = argparse.ArgumentParser(description="Constrói grafo de imports.")
+    parser = argparse.ArgumentParser(description="Constri grafo de imports.")
     parser.add_argument("--src", type=Path, default=Path("src"), help="Diretório src")
-    parser.add_argument("--output", type=Path, default=None, help="Arquivo JSON de saída")
-    parser.add_argument("--no-filter", action="store_true", help="Não filtrar builtins")
-    parser.add_argument("--visualize", type=Path, default=None, help="Arquivo para visualização (requer graphviz)")
-    parser.add_argument("--report", action="store_true", help="Incluir relatório")
+    parser.add_argument("--output", type=Path, default=None, help="Arquivo JSON de sada")
+    parser.add_argument("--no-filter", action="store_true", help="No filtrar builtins")
+    parser.add_argument("--visualize", type=Path, default=None, help="Arquivo para visualizao (requer graphviz)")
+    parser.add_argument("--report", action="store_true", help="Incluir relatrio")
 
     args = parser.parse_args()
 
@@ -137,7 +137,7 @@ def main():
     if args.report:
         report = generate_report(graph)
         output["report"] = report
-        print(f"Relatório: {report['total_files']} arquivos, {report['total_imports_unicos']} imports únicos")
+        print(f"Relatrio: {report['total_files']} arquivos, {report['total_imports_unicos']} imports nicos")
 
     if args.visualize:
         visualize_graph(graph, args.visualize)

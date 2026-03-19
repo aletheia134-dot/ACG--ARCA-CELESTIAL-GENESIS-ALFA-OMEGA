@@ -1,0 +1,67 @@
+Copilot said: Segue apenas os comandos prontos para colar
+
+Segue apenas os comandos prontos para colar (PowerShell — execute como Administrador). Cole e execute UMA LINHA DE CADA VEZ, na ordem.
+PowerShell
+
+# (1) sair de venv se ativo
+deactivate 2>$null | Out-Null
+
+PowerShell
+
+# (2) verificar se winget existe
+Get-Command winget -ErrorAction SilentlyContinue
+
+PowerShell
+
+# (3A) se winget disponível, instalar Python 3.11 (cole está linha se o comando 2 mostrou winget)
+winget install --id Python.Python.3.11 -e --accept-package-agreements --accept-source-agreements
+
+PowerShell
+
+# (3B) se winget NÃO disponível, baixar e instalar Python 3.11 (cole está sequência se preferir)
+$tmp="$env:TEMP\python-3.11-installer.exe"
+Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.11.13/python-3.11.13-amd64.exe" -OutFile $tmp -UseBasicParsing
+Start-Process -FilePath $tmp -ArgumentList "/quiet InstallAllUsers=0 PrependPath=1 Include_test=0" -Wait
+Remove-Item $tmp -Force
+
+PowerShell
+
+# (4) confirmar python 3.11 encontrado
+$pyCmd = (Get-Command python -ErrorAction SilentlyContinue).Source
+if (-not $pyCmd) { $pyCmd = "$env:LOCALAPPDATA\Programs\Python\Python311\python.exe" }
+& $pyCmd --version
+
+PowerShell
+
+# (5) criar venv 3.11
+& $pyCmd -m venv .\venv311
+
+PowerShell
+
+# (6) ativar venv311
+.\venv311\Scripts\Activate.ps1
+
+PowerShell
+
+# (7) atualizar pip/setuptools/wheel
+python -m pip install --upgrade pip setuptools wheel --no-cache-dir
+
+PowerShell
+
+# (8) instalar PyTorch com CUDA 11.8 (GTX 1070) — execute está linha e cole a saída se houver erro
+python -m pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu118 --no-cache-dir
+
+PowerShell
+
+# (9) verificar PyTorch + CUDA
+python -c "import torch; print('torch',torch.__version__,'cuda',getattr(torch.version,'cuda',None),'available',torch.cuda.is_available())"
+
+PowerShell
+
+# (10) verificar driver NVIDIA
+nvidia-smi
+
+PowerShell
+
+# (11) instalar o restánte dos pacotes a partir do requirements-py311.txt (colocar o arquivo no diretório do projeto antes)
+python -m pip install --no-cache-dir -r .\requirements-py311.tx

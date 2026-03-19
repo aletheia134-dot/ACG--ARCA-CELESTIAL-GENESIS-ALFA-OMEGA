@@ -1,0 +1,8 @@
+"""Diagnóstico e auditoria"""
+
+try:
+    from src.diagnostico.auditoria_automatica import AuditoriaArca
+except Exception: pass
+try:
+    from src.diagnostico.erros import ArcaError
+except Exception: pass

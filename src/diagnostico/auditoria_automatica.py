@@ -49,7 +49,7 @@ class AuditoriaArca:
                                     tipo='import_faltando',
                                     gravidade='media',
                                     linha=node.lineno,
-                                    descricao=f"Import '{alias.name}' não encontrado."
+                                    descricao=f"Import '{alias.name}' no encontrado."
                                 ))
                     elif isinstance(node, ast.ImportFrom):
                         if node.module and not self._modulo_existe(node.module):
@@ -58,7 +58,7 @@ class AuditoriaArca:
                                 tipo='import_faltando',
                                 gravidade='media',
                                 linha=node.lineno,
-                                descricao=f"Import from '{node.module}' não encontrado."
+                                descricao=f"Import from '{node.module}' no encontrado."
                             ))
             except Exception as e:
                 self.problemas.append(Problema(
@@ -71,21 +71,21 @@ class AuditoriaArca:
 
     def _auditar_lei_zero(self):
         """Audita conformidade com 'Lei Zero' (exemplo: busca por padrões proibidos)."""
-        padroes_proibidos = [r'\b(eval|exec)\s*\(', r'\b__import__\s*\(']
+        padroes_proibidos = [r'\b(eval|exec)\\s*\(', r'\b__import__\\s*\(']
         for arq_py in self.arquivos_python:
             caminho_completo = self.caminho_raiz / arq_py
             try:
                 with open(caminho_completo, 'r', encoding='utf-8-sig') as f:
                     conteudo = f.read()
                     for i, linha in enumerate(conteudo.splitlines(), 1):
-                        for padrao in padroes_proibidos:
-                            if re.search(padrao, linha):
+                        for padrão in padroes_proibidos:
+                            if re.search(padrão, linha):
                                 self.problemas.append(Problema(
                                     arquivo=arq_py,
                                     tipo='lei_zero_violacao',
                                     gravidade='critica',
                                     linha=i,
-                                    descricao=f"Padrão proibido encontrado: {padrao}"
+                                    descricao=f"padrão proibido encontrado: {padrão}"
                                 ))
             except Exception as e:
                 self.problemas.append(Problema(
@@ -109,7 +109,7 @@ class AuditoriaArca:
                     tipo='json_invalido',
                     gravidade='alta',
                     linha=0,
-                    descricao=f"JSON inválido: {e}"
+                    descricao=f"JSON invlido: {e}"
                 ))
             except Exception as e:
                 self.problemas.append(Problema(
@@ -121,7 +121,7 @@ class AuditoriaArca:
                 ))
 
     def _auditar_metodos_nao_implementados(self):
-        """Audita métodos que podem estar declarados mas não implementados."""
+        """Audita métodos que podem estar declarados mas no implementados."""
         for arq_py in self.arquivos_python:
             caminho_completo = self.caminho_raiz / arq_py
             try:
@@ -136,13 +136,13 @@ class AuditoriaArca:
                                 tipo='metodo_nao_implementado',
                                 gravidade='baixa',
                                 linha=node.lineno,
-                                descricao=f"Método '{node.name}' marcado como não implementado."
+                                descricao=f"Método '{node.name}' marcado como no implementado."
                             ))
             except Exception as e:
-                pass  # Já tratado em outros métodos
+                pass  # J tratado em outros métodos
 
     def _auditar_completude(self):
-        """Audita completude geral (exemplo: arquivos sem conteúdo)."""
+        """Audita completude geral (exemplo: arquivos sem contedo)."""
         for arq_py in self.arquivos_python:
             caminho_completo = self.caminho_raiz / arq_py
             try:
@@ -159,7 +159,7 @@ class AuditoriaArca:
 
     def _modulo_existe(self, nome_modulo: str) -> bool:
         """Verifica se um módulo existe (simplificado)."""
-        # Esta é uma verificação básica; pode ser expandida para verificar sys.modules ou pip installs
+        # Esta  uma verificao básica; pode ser expandida para verificar sys.modules ou pip installs
         partes = nome_modulo.split('.')
         caminho_modulo = self.caminho_raiz
         for parte in partes:

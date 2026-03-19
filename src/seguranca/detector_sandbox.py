@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
-detector_sandbox.py - Detecta e valida disponibilidade de Sandbox
+detector_sandbox.py - Detecta e válida disponibilidade de Sandbox
 
 Responsabilidades:
-- Verificar se Docker está instalado
-- Verificar se RestrictedPython está disponível
+- Verificar se Docker est instalado
+- Verificar se RestrictedPython est disponível
 - Detectar modo de execução (com/sem sandbox)
 - Informar IA sobre capacidades
 """
-from __future__ import annotations
 
 
 import logging
@@ -46,9 +46,9 @@ class DetectorSandbox:
         self._determinar_modo()
 
     def _detectar_docker(self) -> None:
-        """Verifica se Docker está instalado e rodando."""
+        """Verifica se Docker est instalado e rodando."""
         try:
-            # Verificar versão
+            # Verificar verso
             resultado = subprocess.run(
                 ["docker", "--version"],
                 capture_output=True,
@@ -58,9 +58,9 @@ class DetectorSandbox:
             
             if resultado.returncode == 0:
                 versao = resultado.stdout.strip()
-                self.logger.info("âœ… Docker detectado: %s", versao)
+                self.logger.info("[OK] Docker detectado: %s", versao)
                 
-                # Verificar se daemon está rodando
+                # Verificar se daemon est rodando
                 resultado_ps = subprocess.run(
                     ["docker", "ps"],
                     capture_output=True,
@@ -72,39 +72,39 @@ class DetectorSandbox:
                     self.docker_disponivel = True
                     self.detalhes["docker_versao"] = versao
                     self.detalhes["docker_running"] = True
-                    self.logger.info("âœ… Docker daemon ativo")
+                    self.logger.info("[OK] Docker daemon ativo")
                 else:
                     self.detalhes["docker_versao"] = versao
                     self.detalhes["docker_running"] = False
-                    self.logger.warning("âš     Docker instalado mas daemon não está rodando")
+                    self.logger.warning("    Docker instalado mas daemon no est rodando")
             else:
-                self.logger.warning("âš ï¸ Docker não encontrado no PATH")
+                self.logger.warning("[AVISO] Docker no encontrado no PATH")
                 self.detalhes["docker_versao"] = None
                 self.detalhes["docker_running"] = False
         
         except FileNotFoundError:
-            self.logger.warning("âŒ Docker não está instalado")
+            self.logger.warning("[ERRO] Docker no est instalado")
             self.detalhes["docker_versao"] = None
             self.detalhes["docker_running"] = False
         except subprocess.TimeoutExpired:
-            self.logger.warning("âš ï¸ Timeout ao verificar Docker")
+            self.logger.warning("[AVISO] Timeout ação verificar Docker")
             self.detalhes["docker_running"] = False
         except Exception as e:
             self.logger.exception("Erro ao detectar Docker: %s", e)
             self.detalhes["docker_running"] = False
 
     def _detectar_restricted_python(self) -> None:
-        """Verifica se RestrictedPython está instalado."""
+        """Verifica se RestrictedPython est instalado."""
         try:
             import RestrictedPython
             versao = RestrictedPython.__version__
             self.restricted_python_disponivel = True
             self.detalhes["restricted_python_versao"] = versao
-            self.logger.info("âœ… RestrictedPython detectado: %s", versao)
+            self.logger.info("[OK] RestrictedPython detectado: %s", versao)
         except ImportError:
             self.restricted_python_disponivel = False
             self.detalhes["restricted_python_versao"] = None
-            self.logger.warning("âš ï¸ RestrictedPython não está instalado")
+            self.logger.warning("[AVISO] RestrictedPython no est instalado")
         except Exception as e:
             self.logger.exception("Erro ao detectar RestrictedPython: %s", e)
             self.restricted_python_disponivel = False
@@ -113,13 +113,13 @@ class DetectorSandbox:
         """Determina modo de execução de sandbox."""
         if self.docker_disponivel and self.restricted_python_disponivel:
             self.modo_sandbox = "COMPLETO"
-            self.logger.info("âœ… MODO SANDBOX: COMPLETO (Docker + RestrictedPython)")
+            self.logger.info("[OK] MODO SANDBOX: COMPLETO (Docker + RestrictedPython)")
         elif self.restricted_python_disponivel:
             self.modo_sandbox = "RESTRINGIDO"
-            self.logger.info("âš ï¸ MODO SANDBOX: RESTRINGIDO (apenas RestrictedPython, sem Docker)")
+            self.logger.info("[AVISO] MODO SANDBOX: RESTRINGIDO (apenas RestrictedPython, sem Docker)")
         else:
             self.modo_sandbox = "DESABILITADO"
-            self.logger.warning("âŒ MODO SANDBOX: DESABILITADO (instale RestrictedPython e Docker)")
+            self.logger.warning("[ERRO] MODO SANDBOX: DESABILITADO (instale RestrictedPython e Docker)")
 
     def obter_status(self) -> Dict[str, Any]:
         """Retorna status completo do sandbox."""
@@ -131,19 +131,19 @@ class DetectorSandbox:
         }
 
     def obter_instrucoes_instalacao(self) -> str:
-        """Retorna instruções de instalação baseado no que está faltando."""
+        """Retorna instrues de instalao baseado no que est faltando."""
         instrucoes = []
         
         if not self.docker_disponivel:
             instrucoes.append("""
-â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
-â•‘ INSTALAÇÍO DO DOCKER                                       â•‘
-â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+╔════════════════════════════════════════════════════════════╗
+ INSTALAO DO DOCKER                                       
+╚════════════════════════════════════════════════════════════╝
 
 WINDOWS/macOS:
   1.Visite: https://www.docker.com/products/docker-desktop
   2.Download Docker Desktop
-  3.Instale seguindo as instruções
+  3.Instale seguindo as instrues
   4.Verifique: docker --version
 
 LINUX (Ubuntu/Debian):
@@ -156,9 +156,9 @@ LINUX (Ubuntu/Debian):
         
         if not self.restricted_python_disponivel:
             instrucoes.append("""
-â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
-â•‘ INSTALAÇÍO DO RESTRICTEDPYTHON                             â•‘
-â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+╔════════════════════════════════════════════════════════════╗
+ INSTALAO DO RESTRICTEDPYTHON                             
+╚════════════════════════════════════════════════════════════╝
 
 pip install RestrictedPython
 
@@ -167,7 +167,7 @@ Verificar:
 """)
         
         if not instrucoes:
-            return "âœ… Sistema de Sandbox está 100% configurado!"
+            return "[OK] Sistema de Sandbox est 100% configurado!"
         
         return "\n".join(instrucoes)
 
@@ -193,13 +193,13 @@ Verificar:
                         self._detectar_docker()
                         
                         if self.docker_disponivel:
-                            return True, "âœ… Docker daemon ativado com sucesso"
+                            return True, "[OK] Docker daemon ativado com sucesso"
                     except Exception:
                         continue
         
         except Exception as e:
             self.logger.exception("Erro ao ativar Docker: %s", e)
         
-        return False, "âŒ Não foi possível ativar Docker daemon"
+        return False, "[ERRO] No foi possível ativar Docker daemon"
 
 

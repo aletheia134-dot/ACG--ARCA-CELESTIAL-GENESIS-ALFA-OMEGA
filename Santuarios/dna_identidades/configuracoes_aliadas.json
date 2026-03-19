@@ -1,0 +1,34 @@
+{
+  "aliadas": {
+    "qwen": {
+      "nome": "Qwen",
+      "ativa": true,
+      "palavra_chave": "correntinha",
+      "modulo": "src.aliadas.aliada_qwen",
+      "classe": "AliadaQwen",
+      "endpoint": "https://api.qwen.example/v1/generate",
+      "api_key": "DEFAULT_FROM_ENV_IF_BLANK"
+    },
+    "gemini": {
+      "nome": "Gemini",
+      "ativa": true,
+      "palavra_chave": "gemini",
+      "modulo": "src.aliadas.aliada_gemini",
+      "classe": "AliadaGemini"
+    },
+    "deepseek": {
+      "nome": "DeepSeek",
+      "ativa": true,
+      "palavra_chave": "deepseek",
+      "modulo": "src.aliadas.aliada_deepseek",
+      "classe": "AliadaDeepSeek"
+    },
+    "qwen_cloud": {
+      "nome": "Qwen Cloud",
+      "ativa": true,
+      "palavra_chave": "qwen_cloud",
+      "modulo": "src.aliadas.aliada_qwen_cloud",
+      "classe": "AliadaQwenCloud"
+    }
+  }
+}

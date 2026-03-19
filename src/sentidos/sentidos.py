@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-src/modules/sentidos.py — IMPLEMENTAÇÍO REAL
-SentidosHumanos: módulo de percepção sensorial das almas (visão, audição, tato, etc.)
-"""
 from __future__ import annotations
+"""
+src/sentidos/sentidos.py  IMPLEMENTAO REAL
+SentidosHumanos: módulo de percepo sensorial das almas (viso, audio, tato, etc.)
+"""
 
 import logging
 import threading
@@ -18,13 +18,13 @@ __all__ = ["SentidosHumanos", "criar_sentidos_humanos"]
 class SentidosHumanos:
     """
     Simula os sentidos humanos para as IAs da ARCA.
-    Fornece percepção de texto, voz, imagem e contexto ambiental.
+    Fornece percepo de texto, voz, imagem e contexto ambiental.
 
     Interface esperada pelo CoracaoOrquestrador:
       - iniciar()
       - parar()
       - injetar_percepcao_temporal (atributo bool)
-      - processar_estimulo(tipo, dado) → Dict
+      - processar_estimulo(tipo, dado)  Dict
     """
 
     def __init__(
@@ -44,20 +44,20 @@ class SentidosHumanos:
         # Estado dos sentidos
         self._estimulos: list = []
 
-        self.logger.info("👁️  SentidosHumanos inicializados para %s", nome_alma)
+        self.logger.info("  SentidosHumanos inicializados para %s", nome_alma)
 
     def iniciar(self) -> None:
         with self._lock:
             self._ativo = True
-        self.logger.info("✅ Sentidos ativados para %s", self.nome_alma)
+        self.logger.info("[OK] Sentidos ativados para %s", self.nome_alma)
 
     def parar(self) -> None:
         with self._lock:
             self._ativo = False
-        self.logger.info("🛑 Sentidos desativados para %s", self.nome_alma)
+        self.logger.info(" Sentidos desativados para %s", self.nome_alma)
 
     def processar_estimulo(self, tipo: str, dado: Any) -> Dict[str, Any]:
-        """Processa um estímulo sensorial e retorna a percepção."""
+        """Processa um estmulo sensorial e retorna a percepo."""
         with self._lock:
             if not self._ativo:
                 return {"status": "inativo", "tipo": tipo}

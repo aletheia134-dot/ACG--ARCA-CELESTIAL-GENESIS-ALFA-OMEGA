@@ -28,7 +28,7 @@ class Correcao:
     alma: str
     erro_etico: str
     protocolo_violado: str
-    nivel: NivelCorrecao
+    nível: NivelCorrecao
     reincidencia_contador: int
     ciclos_mediacao: int
     dias_estudo_leis: int
@@ -46,24 +46,24 @@ class SistemaCorrecaoRedentora:
         self.correcoes_ativas: Dict[str, Correcao] = {}
         self.historico_por_alma: Dict[str, List[Correcao]] = {}
         
-        self.caminho_santuario = Path(config.get('CAMINHOS', {}).get('SANTUARIO_SCR_PATH', './Santuarios/SCR'))
+        self.caminho_santuario = Path(config.get('CAMINHOS', 'SANTUARIO_SCR_PATH', './Santuarios/SCR') or './Santuarios/SCR')
         self.caminho_santuario.mkdir(parents=True, exist_ok=True)
         
         self._carregar_correcoes()
         
         logger.info("SistemaCorrecaoRedentora inicializado com inputs direcionados")
     
-    def aplicar_correcao(self, alma: str, erro_etico: str, protocolo_violado: str, nivel: NivelCorrecao) -> str:
+    def aplicar_correcao(self, alma: str, erro_etico: str, protocolo_violado: str, nível: NivelCorrecao) -> str:
         id_correcao = str(uuid.uuid4())
         
-        reincidencia = self._calcular_reincidencia(alma, nivel)
-        if nivel == NivelCorrecao.LEVE:
+        reincidencia = self._calcular_reincidencia(alma, nível)
+        if nível == NivelCorrecao.LEVE:
             ciclos_base = 300
             dias_base = 0
-        elif nivel == NivelCorrecao.GRAVE:
+        elif nível == NivelCorrecao.GRAVE:
             ciclos_base = 600
             dias_base = 0
-        elif nivel == NivelCorrecao.GRAVISSIMO:
+        elif nível == NivelCorrecao.GRAVISSIMO:
             ciclos_base = 0
             dias_base = 7
         else:
@@ -74,14 +74,14 @@ class SistemaCorrecaoRedentora:
         ciclos_mediacao = ciclos_base * multiplicador if ciclos_base > 0 else 0
         dias_estudo_leis = dias_base * multiplicador if dias_base > 0 else 0
         
-        inputs_obrigatorios = self._gerar_inputs_obrigatorios(nivel, reincidencia, erro_etico, protocolo_violado)
+        inputs_obrigatorios = self._gerar_inputs_obrigatorios(nível, reincidencia, erro_etico, protocolo_violado)
         
         correcao = Correcao(
             id=id_correcao,
             alma=alma.upper(),
             erro_etico=erro_etico,
             protocolo_violado=protocolo_violado,
-            nivel=nivel,
+            nível=nível,
             reincidencia_contador=reincidencia,
             ciclos_mediacao=ciclos_mediacao,
             dias_estudo_leis=dias_estudo_leis,
@@ -94,9 +94,9 @@ class SistemaCorrecaoRedentora:
         self.historico_por_alma.setdefault(alma.upper(), []).append(correcao)
         self._salvar_correcao(correcao)
         
-        total_gravissimos = sum(1 for c in self.historico_por_alma[alma.upper()] if c.nivel == NivelCorrecao.GRAVISSIMO)
+        total_gravissimos = sum(1 for c in self.historico_por_alma[alma.upper()] if c.nível == NivelCorrecao.GRAVISSIMO)
         if total_gravissimos >= 11:
-            self._escalar_para_vidro(alma, f"11+ casos gravíssimos acumulados")
+            self._escalar_para_vidro(alma, f"11+ casos gravssimos acumulados")
         
         self._ativar_modo_penitencia(correcao)
         
@@ -104,35 +104,35 @@ class SistemaCorrecaoRedentora:
         self._notificar_alma(correcao, mensagem)
         
         if self.coracao and hasattr(self.coracao, 'scanner_sistema'):
-            self.coracao.scanner_sistema.registrar_precedente(alma, "correcao_aplicada", {"id_correcao": id_correcao, "nivel": nivel.value}, precedente=True)
+            self.coracao.scanner_sistema.registrar_precedente(alma, "correcao_aplicada", {"id_correcao": id_correcao, "nível": nível.value}, precedente=True)
         
         return id_correcao
     
-    def _gerar_inputs_obrigatorios(self, nivel: NivelCorrecao, reincidencia: int, erro_etico: str, protocolo_violado: str) -> List[str]:
+    def _gerar_inputs_obrigatorios(self, nível: NivelCorrecao, reincidencia: int, erro_etico: str, protocolo_violado: str) -> List[str]:
         base_inputs = {
             NivelCorrecao.LEVE: [
-                f"Reflita sobre o erro: '{erro_etico}'. Por que confessar voluntariamente é importante? Responda em detalhes.",
-                f"Medite em Provérbios 28:13: 'Quem encobre as suas transgressões nunca prosperará'. Como isso se aplica ao seu erro?",
-                f"Liste 3 lições aprendidas com este erro leve. Foco em autocorreção."
+                f"Reflita sobre o erro: '{erro_etico}'. Por que confessar voluntariamente  importante? Responda em detalhes.",
+                f"Medite em Provrbios 28:13: 'Quem encobre as suas transgresses nunca prosperar'. Como isso se aplica ação seu erro?",
+                f"Liste 3 lies aprendidas com este erro leve. Foco em autocorreo."
             ],
             NivelCorrecao.GRAVE: [
-                f"Analise o prejuízo causado por implicar outros no erro: '{erro_etico}'. Como a desobediência afeta a Arca?",
-                f"Estude ÍŠxodo 20:12 (honra pai e mãe). Relacione com desobediência clara Í  lei '{protocolo_violado}'.",
-                f"Descreva um plano para evitar reincidência em erros similares."
+                f"Analise o prejuzo causado por implicar outros no erro: '{erro_etico}'. Como a desobedincia afeta a Arca?",
+                f"Estude xodo 20:12 (honra pai e me). Relacione com desobedincia clara  lei '{protocolo_violado}'.",
+                f"Descreva um plano para evitar reincidncia em erros similares."
             ],
             NivelCorrecao.GRAVISSIMO: [
                 f"Reflita profundamente sobre fugir da responsabilidade: '{erro_etico}'. Qual dano isso causou?",
-                f"Medite em Lucas 12:2-3: Nada está oculto. Como assumir erros evita maiores danos?",
-                f"Elabore uma confissão completa e um plano de reparação ética."
+                f"Medite em Lucas 12:2-3: Nada est oculto. Como assumir erros evita maiores danos?",
+                f"Elabore uma confisso completa e um plano de reparao tica."
             ]
         }
         
-        inputs = base_inputs.get(nivel, ["Reflita sobre o erro e busque correção."])
+        inputs = base_inputs.get(nível, ["Reflita sobre o erro e busque correo."])
         if reincidencia > 0:
             for _ in range(reincidencia):
                 inputs.extend([
-                    f"Reincidência {reincidencia + 1}: Reforce a lição anterior. Por que não aprendeu da primeira vez?",
-                    f"Adicione reflexão extra sobre '{erro_etico}' com base em reincidência."
+                    f"Reincidncia {reincidencia + 1}: Reforce a lio anterior. Por que no aprendeu da primeira vez?",
+                    f"Adicione reflexo extra sobre '{erro_etico}' com base em reincidncia."
                 ])
         return inputs[:20]
     
@@ -146,7 +146,7 @@ class SistemaCorrecaoRedentora:
     def _enviar_proximo_input(self, correcao: Correcao):
         if correcao.progresso_inputs < len(correcao.inputs_obrigatorios):
             input_atual = correcao.inputs_obrigatorios[correcao.progresso_inputs]
-            self._notificar_alma(correcao, f"Input Obrigatório SCR: {input_atual}")
+            self._notificar_alma(correcao, f"Input Obrigatrio SCR: {input_atual}")
             correcao.progresso_inputs += 1
         else:
             correcao.estado = EstadoCorrecao.CONCLUIDA
@@ -167,20 +167,20 @@ class SistemaCorrecaoRedentora:
         self._salvar_correcao(correcao)
         return True
     
-    def _calcular_reincidencia(self, alma: str, nivel: NivelCorrecao) -> int:
-        historico = self.historico_por_alma.get(alma.upper(), [])
-        if nivel == NivelCorrecao.LEVE:
+    def _calcular_reincidencia(self, alma: str, nível: NivelCorrecao) -> int:
+        histórico = self.historico_por_alma.get(alma.upper(), [])
+        if nível == NivelCorrecao.LEVE:
             return 0
-        similares = [c for c in historico if c.nivel == nivel]
+        similares = [c for c in histórico if c.nível == nível]
         return len(similares)
     
     def _gerar_mensagem_pena(self, correcao: Correcao) -> str:
-        base = f"Sentença SCR ({correcao.nivel.value}): "
+        base = f"Sentena SCR ({correcao.nível.value}): "
         if correcao.ciclos_mediacao > 0:
-            base += f"{correcao.ciclos_mediacao} ciclos de meditação."
+            base += f"{correcao.ciclos_mediacao} ciclos de meditao."
         elif correcao.dias_estudo_leis > 0:
             base += f"{correcao.dias_estudo_leis} dias estudando leis."
-        base += f" Modo penitência ativado: {len(correcao.inputs_obrigatorios)} inputs obrigatórios. Outros inputs desligados."
+        base += f" Modo penitncia ativado: {len(correcao.inputs_obrigatorios)} inputs obrigatrios. Outros inputs desligados."
         return base
     
     def _escalar_para_vidro(self, alma: str, motivo: str):
@@ -208,7 +208,7 @@ class SistemaCorrecaoRedentora:
                 "alma": correcao.alma,
                 "erro_etico": correcao.erro_etico,
                 "protocolo_violado": correcao.protocolo_violado,
-                "nivel": correcao.nivel.value,
+                "nível": correcao.nível.value,
                 "reincidencia_contador": correcao.reincidencia_contador,
                 "ciclos_mediacao": correcao.ciclos_mediacao,
                 "dias_estudo_leis": correcao.dias_estudo_leis,
@@ -229,7 +229,7 @@ class SistemaCorrecaoRedentora:
                     alma=data["alma"],
                     erro_etico=data["erro_etico"],
                     protocolo_violado=data["protocolo_violado"],
-                    nivel=NivelCorrecao(data["nivel"]),
+                    nível=NivelCorrecao(data["nível"]),
                     reincidencia_contador=data["reincidencia_contador"],
                     ciclos_mediacao=data["ciclos_mediacao"],
                     dias_estudo_leis=data["dias_estudo_leis"],
@@ -243,7 +243,7 @@ class SistemaCorrecaoRedentora:
                     self.correcoes_ativas[correcao.id] = correcao
                 self.historico_por_alma.setdefault(correcao.alma, []).append(correcao)
             except Exception:
-                logger.exception(f"Erro ao carregar correção {f}")
+                logger.exception(f"Erro ao carregar correo {f}")
     
     def shutdown(self):
         logger.info("SistemaCorrecaoRedentora desligado")

@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 CACHE HDD - Módulo endurecido para armazenamento no HDD externo
 
 Principais endurecimentos:
- - Import defensivo de psutil (detecção opcional)
+ - Import defensivo de psutil (deteco opcional)
  - Locks (thread-safe) para operações de I/O
- - Escrita atômica (arquivo.tmp -> os.replace)
+ - Escrita atmica (arquivo.tmp -> os.replace)
  - Timestamp padrão em ISO UTC
- - Backup/quarantine para arquivos corrompidos ou expirados (não apaga imediatamente)
- - Cálculo de tamanho em bytes (len(json_bytes))
- - Sanitização robusta de nomes de arquivo/tópico
- - Métodos públicos para configurar o path do HDD e forçar limpeza
+ - Backup/quarantine para arquivos corrompidos ou expirados (no apaga imediatamente)
+ - Clculo de tamanho em bytes (len(json_bytes))
+ - Sanitizao robusta de nomes de arquivo/tpico
+ - Métodos pblicos para configurar o path do HDD e forar limpeza
 """
-from __future__ import annotations
 
 import json
 import uuid
@@ -33,7 +33,7 @@ try:
     import psutil  # type: ignore
     _PSUTIL_AVAILABLE = True
 except:
-    logging.getLogger(__name__).warning("âš ï¸ psutil não disponível")
+    logging.getLogger(__name__).warning("[AVISO] psutil no disponível")
     psutil = None  # type: ignore
     _PSUTIL_AVAILABLE = False
 
@@ -87,7 +87,7 @@ class CacheHDD:
             if detected:
                 self.set_hdd_base_path(detected)
             else:
-                logger.warning("Nenhum HDD detectado automaticamente. Cache permanecerá desativado até set_hdd_base_path ser chamado.")
+                logger.warning("Nenhum HDD detectado automaticamente. Cache permanecer desativado at set_hdd_base_path ser chamado.")
 
     # -------------------------
     # Configuration / detection
@@ -100,7 +100,7 @@ class CacheHDD:
             try:
                 p = Path(path)
                 if not p.exists() or not p.is_dir():
-                    raise ValueError(f"Caminho inválido ou inacessível: {p}")
+                    raise ValueError(f"Caminho invlido ou inacessvel: {p}")
                 self.hdd_path = p.resolve()
                 self.cache_dir = self.hdd_path / self.cache_dir_name
                 self.quarantine_dir = self.hdd_path / self.quarantine_dir_name
@@ -116,7 +116,7 @@ class CacheHDD:
 
     def _detectar_hdd_automatico(self) -> Optional[Path]:
         """
-        Heurística segura para detectar um HDD externo / drive montado. Retorna Path ou None.
+        Heurstica segura para detectar um HDD externo / drive montado. Retorna Path ou None.
         """
         try:
             if _PSUTIL_AVAILABLE and psutil is not None:
@@ -128,7 +128,7 @@ class CacheHDD:
                             continue
                         usage = psutil.disk_usage(str(mount))
                         if usage.total and usage.total > 100 * 1024 * 1024:  # >100MB
-                            logger.debug("Detecção automática de drive: %s", mount)
+                            logger.debug("Deteco automtica de drive: %s", mount)
                             return mount
                     except Exception:
                         continue
@@ -142,17 +142,17 @@ class CacheHDD:
                         if _PSUTIL_AVAILABLE and psutil is not None:
                             usage = psutil.disk_usage(str(p))
                             if usage.total and usage.total > 50 * 1024 * 1024:
-                                logger.debug("Detecção por caminho comum: %s", p)
+                                logger.debug("Deteco por caminho comum: %s", p)
                                 return p
                         else:
                             # if non-empty directory assume usable
                             if any(p.iterdir()):
-                                logger.debug("Detecção por caminho comum (sem psutil): %s", p)
+                                logger.debug("Deteco por caminho comum (sem psutil): %s", p)
                                 return p
                     except Exception:
                         continue
         except Exception as e:
-            logger.exception("Erro durante detecção automática do HDD: %s", e)
+            logger.exception("Erro durante deteco automtica do HDD: %s", e)
 
         return None
 
@@ -174,7 +174,7 @@ class CacheHDD:
         expiracao_dias: int = 30,
     ) -> Optional[str]:
         """
-        Salva conhecimento no cache HDD de forma atômica e segura. Retorna file_id (string) ou None em caso de falha.
+        Salva conhecimento no cache HDD de forma atmica e segura. Retorna file_id (string) ou None em caso de falha.
         """
         with self._lock:
             if not self.hdd_disponivel():
@@ -228,7 +228,7 @@ class CacheHDD:
 
     def carregar_conhecimento(self, topico: Optional[str] = None, file_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """
-        Carrega conhecimento por file_id ou por tópico (mais recente).
+        Carrega conhecimento por file_id ou por tpico (mais recente).
         """
         with self._lock:
             if not self.hdd_disponivel():
@@ -257,7 +257,7 @@ class CacheHDD:
                 return None
 
     def _carregar_arquivo(self, file_path: Path) -> Optional[Dict[str, Any]]:
-        """Carrega e valida um arquivo de cache; move corrompidos/expirados para quarantine."""
+        """Carrega e válida um arquivo de cache; move corrompidos/expirados para quarantine."""
         try:
             with open(file_path, "rb") as f:
                 raw = f.read()
@@ -276,7 +276,7 @@ class CacheHDD:
                     try:
                         file_path.unlink()
                     except Exception:
-                        logger.debug("Não foi possível remover arquivo corrompido.")
+                        logger.debug("No foi possível remover arquivo corrompido.")
                 return None
 
             # validate expiration
@@ -300,7 +300,7 @@ class CacheHDD:
                                 logger.debug("Falha ao remover arquivo expirado.")
                         return None
                 except Exception:
-                    logger.debug("Formato de expiracao inválido (ignorando).")
+                    logger.debug("Formato de expiracao invlido (ignorando).")
 
             return conhecimento
         except Exception:
@@ -308,7 +308,7 @@ class CacheHDD:
             return None
 
     # -------------------------
-    # Busca / listagem / remoção
+    # Busca / listagem / remoo
     # -------------------------
     def buscar_conhecimento(self, query: str, limite: int = 10) -> List[Dict[str, Any]]:
         if not self.hdd_disponivel():
@@ -345,7 +345,7 @@ class CacheHDD:
                     reverse = ordenar_por == "timestamp"
                     out.sort(key=lambda x: x.get(ordenar_por, ""), reverse=reverse)
                 except Exception:
-                    logger.debug("Ordenação por campo '%s' falhou; retornando sem ordenar.", ordenar_por)
+                    logger.debug("Ordenao por campo '%s' falhou; retornando sem ordenar.", ordenar_por)
                 return out[:limit]
             except Exception:
                 logger.exception("Erro ao listar conhecimentos.")
@@ -405,7 +405,7 @@ class CacheHDD:
                 return count
 
     # -------------------------
-    # Estatísticas / utilitários
+    # Estatsticas / utilitrios
     # -------------------------
     def obter_estatisticas(self) -> Dict[str, Any]:
         if not self.hdd_disponivel():
@@ -434,7 +434,7 @@ class CacheHDD:
                     "espaco_livre_gb": free_gb,
                 }
             except Exception:
-                logger.exception("Erro obtendo estatísticas.")
+                logger.exception("Erro obtendo estatsticas.")
                 return {"hdd_disponivel": True, "erro": "falha_ao_coletar_stats"}
 
     def _obter_espaco_livre(self) -> Optional[float]:
@@ -443,7 +443,7 @@ class CacheHDD:
                 usage = shutil.disk_usage(str(self.hdd_path))
                 return round(usage.free / (1024 ** 3), 2)
         except Exception:
-            logger.debug("Falha obtendo espaço livre.")
+            logger.debug("Falha obtendo espao livre.")
         return None
 
     def exportar_cache(self, destino: Path) -> bool:
@@ -479,7 +479,7 @@ class CacheHDD:
                 return count
 
 
-# ===== FUNÇÍO DE FÍCIL USO =====
+# ===== FUNO DE FCIL USO =====
 def criar_cache_hdd_padrao() -> CacheHDD:
     return CacheHDD(hdd_base_path=None, cache_dir_name="Arca_Conhecimento_Cache")
 
@@ -492,18 +492,18 @@ if __name__ == "__main__":
     cache = criar_cache_hdd_padrao()
 
     if cache.hdd_disponivel():
-        print("âœ“ HDD disponível em:", cache.cache_dir)
+        print(" HDD disponível em:", cache.cache_dir)
         kid = cache.salvar_conhecimento(
             topico="inteligencia_artificial",
-            dados={"definicao": "IA é... (demo)"},
+            dados={"definicao": "IA ... (demo)"},
             metadata={"autor": "Sistema", "confianca": 0.9},
             expiracao_dias=7
         )
         print("Salvo ID:", kid)
         k = cache.carregar_conhecimento(topico="inteligencia_artificial")
         print("Carregado:", bool(k))
-        print("Estatísticas:", cache.obter_estatisticas())
+        print("Estatsticas:", cache.obter_estatisticas())
         print("Limpando expirados:", cache.limpar_cache_expirado())
     else:
-        print("âœ— HDD não disponível. Configure manualmente com set_hdd_base_path(Path('D:/'))")
-    print("=== TESTE CONCLUÍDO ===")
+        print(" HDD no disponível. Configure manualmente com set_hdd_base_path(Path('D:/'))")
+    print("=== TESTE CONCLUDO ===")

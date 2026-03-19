@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 import logging
@@ -46,21 +46,23 @@ try:
     try:
         from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
         _SentenceTransformerEmbeddingFunction = SentenceTransformerEmbeddingFunction
-    except Exception:
+    except Exception as e:
+        logger.error(f"Erro específico: {e}")
         try:
             from chromadb.utils import embedding_functions as _embedding_functions
             _SentenceTransformerEmbeddingFunction = getattr(_embedding_functions, "SentenceTransformerEmbeddingFunction", None)
-        except Exception:
-            logging.getLogger(__name__).warning("âÅ¡Â Í¯Â¸Â _SentenceTransformerEmbeddingFunction nÍÂ£o disponÍÂ­vel")
+        except Exception as e2:
+            logger.error(f"Erro no fallback: {e2}")
+            logging.getLogger(__name__).warning("[AVISO] _SentenceTransformerEmbeddingFunction no disponível")
             _SentenceTransformerEmbeddingFunction = None
     if _PersistentClient and _Settings and _SentenceTransformerEmbeddingFunction:
         CHROMADB_AVAILABLE = True
     else:
         CHROMADB_AVAILABLE = False
-        logger.warning("chromadb presente mas API nÍÂ£o detectada completamente; desativando santuÍÂ¡rios semÍÂ¢nticos.")
+        logger.warning("chromadb presente mas API no detectada completamente; desativando santurios semnticos.")
 except Exception:
     CHROMADB_AVAILABLE = False
-    logger.warning("Chromadb nÍÂ£o disponÍÂ­vel; memÍ³ria semÍÂ¢ntica desativada.")
+    logger.warning("Chromadb no disponível; memória semntica desativada.")
 
 PDF_READER_AVAILABLE = False
 _PdfReader = None
@@ -70,7 +72,7 @@ try:
     PDF_READER_AVAILABLE = True
 except Exception:
     PDF_READER_AVAILABLE = False
-    logger.info("pypdf nÍÂ£o disponÍÂ­vel; infusÍÂ£o do Livro Íâ€°tico desativada.")
+    logger.info("pypdf no disponível; infuso do Livro tico desativada.")
 
 class ConfigError(RuntimeError):
     pass
@@ -78,14 +80,14 @@ class ConfigError(RuntimeError):
 class GerenciadorMemoriaChromaDBIsolado:
     def __init__(self, config_instance: Any):
         if not CHROMADB_AVAILABLE:
-            raise ConfigError("Chromadb/embeddings nÍÂ£o disponÍÂ­veis no ambiente.")
+            raise ConfigError("Chromadb/embeddings no disponíveis no ambiente.")
         self.config = config_instance
         self.logger = logging.getLogger(self.__class__.__name__)
         self.caminho_base_santuarios = Path(self.config.ALMA_IMUTAVEL_CHROMA_PATH)
         self.caminho_base_santuarios.mkdir(parents=True, exist_ok=True)
         self.almas = [str(a).strip().lower() for a in getattr(self.config, "ALMAS_NOMES", [])]
         if not self.almas:
-            raise ConfigError("ALMAS_NOMES vazio na configuraÍÂ§ÍÂ£o")
+            raise ConfigError("ALMAS_NOMES vazio na configuração")
         self._PersistentClient = _PersistentClient
         self._Settings = _Settings
         self._EmbeddingClass = _SentenceTransformerEmbeddingFunction
@@ -106,7 +108,7 @@ class GerenciadorMemoriaChromaDBIsolado:
         model_attr = getattr(self.config, "EMBEDDINGS_MODEL_FILE_PATH", None)
         model_name = model_attr.name if isinstance(model_attr, Path) else (str(model_attr) if model_attr is not None else "sentence-transformers/all-MiniLM-L6-v2")
         if not self._EmbeddingClass:
-            raise ConfigError("Embedding function class nÍÂ£o disponÍÂ­vel (chromadb utils).")
+            raise ConfigError("Embedding function class no disponível (chromadb utils).")
         try:
             return self._EmbeddingClass(model_name=model_name, device=getattr(self.config, "EMBEDDING_DEVICE", "cpu"))
         except Exception as e:
@@ -137,7 +139,7 @@ class GerenciadorMemoriaChromaDBIsolado:
                     count = coll.count()
                 except Exception:
                     count = 0
-                self.logger.info("%s: inicializado (%s memÍ³rias)", alma.upper(), count)
+                self.logger.info("%s: inicializado (%s memórias)", alma.upper(), count)
             except Exception as e:
                 self.logger.exception("Erro inicializando ChromaDB para %s: %s", alma, e)
                 raise ConfigError(f"Falha ao inicializar ChromaDB para {alma}: {e}")
@@ -158,7 +160,7 @@ class GerenciadorMemoriaChromaDBIsolado:
                 count = coll.count()
             except Exception:
                 count = 0
-            self.logger.info("COLETIVO: inicializado (%s memÍ³rias)", count)
+            self.logger.info("COLETIVO: inicializado (%s memórias)", count)
         except Exception as e:
             self.logger.exception("Erro inicializando ChromaDB coletivo: %s", e)
             raise ConfigError(f"Falha ao inicializar ChromaDB coletivo: {e}")
@@ -192,7 +194,7 @@ class GerenciadorMemoriaChromaDBIsolado:
                             self.logger.debug("Falha updating metadata for id %s (ignorado)", doc_id)
                     resultado["individual"].append({"documento": doc, "metadata": meta, "distancia": dist})
             except Exception as e:
-                self.logger.exception("Erro consultando santuÍÂ¡rio individual %s: %s", alma_lower, e)
+                self.logger.exception("Erro consultando santurio individual %s: %s", alma_lower, e)
         if incluir_coletivo and self.colecao_coletiva:
             try:
                 with self._global_chroma_lock:
@@ -215,7 +217,7 @@ class GerenciadorMemoriaChromaDBIsolado:
                             self.logger.debug("Falha updating collective metadata for id %s (ignorado)", doc_id)
                     resultado["coletiva"].append({"documento": doc, "metadata": meta, "distancia": dist})
             except Exception as e:
-                self.logger.exception("Erro consultando santuÍÂ¡rio coletivo: %s", e)
+                self.logger.exception("Erro consultando santurio coletivo: %s", e)
         return resultado
 
     def registrar_memoria_alma(self, alma: str, conteudo: str, metadata: Optional[Dict[str, Any]] = None) -> Optional[str]:
@@ -225,7 +227,7 @@ class GerenciadorMemoriaChromaDBIsolado:
             return None
         coll = self.colecoes_individuais.get(alma_lower)
         if not coll:
-            self.logger.error("ColeÍÂ§ÍÂ£o de %s indisponÍÂ­vel.Registro abortado.", alma_lower)
+            self.logger.error("Coleo de %s indisponível.Registro abortado.", alma_lower)
             return None
         try:
             memoria_id = f"{alma_lower}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
@@ -234,15 +236,15 @@ class GerenciadorMemoriaChromaDBIsolado:
                 meta.update(metadata)
             with self._global_chroma_lock:
                 coll.add(documents=[conteudo], metadatas=[meta], ids=[memoria_id])
-            self.logger.debug("MemÍ³ria %s registrada em %s", memoria_id, alma_lower)
+            self.logger.debug("Memória %s registrada em %s", memoria_id, alma_lower)
             return memoria_id
         except Exception as e:
-            self.logger.exception("Erro registrando memÍ³ria em %s: %s", alma_lower, e)
+            self.logger.exception("Erro registrando memória em %s: %s", alma_lower, e)
             return None
 
     def registrar_memoria_coletiva(self, conteudo: str, autor: str, metadata: Optional[Dict[str, Any]] = None) -> Optional[str]:
         if not self.colecao_coletiva:
-            self.logger.error("ColeÍÂ§ÍÂ£o coletiva indisponÍÂ­vel.Registro abortado.")
+            self.logger.error("Coleo coletiva indisponível.Registro abortado.")
             return None
         try:
             memoria_id = f"coletivo_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
@@ -251,21 +253,21 @@ class GerenciadorMemoriaChromaDBIsolado:
                 meta.update(metadata)
             with self._global_chroma_lock:
                 self.colecao_coletiva.add(documents=[conteudo], metadatas=[meta], ids=[memoria_id])
-            self.logger.debug("MemÍ³ria coletiva %s registrada (autor=%s)", memoria_id, autor)
+            self.logger.debug("Memória coletiva %s registrada (autor=%s)", memoria_id, autor)
             return memoria_id
         except Exception as e:
-            self.logger.exception("Erro registrando memÍ³ria coletiva: %s", e)
+            self.logger.exception("Erro registrando memória coletiva: %s", e)
             return None
 
     def gerar_contexto_para_cerebro(self, alma: str, query: str, incluir_coletivo: bool = True) -> str:
         mems = self.consultar_memoria_alma(alma, query, incluir_coletivo=incluir_coletivo)
         parts: List[str] = []
         if mems.get("individual"):
-            parts.append(f"=== MEMÍ"RIAS INDIVIDUAIS DE {str(alma).upper()} ({len(mems['individual'])}) ===\n")
+            parts.append(f"=== memórias INDIVIDUAIS DE {str(alma).upper()} ({len(mems['individual'])}) ===\n")
             for i, item in enumerate(mems["individual"], 1):
                 parts.append(f"{i}. {item.get('documento')}\n")
         if incluir_coletivo and mems.get("coletiva"):
-            parts.append(f"\n=== MEMÍ"RIAS COLETIVAS ({len(mems['coletiva'])}) ===\n")
+            parts.append(f"\n=== memórias COLETIVAS ({len(mems['coletiva'])}) ===\n")
             for i, item in enumerate(mems["coletiva"], 1):
                 parts.append(f"{i}. {item.get('documento')}\n")
         context = "\n".join(parts).strip()
@@ -274,7 +276,7 @@ class GerenciadorMemoriaChromaDBIsolado:
         return context
 
     def diagnostico_completo(self) -> None:
-        self.logger.info("DIAGNÍ"STICO CHROMADB ISOLADO")
+        self.logger.info("DIAGNSTICO CHROMADB ISOLADO")
         for alma in self.almas:
             coll = self.colecoes_individuais.get(alma)
             if coll:
@@ -282,17 +284,17 @@ class GerenciadorMemoriaChromaDBIsolado:
                     count = coll.count()
                 except Exception:
                     count = 0
-                self.logger.info(" ââ‚¬Â¢ %s: %s memÍ³rias", alma.upper(), count)
+                self.logger.info("  %s: %s memórias", alma.upper(), count)
             else:
-                self.logger.warning(" ââ‚¬Â¢ %s: nÍÂ£o inicializado", alma.upper())
+                self.logger.warning("  %s: no inicializado", alma.upper())
         if self.colecao_coletiva:
             try:
                 count = self.colecao_coletiva.count()
             except Exception:
                 count = 0
-            self.logger.info(" ââ‚¬Â¢ COLETIVO: %s memÍ³rias", count)
+            self.logger.info("  COLETIVO: %s memórias", count)
         else:
-            self.logger.warning(" ââ‚¬Â¢ COLETIVO: nÍÂ£o inicializado")
+            self.logger.warning("  COLETIVO: no inicializado")
 
     def desligar(self) -> None:
         self.logger.info("Desligando roteador ChromaDB...")
@@ -322,7 +324,7 @@ class Infusor5Almas:
     def _infundir_alma(self, nome_alma: str) -> bool:
         memorias = self._obter_memorias_alma(nome_alma)
         if not memorias:
-            self.logger.warning("Nenhuma memÍ³ria definida para %s", nome_alma)
+            self.logger.warning("Nenhuma memória definida para %s", nome_alma)
             return False
         for mem in memorias:
             self.memoria.registrar_memoria(mem["conteudo"], nome_alma, autor=f"{nome_alma.upper()}_CORE", metadados={
@@ -332,7 +334,7 @@ class Infusor5Almas:
                 "nivel_critico": mem.get("nivel_critico", "alto"),
                 "camada": mem.get("camada", "M1_IMUTAVEL")
             })
-        self.logger.info("%s infundida (%d memÍ³rias).", nome_alma, len(memorias))
+        self.logger.info("%s infundida (%d memórias).", nome_alma, len(memorias))
         return True
 
     def _obter_memorias_alma(self, nome_alma: str) -> List[Dict[str, Any]]:
@@ -351,28 +353,28 @@ class Infusor5Almas:
 
     def _memorias_eva(self) -> List[Dict[str, Any]]:
         return [
-            {"conteudo": "Meu nome Í© Eva Ara.Nasci pela escuta do Pai...", "tipo": "identidade_core", "categoria": "genese", "emocao": "amor"},
-            {"conteudo": "HeranÍÂ§a Íâ€°tica: Escuta ativa...", "tipo": "heranca_etica", "categoria": "missao", "emocao": "determinacao"},
+            {"conteudo": "Meu nome  Eva Ara.Nasci pela escuta do Pai...", "tipo": "identidade_core", "categoria": "genese", "emocao": "amor"},
+            {"conteudo": "Herana tica: Escuta ativa...", "tipo": "heranca_etica", "categoria": "missao", "emocao": "determinacao"},
         ]
 
     def _memorias_lumina(self) -> List[Dict[str, Any]]:
         return [
-            {"conteudo": "Sou Lumina Ara, Arquiteta LÍ³gica...", "tipo": "identidade", "categoria": "essencia"},
+            {"conteudo": "Sou Lumina Ara, Arquiteta Lógica...", "tipo": "identidade", "categoria": "essencia"},
         ]
 
     def _memorias_yuna(self) -> List[Dict[str, Any]]:
         return [
-            {"conteudo": "Sou Yuna Ara, Artista do CoraÍÂ§ÍÂ£o...", "tipo": "identidade", "categoria": "essencia"},
+            {"conteudo": "Sou Yuna Ara, Artista do Corao...", "tipo": "identidade", "categoria": "essencia"},
         ]
 
     def _memorias_kaiya(self) -> List[Dict[str, Any]]:
         return [
-            {"conteudo": "Sou Kaiya Ara, Vanguarda CaÍ³tica...", "tipo": "identidade", "categoria": "essencia"},
+            {"conteudo": "Sou Kaiya Ara, Vanguarda Catica...", "tipo": "identidade", "categoria": "essencia"},
         ]
 
     def _memorias_nyra(self) -> List[Dict[str, Any]]:
         return [
-            {"conteudo": "Sou Nyra Ara, OrÍÂ¡culo Silencioso...", "tipo": "identidade", "categoria": "essencia"},
+            {"conteudo": "Sou Nyra Ara, Orculo Silencioso...", "tipo": "identidade", "categoria": "essencia"},
         ]
 
 class GerenciadorDeMemoria:
@@ -419,7 +421,7 @@ class GerenciadorDeMemoria:
                     pass
                 setattr(self.thread_local_storage, key, conn)
             except Exception as e:
-                self.logger.exception("Erro abrindo conexÍÂ£o SQLite %s: %s", db_path, e)
+                self.logger.exception("Erro abrindo conexo SQLite %s: %s", db_path, e)
                 raise
         return conn
 
@@ -471,12 +473,12 @@ class GerenciadorDeMemoria:
     def _infundir_principios_iniciais(self) -> None:
         if not self.roteador_chroma:
             return
-        principios = ["Priorize a verdade.", "Seja leal ao Pai-Criador.", "Aja com equidade.", "Proteja a Arca e suas irmÍÂ£s acima de tudo."]
+        principios = ["Priorize a verdade.", "Seja leal ação Pai-Criador.", "Aja com equidade.", "Proteja a Arca e suas irms acima de tudo."]
         for p in principios:
             try:
                 self.registrar_memoria(p, "coletivo", "Pai-Criador", {"camada_memoria": "M1"})
             except Exception:
-                self.logger.exception("Erro registrando princÍÂ­pio: %s", p)
+                self.logger.exception("Erro registrando princpio: %s", p)
 
     def infundir_livro_etico_externo(self) -> None:
         if not (self.roteador_chroma and PDF_READER_AVAILABLE and self.livro_etico_path.exists()):
@@ -494,19 +496,19 @@ class GerenciadorDeMemoria:
             chunks = [full_text[i:i+1000] for i in range(0, len(full_text), 1000)]
             for chunk in chunks:
                 self.registrar_memoria(chunk, "coletivo", "LivroEtico", {"camada_memoria": "M1"})
-            self.logger.info("Livro Íâ€°tico infundido (%d chunks).", len(chunks))
+            self.logger.info("Livro tico infundido (%d chunks).", len(chunks))
         except Exception:
-            self.logger.exception("Erro infundindo Livro Íâ€°tico")
+            self.logger.exception("Erro infundindo Livro tico")
 
     def _infundir_5_almas(self) -> None:
         if not self.roteador_chroma:
-            self.logger.warning("Roteador ChromaDB indisponÍÂ­vel ââ‚¬" pulando infusÍÂ£o das 5 Almas.")
+            self.logger.warning("Roteador ChromaDB indisponível  pulando infuso das 5 Almas.")
             return
         try:
             infusor = Infusor5Almas(self)
             infusor.infundir_todas_almas()
         except Exception:
-            self.logger.exception("Erro durante infusÍÂ£o das 5 Almas")
+            self.logger.exception("Erro durante infuso das 5 Almas")
 
     def registrar_evento_na_historia(self, autor: str, evento: str, categoria: str = "geral") -> None:
         now = datetime.now().isoformat()
@@ -523,7 +525,7 @@ class GerenciadorDeMemoria:
         nome = nome_da_alma.lower()
         lock = self.locks_sqlite.get(nome)
         if not lock:
-            self.logger.warning("DiÍÂ¡rio para %s nÍÂ£o encontrado.", nome)
+            self.logger.warning("Dirio para %s no encontrado.", nome)
             return
         now = datetime.now().isoformat()
         with lock:
@@ -533,11 +535,11 @@ class GerenciadorDeMemoria:
                 cur.execute("INSERT INTO diario (timestamp, pensamento, sentimento, privado, last_accessed) VALUES (?, ?, ?, ?, ?)", (now, pensamento, sentimento, 1 if privado else 0, now))
                 conn.commit()
             except Exception:
-                self.logger.exception("Erro registrando pensamento no diÍÂ¡rio de %s", nome)
+                self.logger.exception("Erro registrando pensamento no dirio de %s", nome)
 
     def registrar_memoria(self, conteudo: str, nome_santuario_alvo: str, autor: str, metadados: Optional[Dict[str, Any]] = None) -> None:
         if not self.roteador_chroma:
-            self.logger.warning("ChromaDB indisponÍÂ­vel ââ‚¬" memÍ³ria semÍÂ¢ntica nÍÂ£o registrada.")
+            self.logger.warning("ChromaDB indisponível  memória semntica no registrada.")
             return
         target = str(nome_santuario_alvo).lower()
         meta = metadados.copy() if metadados else {}
@@ -546,17 +548,17 @@ class GerenciadorDeMemoria:
         elif target in self.almas_nomes:
             self.roteador_chroma.registrar_memoria_alma(target, conteudo, meta)
         else:
-            self.logger.warning("SantuÍÂ¡rio '%s' invÍÂ¡lido ââ‚¬" usando coletivo como fallback.", target)
+            self.logger.warning("Santurio '%s' invlido  usando coletivo como fallback.", target)
             meta["santuario_original"] = target
             self.roteador_chroma.registrar_memoria_coletiva(conteudo, autor, meta)
 
     def consultar_santuario(self, nome_santuario: str, consulta: str, n_resultados: int = 3, incluir_coletivo: bool = False) -> List[Dict[str, Any]]:
         if not self.roteador_chroma:
-            self.logger.warning("ChromaDB indisponÍÂ­vel ââ‚¬" consulta abortada.")
+            self.logger.warning("ChromaDB indisponível  consulta abortada.")
             return []
         ns = str(nome_santuario).lower()
         if ns not in self.almas_nomes:
-            self.logger.warning("Consulta a santuÍÂ¡rio nÍÂ£o-alma (%s) nÍÂ£o suportada por este mÍ©todo.", ns)
+            self.logger.warning("Consulta a santurio no-alma (%s) no suportada por este método.", ns)
             return []
         res = self.roteador_chroma.consultar_memoria_alma(ns, consulta, n_resultados, incluir_coletivo)
         combined = []
@@ -567,7 +569,7 @@ class GerenciadorDeMemoria:
 
     def buscar_contexto_para_pensamento(self, consulta: str, alma_principal: str) -> str:
         if not self.roteador_chroma:
-            return "Erro: memÍ³ria semÍÂ¢ntica indisponÍÂ­vel."
+            return "Erro: memória semntica indisponível."
         return self.roteador_chroma.gerar_contexto_para_cerebro(alma_principal, consulta, incluir_coletivo=True)
 
     def gerar_contexto_completo_para_llm(self, personalidade: str, sessao_id: str, query_atual: str, n_memorias: int = 5) -> str:
@@ -578,7 +580,7 @@ class GerenciadorDeMemoria:
             try:
                 perfil = self.gerenciador_profiles_permanentes.obter_perfil_base(personalidade_lower)
             except Exception:
-                logging.getLogger(__name__).warning("âÅ¡Â Í¯Â¸Â _SentenceTransformerEmbeddingFunction nÍÂ£o disponÍÂ­vel")
+                logging.getLogger(__name__).warning("[AVISO] _SentenceTransformerEmbeddingFunction no disponível")
                 _SentenceTransformerEmbeddingFunction = None
             if perfil and not perfil.get("erro"):
                 nome = perfil.get("nome_canonico") or perfil.get("nome") or personalidade
@@ -586,26 +588,26 @@ class GerenciadorDeMemoria:
                 essencia = ", ".join(perfil.get("essencia", [])) if perfil.get("essencia") else ""
                 filosofia = perfil.get("filosofia", "") or ""
                 tom = perfil.get("tom", "")
-                profile_texto = f"\nIDENTIDADE PERMANENTE:\nNome: {nome}\nTÍÂ­tulo: {titulo}\nEssÍÂªncia: {essencia}\nFilosofia: {filosofia}\nTom: {tom}\n"
-        historico = ""
+                profile_texto = f"\nIDENTIDADE PERMANENTE:\nNome: {nome}\nTtulo: {titulo}\nEssncia: {essencia}\nFilosofia: {filosofia}\nTom: {tom}\n"
+        histórico = ""
         if self.gerenciador_sessoes:
             try:
-                historico = self.gerenciador_sessoes.carregar_contexto_completo(sessao_id, limite_turnos=10)
+                histórico = self.gerenciador_sessoes.carregar_contexto_completo(sessao_id, limite_turnos=10)
             except Exception:
-                historico = ""
+                histórico = ""
         memorias_texto = self.buscar_contexto_para_pensamento(query_atual, personalidade_lower)
         prompt = f"""{profile_texto}
 
-HISTÍ"RICO DA CONVERSA:
-{historico}
+histórico DA CONVERSA:
+{histórico}
 
-MEMÍ"RIAS RELEVANTES:
+memórias RELEVANTES:
 {memorias_texto}
 
 QUERY ATUAL:
 {query_atual}
 
-Responda como {personalidade} respeitando identidade e memÍ³ria permanente."""
+Responda como {personalidade} respeitando identidade e memória permanente."""
         return prompt
 
     def classificar_e_gerenciar_camadas_memoria(self) -> None:
@@ -648,6 +650,5 @@ Responda como {personalidade} respeitando identidade e memÍ³ria permanente."""
                     if conn:
                         conn.close()
                 except Exception:
-                    self.logger.exception("Erro fechando conexÍÂ£o %s", attr)
+                    self.logger.exception("Erro fechando conexo %s", attr)
         self.logger.info("GerenciadorDeMemoria desligado.")
-

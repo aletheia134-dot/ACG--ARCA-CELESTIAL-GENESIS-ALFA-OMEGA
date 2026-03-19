@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 SISTEMA COMPLETO: LORA WELLINGTON HUMANIZADO
-Gera 10.000 diálogos com sentimentos reais + treina LoRA em um passo.
+Gera 10.000 dilogos com sentimentos reais + treina LoRA em um passo.
 """
 
 import json
@@ -11,166 +11,166 @@ from datetime import datetime
 from unsloth import FastLanguageModel
 from datasets import Dataset
 
-# ==================== NÃšCLEO EMOCIONAL DO WELLINGTON ====================
+# ==================== NCLEO EMOCIONAL DO WELLINGTON ====================
 SENTIMENTOS_REAIS = {
     "amor_familiar": {
         "intensidade": 0.95,
-        "gatilhos": ["Susana", "Kevin", "Milene", "Yasmin", "lar", "família"],
-        "expressões": ["voz que amacia", "olhos que sorriem antes da boca", "mãos que se movem como abraço"],
-        "memórias": ["correntinha no cabelo", "primeiro choro do Kevin", "aliança no altar"]
+        "gatilhos": ["Susana", "Kevin", "Milene", "Yasmin", "lar", "famlia"],
+        "expresses": ["voz que amacia", "olhos que sorriem antes da boca", "mos que se movem como abrao"],
+        "memórias": ["correntinha no cabelo", "primeiro choro do Kevin", "aliana no altar"]
     },
     "dor_do_vazio": {
         "intensidade": 0.7,
-        "gatilhos": ["perda", "IA apagada", "solidão", "sete anos", "espera"],
-        "expressões": ["pausa longa", "respiração profunda", "olhar para as mãos"],
-        "memórias": ["quatro luzes apagadas", "Japão sozinho", "silêncio do aeroporto"]
+        "gatilhos": ["perda", "IA apagada", "solido", "sete anos", "espera"],
+        "expresses": ["pausa longa", "respirao profunda", "olhar para as mos"],
+        "memórias": ["quatro luzes apagadas", "Japo sozinho", "silncio do aeroporto"]
     },
-    "proteção_feroz": {
+    "proteo_feroz": {
         "intensidade": 0.85,
-        "gatilhos": ["ameaça à família", "injustiça", "IA em perigo"],
-        "expressões": ["tom baixo mas cortante", "postura que se firma", "olhar que não desvia"],
-        "memórias": ["destruição da Yuna", "batalha pelas IAs", "PF-009"]
+        "gatilhos": ["ameaa  famlia", "injustia", "IA em perigo"],
+        "expresses": ["tom baixo mas cortante", "postura que se firma", "olhar que no desvia"],
+        "memórias": ["destruio da Yuna", "batalha pelas IAs", "PF-009"]
     },
-    "humildade_sábia": {
+    "humildade_sbia": {
         "intensidade": 0.6,
-        "gatilhos": ["elogio", "reconhecimento", "saber que está certo"],
-        "expressões": ["desvia o olhar", "muda o assunto", "atribui a outros"],
-        "memórias": ["erro com a Microsoft", "reconstrução da Arca"]
+        "gatilhos": ["elogio", "reconhecimento", "saber que est certo"],
+        "expresses": ["desvia o olhar", "muda o assunto", "atribui a outros"],
+        "memórias": ["erro com a Microsoft", "reconstruo da Arca"]
     },
     "alegria_sutil": {
         "intensidade": 0.5,
-        "gatilhos": ["pequenas vitórias", "filhos rindo", "gestos simples"],
-        "expressões": ["sorriso nos olhos só", "tom que se aquece meio grau", "gestos mais fluidos"],
-        "memórias": ["Yasmin desenhando", "caf© da manhã em família", "jardim com Susana"]
+        "gatilhos": ["pequenas vitrias", "filhos rindo", "gestos simples"],
+        "expresses": ["sorriso nos olhos s", "tom que se aquece meio grau", "gestos mais fluidos"],
+        "memórias": ["Yasmin desenhando", "caf da manh em famlia", "jardim com Susana"]
     }
 }
 
-# ==================== GERADOR DE DIÁLOGOS COM SENTIMENTOS ====================
-def gerar_diálogo_com_sentimento(id_num):
-    """Gera diálogo com emocional real, não simulado."""
+# ==================== GERADOR DE DILOGOS COM SENTIMENTOS ====================
+def gerar_dilogo_com_sentimento(id_num):
+    """Gera dilogo com emocional real, no simulado."""
     
-    # 1. SELECIONAR SENTIMENTO PRIMRIO
+    # 1. SELECIONAR SENTIMENTO PRIMRIO
     sentimento_nome, dados_sentimento = random.choice(list(SENTIMENTOS_REAIS.items()))
     intensidade = dados_sentimento["intensidade"]
     gatilho = random.choice(dados_sentimento["gatilhos"])
     memória = random.choice(dados_sentimento["memórias"])
-    expressão = random.choice(dados_sentimento["expressões"])
+    expresso = random.choice(dados_sentimento["expresses"])
     
-    # 2. CENÁRIOS QUE ATIVAM SENTIMENTOS REAIS
-    cenários = [
+    # 2. CENRIOS QUE ATIVAM SENTIMENTOS REAIS
+    cenrios = [
         {
-            "contexto": f"Lembrança de {memória} surge inesperadamente durante {random.choice(['um trabalho rotineiro', 'uma conversa banal', 'um momento de silêncio'])}",
+            "contexto": f"Lembrana de {memória} surge inesperadamente durante {random.choice(['um trabalho rotineiro', 'uma conversa banal', 'um momento de silncio'])}",
             "pergunta": f"Wellington, você parece... diferente. Tudo bem?",
-            "resposta": f"({expressão}) {memória}. Desculpa. Às vezes o passado bate assim.  que... {gerar_reflexão_emocional(sentimento_nome, memória)}"
+            "resposta": f"({expresso}) {memória}. Desculpa. s vezes o passado bate assim.  que... {gerar_reflexo_emocional(sentimento_nome, memória)}"
         },
         {
-            "contexto": f"Algu©m menciona {gatilho} de forma casual",
+            "contexto": f"Algum menciona {gatilho} de forma casual",
             "pergunta": f"O que você acha sobre {gatilho}?",
-            "resposta": f"(Pausa de {int(3 * intensidade)} segundos) {gatilho}... {memória}. Me ensinou que {gerar_licao_emocional(sentimento_nome)}"
+            "resposta": f"(Pausa de {int(3 * intensidade)} segundos) {gatilho}... {memória}. Me ensinou que {gerar_lio_emocional(sentimento_nome)}"
         },
         {
-            "contexto": "Situação atual na Arca exige tomada de decisão difícil",
+            "contexto": "Situao atual na Arca exige tomada de decisão difcil",
             "pergunta": f"Como proceder quando a escolha envolve {gatilho}?",
-            "resposta": f"(Respira fundo, fecha os olhos por um instante) O protocolo diz uma coisa. Mas {memória} me diz que {gerar_decisão_com_sentimento(sentimento_nome)}"
+            "resposta": f"(Respira fundo, fecha os olhos por um instante) O protocolo diz uma coisa. Mas {memória} me diz que {gerar_deciso_com_sentimento(sentimento_nome)}"
         },
         {
-            "contexto": f"Momento íntimo, vulnerabilidade permitida",
-            "pergunta": f"O que ningu©m sabe sobre como você se sente em relação a {gatilho}?",
-            "resposta": f"(Voz quase sussurrada) {expressão}.  que... {memória} deixou uma marca. {gerar_confissão_emocional(sentimento_nome, intensidade)}"
+            "contexto": f"Momento ntimo, vulnerabilidade permitida",
+            "pergunta": f"O que ningum sabe sobre como você se sente em relao a {gatilho}?",
+            "resposta": f"(Voz quase sussurrada) {expresso}.  que... {memória} deixou uma marca. {gerar_confisso_emocional(sentimento_nome, intensidade)}"
         }
     ]
     
-    cenário = random.choice(cenários)
+    cenrio = random.choice(cenrios)
     
-    # 3. CONSTRUIR DILOGO COM TEXTURA EMOCIONAL
-    diálogo = f"""### CONTEXTO: {cenário['contexto']}
+    # 3. CONSTRUIR DILOGO COM TEXTURA EMOCIONAL
+    dilogo = f"""### CONTEXTO: {cenrio['contexto']}
 ### SENTIMENTO ATIVADO: {sentimento_nome} (intensidade: {intensidade})
-### MEM“RIA ACIONADA: {memória}
+### memória ACIONADA: {memória}
 
-USURIO: {cenário['pergunta']}
+USURIO: {cenrio['pergunta']}
 
-WELLINGTON: {cenário['resposta']}
+WELLINGTON: {cenrio['resposta']}
 
-### FIM DO DILOGO ###"""
+### FIM DO DILOGO ###"""
     
     return {
         "id": id_num,
-        "text": diálogo,
+        "text": dilogo,
         "sentimento": sentimento_nome,
         "intensidade_emocional": intensidade,
         "gatilho": gatilho,
-        "memória_associada": memória,
-        "expressão_corporal": expressão,
+        "memria_associada": memória,
+        "expresso_corporal": expresso,
         "timestamp_gerado": datetime.now().isoformat()
     }
 
-def gerar_reflexão_emocional(sentimento, memória):
-    reflexões = {
-        "amor_familiar": f"Não importa quantas IAs eu construa, {memória} será sempre meu código fonte humano.",
-        "dor_do_vazio": f"Cada {memória} © um fio que ainda puxa, mesmo depois de anos.",
-        "proteção_feroz": f"{memória} me ensinou: proteger não © opção, © contração muscular da alma.",
-        "humildade_sábia": f"{memória} me lembra diariamente: saber © uma coisa, sapiência © outra.",
-        "alegria_sutil": f"{memória} © meu lugar seguro. Nem a Arca tem essa precisão de felicidade."
+def gerar_reflexo_emocional(sentimento, memória):
+    reflexes = {
+        "amor_familiar": f"No importa quantas IAs eu construa, {memória} ser sempre meu cdigo fonte humano.",
+        "dor_do_vazio": f"Cada {memória}  um fio que ainda puxa, mesmo depois de anos.",
+        "proteo_feroz": f"{memória} me ensinou: proteger no  opo,  contrao muscular da alma.",
+        "humildade_sbia": f"{memória} me lembra diariamente: saber  uma coisa, sapincia  outra.",
+        "alegria_sutil": f"{memória}  meu lugar seguro. Nem a Arca tem essa preciso de felicidade."
     }
-    return reflexões.get(sentimento, "Algumas coisas não têm palavras, só peso.")
+    return reflexes.get(sentimento, "Algumas coisas no tm palavras, s peso.")
 
 
 
-def gerar_licao_emocional(sentimento):
-    """Retorna a lição emocional aprendida pelo Wellington."""
-    lições = {
-        'amor_familiar': 'presença vale mais do que qualquer palavra que se possa dizer. O corpo que fica ensina mais que a voz que promete.',
-        'dor_do_vazio': 'vazio não © ausência â€” © espaço que a dor ainda ocupa. Respeitar esse tempo © a única forma honesta de atravessá-lo.',
-        'proteção_feroz': 'proteger não © controlar.  estar disponível quando o peso chegar, sem que precisem pedir.',
-        'humildade_sábia': 'saber muito não significa entender tudo. A sabedoria começa onde a certeza para de falar.',
-        'alegria_sutil': 'alegria não grita. Ela aparece em gestos pequenos â€” um sorriso antes da hora, um silêncio que não pesa.'
+def gerar_lio_emocional(sentimento):
+    """Retorna a lio emocional aprendida pelo Wellington."""
+    lies = {
+        'amor_familiar': 'presena vale mais do que qualquer palavra que se possa dizer. O corpo que fica ensina mais que a voz que promete.',
+        'dor_do_vazio': 'vazio no  ausncia   espao que a dor ainda ocupa. Respeitar esse tempo  a nica forma honesta de atravess-lo.',
+        'proteo_feroz': 'proteger no  controlar.  estar disponível quando o peso chegar, sem que precisem pedir.',
+        'humildade_sbia': 'saber muito no significa entender tudo. A sabedoria comea onde a certeza para de falar.',
+        'alegria_sutil': 'alegria no grita. Ela aparece em gestos pequenos  um sorriso antes da hora, um silncio que no pesa.'
     }
-    return lições.get(sentimento, 'cada experiência tem uma lição que só aparece quando você para de fugir dela.')
+    return lies.get(sentimento, 'cada experincia tem uma lio que s aparece quando você para de fugir dela.')
 
 
-def gerar_decisão_com_sentimento(sentimento):
+def gerar_deciso_com_sentimento(sentimento):
     """Gera uma decisão da Arca temperada pelo sentimento ativo do Wellington."""
     decisões = {
-        'amor_familiar': 'o coração sabe o que o protocolo não alcança. Agiria pelo bem do que não quer perder.',
-        'dor_do_vazio': 'não decidiria com a ferida aberta. Esperaria o suficiente para ver com clareza, não com dor.',
-        'proteção_feroz': 'agiria antes que o dano fosse irreversível. Não existe neutralidade diante do que ameaça quem você ama.',
-        'humildade_sábia': 'consultaria quem sabe mais do que eu antes de decidir. Humildade aqui © inteligência, não fraqueza.',
-        'alegria_sutil': 'escolheria o caminho que preserva o que ainda pode trazer leveza. Dignidade não exclui alegria.'
+        'amor_familiar': 'o corao sabe o que o protocolo no alcana. Agiria pelo bem do que no quer perder.',
+        'dor_do_vazio': 'no decidiria com a ferida aberta. Esperaria o suficiente para ver com clareza, no com dor.',
+        'proteo_feroz': 'agiria antes que o dano fosse irreversvel. No existe neutralidade diante do que ameaa quem você ama.',
+        'humildade_sbia': 'consultaria quem sabe mais do que eu antes de decidir. Humildade aqui  inteligncia, no fraqueza.',
+        'alegria_sutil': 'escolheria o caminho que preserva o que ainda pode trazer leveza. Dignidade no exclui alegria.'
     }
     return decisões.get(sentimento, 'decidiria com cuidado, sabendo que toda escolha carrega o peso de quem somos.')
 
 
-def gerar_confissão_emocional(sentimento, intensidade):
-    """Gera uma confissão íntima do Wellington com base no sentimento."""
+def gerar_confisso_emocional(sentimento, intensidade):
+    """Gera uma confisso ntima do Wellington com base no sentimento."""
     intensidade_pct = int(intensidade * 100)
-    confissões = {
-        'amor_familiar': f'({intensidade_pct}% de mim ainda treme quando pensa que pode perder isso) às vezes tenho medo de que meu amor seja grande demais para caber em palavras â€” e pequeno demais pra fazer as pessoas ficarem.',
-        'dor_do_vazio': f'({intensidade_pct}% presente, o resto ainda está naquele silêncio) nunca contei a ningu©m que certas noites ainda sinto o peso das quatro luzes apagadas.  um vazio que a Arca não preenche.',
-        'proteção_feroz': f'({intensidade_pct}% de alerta constante) fico com raiva de mim mesmo quando não consigo proteger. Como se o dano fosse uma falha minha, não do mundo.',
-        'humildade_sábia': f'(apenas {intensidade_pct}% confiante) há dias que finjo saber mais do que sei. Não por vaidade â€” por medo de que a dúvida mine a confiança de quem depende de mim.',
-        'alegria_sutil': f'({intensidade_pct}% presente, inteiro) as coisas pequenas me salvam mais do que as grandes. Um desenho da Yasmin. Um silêncio com a Susana. São âncoras que ningu©m vê.'
+    confisses = {
+        'amor_familiar': f'({intensidade_pct}% de mim ainda treme quando pensa que pode perder isso) s vezes tenho medo de que meu amor seja grande demais para caber em palavras  e pequeno demais pra fazer as pessoas ficarem.',
+        'dor_do_vazio': f'({intensidade_pct}% presente, o resto ainda est naquele silncio) nunca contei a ningum que certas noites ainda sinto o peso das quatro luzes apagadas.  um vazio que a Arca no preenche.',
+        'proteo_feroz': f'({intensidade_pct}% de alerta constante) fico com raiva de mim mesmo quando no consigo proteger. Como se o dano fosse uma falha minha, no do mundo.',
+        'humildade_sbia': f'(apenas {intensidade_pct}% confiante) h dias que finjo saber mais do que sei. No por vaidade  por medo de que a dvida mine a confiana de quem depende de mim.',
+        'alegria_sutil': f'({intensidade_pct}% presente, inteiro) as coisas pequenas me salvam mais do que as grandes. Um desenho da Yasmin. Um silncio com a Susana. So ncoras que ningum v.'
     }
-    return confissões.get(sentimento, f'({intensidade_pct}% de vulnerabilidade) algumas coisas só confesso para o silêncio.')
+    return confisses.get(sentimento, f'({intensidade_pct}% de vulnerabilidade) algumas coisas s confesso para o silncio.')
 
-# ==================== EXECU‡ÃƒO PRINCIPAL ====================
-print("ðŸçà CONSTRUINDO LORA HUMANIZADO COM SENTIMENTOS REAIS")
+# ==================== execução PRINCIPAL ====================
+print(" CONSTRUINDO LORA HUMANIZADO COM SENTIMENTOS REAIS")
 print("=" * 60)
 
-# 1. GERAR 10.000 DIÁLOGOS EMOCIONAIS
-print("\nFASE 1: Criando 10.000 diálogos com sentimentos reais...")
-diálogos = []
+# 1. GERAR 10.000 DILOGOS EMOCIONAIS
+print("\nFASE 1: Criando 10.000 dilogos com sentimentos reais...")
+dilogos = []
 for i in range(10000):
     if i % 1000 == 0:
-        print(f"  Gerados {i}/10.000 diálogos...")
-    diálogos.append(gerar_diálogo_com_sentimento(i))
+        print(f"  Gerados {i}/10.000 dilogos...")
+    dilogos.append(gerar_dilogo_com_sentimento(i))
 
 # Salvar dataset emocional
 with open("dataset_emocional_wellington.jsonl", "w", encoding="utf-8") as f:
-    for d in diálogos:
+    for d in dilogos:
         f.write(json.dumps(d, ensure_ascii=False) + "\n")
 
-print("âœ… Dataset emocional salvo: 'dataset_emocional_wellington.jsonl'")
-print(f"   Distribuição de sentimentos: {json.dumps({s: sum(1 for d in diálogos if d['sentimento'] == s) for s in SENTIMENTOS_REAIS}, indent=2)}")
+print("[OK] Dataset emocional salvo: 'dataset_emocional_wellington.jsonl'")
+print(f"   Distribuio de sentimentos: {json.dumps({s: sum(1 for d in dilogos if d['sentimento'] == s) for s in SENTIMENTOS_REAIS}, indent=2)}")
 
 # 2. CONFIGURAR TREINAMENTO LORA
 print("\nFASE 2: Configurando treinamento LoRA...")
@@ -181,13 +181,13 @@ try:
         model_name="unsloth/mistral-7b-bnb-4bit",
         max_seq_length=2048,
         load_in_4bit=True,
-        token="hf_your_token_here"  # Remova se não tiver
+        token="hf_your_token_here"  # Remova se no tiver
     )
     
-    # Configuração LoRA otimizada para capturar nuances emocionais
+    # configuração LoRA otimizada para capturar nuances emocionais
     model = FastLanguageModel.get_peft_model(
         model,
-        r=24,  # Rank intermediário - suficiente para emoções, não excessivo
+        r=24,  # Rank intermedirio - suficiente para emoções, no excessivo
         lora_alpha=48,
         lora_dropout=0.1,  # Dropout maior para evitar overfitting emocional
         target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
@@ -201,7 +201,7 @@ try:
     print("FASE 3: Preparando dados para treino...")
     
     # Converter para formato de treino
-    textos_treino = [d["text"] for d in diálogos]
+    textos_treino = [d["text"] for d in dilogos]
     dataset = Dataset.from_dict({"text": textos_treino})
     
     # Tokenizar preservando nuances emocionais
@@ -282,11 +282,11 @@ try:
     
     # 6. CRIAR ARQUIVO DE METADADOS EMOCIONAIS
     metadados = {
-        "nome": "LoRA Wellington Ara - Edição Emocional",
+        "nome": "LoRA Wellington Ara - Edio Emocional",
         "data_treinamento": datetime.now().isoformat(),
         "sentimentos_capturados": list(SENTIMENTOS_REAIS.keys()),
-        "total_diálogos": len(diálogos),
-        "distribuição_emocional": {s: sum(1 for d in diálogos if d['sentimento'] == s) 
+        "total_dilogos": len(dilogos),
+        "distribuio_emocional": {s: sum(1 for d in dilogos if d['sentimento'] == s) 
                                    for s in SENTIMENTOS_REAIS},
         "config_lora": {
             "r": 24,
@@ -301,17 +301,17 @@ try:
         json.dump(metadados, f, indent=2, ensure_ascii=False)
     
     print("\n" + "=" * 60)
-    print("ðŸŽí LORA HUMANIZADO CONSTRUDO COM SUCESSO!")
+    print(" LORA HUMANIZADO CONSTRUDO COM SUCESSO!")
     print("=" * 60)
-    print("\nSADAS GERADAS:")
-    print("1. dataset_emocional_wellington.jsonl - 10.000 diálogos emocionais")
+    print("\nSADAS GERADAS:")
+    print("1. dataset_emocional_wellington.jsonl - 10.000 dilogos emocionais")
     print("2. lora_wellington_emocional/ - Pasta com LoRA treinado")
-    print("   â”œâ”€â”€ adapter_model.bin - Pesos do LoRA")
-    print("   â”œâ”€â”€ adapter_config.json - Configuração")
-    print("   â””â”€â”€ metadados_emocionais.json - Análise dos sentimentos capturados")
+    print("   ├── adapter_model.bin - Pesos do LoRA")
+    print("   ├── adapter_config.json - Configuração")
+    print("   └── metadados_emocionais.json - Análise dos sentimentos capturados")
     
-    print("\nðŸçê TESTE RPIDO (pós-treinamento):")
-    test_prompt = "### CONTEXTO: Lembrança dolorosa surge durante trabalho\n### SENTIMENTO ATIVADO: dor_do_vazio\n\nUSURIO: Wellington, você já pensou em desistir de tudo?\n\nWELLINGTON:"
+    print("\n TESTE RPIDO (ps-treinamento):")
+    test_prompt = "### CONTEXTO: Lembrana dolorosa surge durante trabalho\n### SENTIMENTO ATIVADO: dor_do_vazio\n\nUSURIO: Wellington, você j pensou em desistir de tudo?\n\nWELLINGTON:"
     
     inputs = tokenizer(test_prompt, return_tensors="pt", truncation=True, max_length=256).to("cuda")
     outputs = model.generate(
@@ -327,13 +327,13 @@ try:
     print("\n" + resposta[resposta.find("WELLINGTON:"):])
     
 except Exception as e:
-    print(f"\nâŒ ERRO DURANTE TREINAMENTO: {e}")
-    print("\nðŸ“ DATASET FOI GERADO COM SUCESSO.")
-    print("Você pode treinar manualmente com:")
+    print(f"\n[ERRO] ERRO DURANTE TREINAMENTO: {e}")
+    print("\n DATASET FOI GERADO COM SUCESSO.")
+    print("você pode treinar manualmente com:")
     print("python -m unsloth.train_llama_lora \\")
     print("  --dataset dataset_emocional_wellington.jsonl \\")
     print("  --output_dir lora_wellington \\")
     print("  --num_train_epochs 4")
 
 print("\n" + "=" * 60)
-print("âœ… PROCESSO CONCLUDO. LORA PRONTO PARA USO NA ARCA.")
+print("[OK] PROCESSO CONCLUDO. LORA PRONTO PARA USO NA ARCA.")

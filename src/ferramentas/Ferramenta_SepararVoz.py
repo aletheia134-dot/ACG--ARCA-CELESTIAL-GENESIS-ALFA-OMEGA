@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS, USAR_GPU
 
 import customtkinter as ctk
@@ -21,7 +21,7 @@ try:
     SPLEETER_AVAILABLE = True
 except:
     SPLEETER_AVAILABLE = False
-    print("âš ï¸ Spleeter não instalado")
+    print("[AVISO] Spleeter no instalado")
 
 class FerramentaSepararVoz:
     def __init__(self, usar_gpu=True):
@@ -32,20 +32,20 @@ class FerramentaSepararVoz:
     def carregar_modelo(self, stems=2):
         """Carrega modelo Spleeter"""
         if not SPLEETER_AVAILABLE:
-            print("âŒ Spleeter não disponível")
+            print("[ERRO] Spleeter no disponível")
             return
         
         try:
             # stems: 2 (voz + acompanhamento) ou 4 (voz + baixo + bateria + outros)
             self.separator = Separator(f'spleeter:{stems}stems', multiprocess=False)
-            print(f"âœ… Spleeter carregado (stems={stems})")
+            print(f"[OK] Spleeter carregado (stems={stems})")
         except Exception as e:
-            print(f"âŒ Erro Spleeter: {e}")
+            print(f"[ERRO] Erro Spleeter: {e}")
     
     def processar(self, caminho_audio, stems=2, pasta_saida=None):
-        """Separa áudio em componentes"""
+        """Separa udio em componentes"""
         if self.separator is None:
-            return None, "Modelo não carregado"
+            return None, "Modelo no carregado"
         
         try:
             if not pasta_saida:
@@ -74,7 +74,7 @@ class FerramentaSepararVoz:
 
 class InterfaceSepararVoz(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸŽ¤ Separar Voz de Instrumental", "700x600")
+        super().__init__(" Separar Voz de Instrumental", "700x600")
         self.ferramenta = FerramentaSepararVoz(usar_gpu=USAR_GPU)
         self.caminho_audio = None
         self.resultado = None
@@ -83,20 +83,20 @@ class InterfaceSepararVoz(InterfaceBase):
     def setup_interface(self):
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸŽµ Separar Voz e Instrumental",
+            text=" Separar Voz e Instrumental",
             font=("Arial", 22, "bold")
         )
         titulo.pack(pady=10)
         
         # Status
-        status = "âœ… Spleeter disponível" if SPLEETER_AVAILABLE else "âŒ Spleeter não instalado"
+        status = "[OK] Spleeter disponível" if SPLEETER_AVAILABLE else "[ERRO] Spleeter no instalado"
         self.lbl_status = ctk.CTkLabel(self.frame, text=status)
         self.lbl_status.pack(pady=5)
         
-        # Seleção
+        # Seleo
         self.btn_audio = ctk.CTkButton(
             self.frame,
-            text="ðŸ“ Selecionar Música",
+            text=" Selecionar Msica",
             command=self.selecionar_audio,
             width=200,
             height=40
@@ -109,7 +109,7 @@ class InterfaceSepararVoz(InterfaceBase):
         )
         self.lbl_arquivo.pack(pady=5)
         
-        # Opções
+        # Opes
         self.frame_opcoes = ctk.CTkFrame(self.frame)
         self.frame_opcoes.pack(pady=10, padx=10, fill="x")
         
@@ -134,10 +134,10 @@ class InterfaceSepararVoz(InterfaceBase):
         )
         self.radio4.pack(pady=5)
         
-        # Botão processar
+        # Boto processar
         self.btn_processar = ctk.CTkButton(
             self.frame,
-            text="ðŸŽ¤ Separar Íudio",
+            text=" Separar udio",
             command=self.processar,
             width=200,
             height=40,
@@ -151,20 +151,20 @@ class InterfaceSepararVoz(InterfaceBase):
         self.progress.pack(pady=10)
         self.progress.set(0)
         
-        # Írea de resultados
+        # rea de resultados
         self.frame_resultado = ctk.CTkFrame(self.frame)
         self.frame_resultado.pack(pady=10, padx=10, fill="both", expand=True)
         
         self.lbl_resultado = ctk.CTkLabel(
             self.frame_resultado,
-            text="Resultados aparecerão aqui"
+            text="Resultados aparecero aqui"
         )
         self.lbl_resultado.pack(expand=True)
     
     def selecionar_audio(self):
         caminho = self.utils.selecionar_arquivo(
-            "Selecione uma música",
-            [("Íudio", "*.mp3 *.wav *.flac *.m4a")]
+            "Selecione uma msica",
+            [("udio", "*.mp3 *.wav *.flac *.m4a")]
         )
         if caminho:
             self.caminho_audio = caminho
@@ -173,7 +173,7 @@ class InterfaceSepararVoz(InterfaceBase):
     
     def processar(self):
         def processar_thread():
-            self.btn_processar.configure(state="disabled", text="â³ Separando...")
+            self.btn_processar.configure(state="disabled", text=" Separando...")
             self.progress.set(0.3)
             
             self.ferramenta.carregar_modelo(stems=self.stems_var.get())
@@ -190,12 +190,12 @@ class InterfaceSepararVoz(InterfaceBase):
             if resultado:
                 self.resultado = resultado
                 self.mostrar_resultados(resultado)
-                self.utils.mostrar_info("Sucesso", "Separação concluída!")
+                self.utils.mostrar_info("Sucesso", "Separao concluda!")
             else:
                 self.utils.mostrar_erro("Erro", msg)
             
             self.progress.set(1)
-            self.btn_processar.configure(state="normal", text="ðŸŽ¤ Separar Íudio")
+            self.btn_processar.configure(state="normal", text=" Separar udio")
         
         threading.Thread(target=processar_thread).start()
     
@@ -204,10 +204,10 @@ class InterfaceSepararVoz(InterfaceBase):
         for widget in self.frame_resultado.winfo_children():
             widget.destroy()
         
-        # Título
+        # Ttulo
         titulo = ctk.CTkLabel(
             self.frame_resultado,
-            text=f"âœ… Separado em {resultado['stems']} stems",
+            text=f"[OK] Separado em {resultado['stems']} stems",
             font=("Arial", 14, "bold")
         )
         titulo.pack(pady=5)
@@ -223,7 +223,7 @@ class InterfaceSepararVoz(InterfaceBase):
             
             btn = ctk.CTkButton(
                 frame_arquivo,
-                text="ðŸ“ Abrir Pasta",
+                text=" Abrir Pasta",
                 command=lambda p=arquivo: self.abrir_pasta(p),
                 width=80
             )

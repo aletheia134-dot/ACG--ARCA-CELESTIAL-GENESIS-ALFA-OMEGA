@@ -32,8 +32,8 @@ class ObservadorArca:
         self.logger = logging.getLogger("ObservadorArca")
 
         if not self.db_base_path.exists():
-            self.logger.error("Caminho de diários não encontrado: %s", str(self.db_base_path))
-            self.logger.warning("ObservadorArca operará em modo degradado")
+            self.logger.error("Caminho de dirios no encontrado: %s", str(self.db_base_path))
+            self.logger.warning("ObservadorArca operar em modo degradado")
 
     def listar_ais(self) -> List[str]:
         return list(self.ais)
@@ -47,7 +47,7 @@ class ObservadorArca:
             if ai_nome_clean.lower() == candidate.lower():
                 return candidate
 
-        self.logger.debug("Nome de AI não reconhecido: %s", ai_nome)
+        self.logger.debug("Nome de AI no reconhecido: %s", ai_nome)
         return None
 
     def _db_path_for_ai(self, ai_nome: str) -> Optional[Path]:
@@ -57,7 +57,7 @@ class ObservadorArca:
 
         db_path = self.db_base_path / f"diario_{canonical}.db"
         if not db_path.exists():
-            self.logger.debug("Diário não encontrado para %s: %s", canonical, db_path)
+            self.logger.debug("Dirio no encontrado para %s: %s", canonical, db_path)
             return None
 
         return db_path
@@ -73,14 +73,14 @@ class ObservadorArca:
             )
             conn = sqlite3.connect(uri, uri=True, timeout=5)
             conn.row_factory = sqlite3.Row
-            self.logger.debug("✅ Conectado (ro) a %s", ai_nome)
+            self.logger.debug("[OK] Conectado (ro) a %s", ai_nome)
             return conn
 
         except sqlite3.OperationalError as e:
             self.logger.error("Falha ao abrir DB (ro) para %s: %s", ai_nome, e)
             return None
         except Exception as e:
-            self.logger.exception("Erro inesperado ao conectar a %s: %s", ai_nome, e)
+            self.logger.exception("Erro inesperado ação conectar a %s: %s", ai_nome, e)
             return None
 
     def varredura_total(
@@ -148,13 +148,13 @@ class ObservadorArca:
                         resultados.append(d)
 
                     descobertas[ai] = resultados
-                    self.logger.debug("📊 %s: %d registros encontrados", ai, len(resultados))
+                    self.logger.debug(" %s: %d registros encontrados", ai, len(resultados))
 
             except sqlite3.OperationalError as e:
-                self.logger.error("Erro SQL ao auditar %s: %s", ai, e)
+                self.logger.error("Erro SQL ação auditar %s: %s", ai, e)
                 descobertas[ai] = []
             except Exception:
-                self.logger.exception("Erro inesperado ao auditar %s", ai)
+                self.logger.exception("Erro inesperado ação auditar %s", ai)
                 descobertas[ai] = []
             finally:
                 try:
@@ -206,7 +206,7 @@ class ObservadorArca:
 
                 status = "saudavel" if total_registros > 0 else "vazia/limpa"
 
-                self.logger.info("✅ %s: %d registros (status: %s)", ai_nome, total_registros, status)
+                self.logger.info("[OK] %s: %d registros (status: %s)", ai_nome, total_registros, status)
 
                 return {
                     "ai": ai_nome,
@@ -260,11 +260,11 @@ class ObservadorArca:
                     for k, v in zip(row.keys(), r)
                 }
 
-                self.logger.debug("📝 Último pensamento de %s: %s", normalized, d.get("timestamp"))
+                self.logger.debug(" ltimo pensamento de %s: %s", normalized, d.get("timestamp"))
                 return d
 
         except Exception:
-            self.logger.exception("Erro ao obter último pensamento de %s", ai_nome)
+            self.logger.exception("Erro ao obter ltimo pensamento de %s", ai_nome)
             return None
         finally:
             try:
@@ -286,7 +286,7 @@ class Cronista:
         self.observador = ObservadorArca()
 
     def registrar_evento(self, evento: Any) -> bool:
-        """Registra um evento no diário da alma correspondente."""
+        """Registra um evento no dirio da alma correspondente."""
         try:
             dados = evento if isinstance(evento, dict) else {"evento": str(evento)}
             tipo  = dados.get("tipo", "EVENTO")
@@ -294,7 +294,7 @@ class Cronista:
             ts    = datetime.now().isoformat()
             logger.info("[Cronista] %s | %s | %s", ts, alma, tipo)
 
-            # Persistir no SQLite do santuário se disponível
+            # Persistir no SQLite do santurio se disponível
             if self.gerenciador_memoria:
                 try:
                     self.gerenciador_memoria.salvar(
@@ -306,7 +306,7 @@ class Cronista:
                     pass
             return True
         except Exception as e:
-            logger.warning("Cronista: erro ao registrar evento: %s", e)
+            logger.warning("Cronista: erro ação registrar evento: %s", e)
             return False
 
     def consultar_historico(self, filtros: dict) -> list:
@@ -319,11 +319,11 @@ class Cronista:
                 ai_nome=alma, limite=limite
             ) if alma else []
         except Exception as e:
-            logger.warning("Cronista: erro ao consultar histórico: %s", e)
+            logger.warning("Cronista: erro ação consultar histórico: %s", e)
             return []
 
     def obter_resumo(self, periodo: str = "7d") -> dict:
-        """Retorna resumo estatístico do período."""
+        """Retorna resumo estatstico do perodo."""
         try:
             return {
                 "periodo": periodo,
@@ -333,13 +333,13 @@ class Cronista:
                 "status": "operacional"
             }
         except Exception as e:
-            logger.warning("Cronista: erro ao obter resumo: %s", e)
+            logger.warning("Cronista: erro ação obter resumo: %s", e)
             return {}
 
     def iniciar_vigilancia(self) -> None:
-        """Inicia monitoramento passivo — apenas loga. Sem threads bloqueantes."""
-        logger.info("[Cronista] Vigilância iniciada — monitoramento passivo ativo.")
+        """Inicia monitoramento passivo  apenas loga. Sem threads bloqueantes."""
+        logger.info("[Cronista] Vigilncia iniciada  monitoramento passivo ativo.")
 
     def shutdown(self) -> None:
         """Encerra o cronista de forma limpa."""
-        logger.info("[Cronista] Encerrando. Até a próxima vigília.")
+        logger.info("[Cronista] Encerrando. At a prxima viglia.")

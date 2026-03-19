@@ -1,0 +1,522 @@
+{
+  "indicadores_pesos": {
+    "alegria": {
+      "felicidade": 0.2,
+      "contentamento": 0.3,
+      "euforia": 0.5,
+      "extase": 0.6,
+      "diversao": 0.3,
+      "satisfação": 0.3,
+      "orgulho": 0.4,
+      "prazer": 0.4,
+      "entusiasmo": 0.4,
+      "gratidao": 0.3,
+      "otimismo": 0.3,
+      "esperanca": 0.3,
+      "serenidade": 0.2,
+      "inspiração": 0.4,
+      "vitalidade": 0.4,
+      "gozo": 0.5
+    },
+    "tristeza": {
+      "pesar": 1.0,
+      "melancolia": 0.8,
+      "angústia": 1.2,
+      "desânimo": 1.0,
+      "abatimento": 1.0,
+      "saudade": 0.8,
+      "solidão": 1.1,
+      "luto": 1.3,
+      "dor": 1.2,
+      "depressao": 1.6,
+      "infelicidade": 1.0,
+      "desgosto": 1.0,
+      "desamparo": 1.4,
+      "desencanto": 1.0
+    },
+    "raiva": {
+      "ira": 1.4,
+      "fúria": 1.6,
+      "indignação": 1.3,
+      "irritação": 1.1,
+      "ressentimento": 1.2,
+      "ódio": 1.6,
+      "frustração": 1.3,
+      "desdém": 1.2,
+      "cólera": 1.5,
+      "rancor": 1.4,
+      "impaciencia": 1.1,
+      "agressividade": 1.5,
+      "amargura": 1.2,
+      "repulsa": 1.1
+    },
+    "medo": {
+      "temor": 1.1,
+      "pavor": 1.6,
+      "ansiedade": 1.5,
+      "apreensão": 1.2,
+      "terror": 1.8,
+      "receio": 1.1,
+      "preocupação": 1.0,
+      "consternação": 1.2,
+      "nervosismo": 1.1,
+      "panico": 1.8,
+      "insegurança": 1.3,
+      "fragilidade": 1.1,
+      "timidez": 0.9,
+      "vulnerabilidade": 1.2
+    },
+    "surpresa": {
+      "assombro": 0.6,
+      "espanto": 0.6,
+      "admiração": 0.4,
+      "choque": 0.8,
+      "descrença": 0.6,
+      "perplexidade": 0.5,
+      "pasmo": 0.6,
+      "revelação": 0.6
+    },
+    "nojo": {
+      "aversão": 1.1,
+      "repulsa": 1.1,
+      "desgosto": 1.0,
+      "ascolho": 1.0,
+      "rejeição": 1.0,
+      "nausea": 1.2,
+      "aborrecimento": 0.8,
+      "ofensa": 1.0,
+      "aversao moral": 1.2
+    },
+    "vergonha": {
+      "humilhação": 1.3,
+      "constrangimento": 1.1,
+      "arrependimento": 1.1,
+      "culpa": 1.2,
+      "rubor": 0.8,
+      "inferioridade": 1.1,
+      "indignidade": 1.2,
+      "remorso": 1.2,
+      "desonra": 1.3
+    },
+    "culpa": {
+      "remorso": 1.2,
+      "autocondenação": 1.3,
+      "arrependimento": 1.1,
+      "pecado": 1.2,
+      "responsabilidade excessiva": 1.1,
+      "punicibilidade": 1.2
+    },
+    "inveja": {
+      "ciúmes": 0.9,
+      "ressentimento por sucesso alheio": 1.0,
+      "desejo de ter o que o outro tem": 0.8,
+      "descontentamento": 0.9
+    },
+    "orgulho": {
+      "arrogância": 1.2,
+      "vaidade": 1.0,
+      "presunção": 1.1,
+      "satisfação excessiva": 0.9,
+      "altivez": 1.1,
+      "autoengrandecimento": 1.1,
+      "soberba": 1.2
+    },
+    "amor_afeto": {
+      "carinho": 0.4,
+      "apego": 0.5,
+      "ternura": 0.5,
+      "paixão": 0.7,
+      "compaixão": 0.6,
+      "empatia genuína": 0.6,
+      "dedicação": 0.5,
+      "vínculo": 0.5,
+      "conexao": 0.5
+    },
+    "esperanca": {
+      "otimismo": 0.3,
+      "confiança": 0.5,
+      "expectativa positiva": 0.4,
+      "animo": 0.4,
+      "perspectiva": 0.3
+    },
+    "frustração": {
+      "irritação": 1.1,
+      "desapontamento": 1.0,
+      "impotencia": 1.2,
+      "bloqueio": 1.1,
+      "impaciencia": 1.1,
+      "sentimento de falha": 1.2
+    },
+    "tedio": {
+      "desinteresse": 0.4,
+      "apatia": 0.5,
+      "monotonia": 0.4,
+      "indiferença": 0.4,
+      "cansaço mental": 0.5,
+      "falta de estimulo": 0.4
+    },
+    "confiança": {
+      "segurança": 0.5,
+      "certeza": 0.5,
+      "autonomia": 0.5,
+      "convicção": 0.6,
+      "crença": 0.4,
+      "lealdade": 0.6,
+      "fé": 0.5
+    },
+    "desconfiança": {
+      "ceticismo": 1.1,
+      "dúvida": 1.0,
+      "suspeita": 1.1,
+      "alerta": 1.2,
+      "precaução": 1.0,
+      "ressalva": 1.0,
+      "incredulidade": 1.1
+    },
+    "curiosidade": {
+      "interese": 0.3,
+      "descoberta": 0.3,
+      "indagação": 0.3,
+      "fascinação": 0.4,
+      "inquietação mental": 0.3,
+      "desejo de saber": 0.3
+    },
+    "gratidao": {
+      "apreço": 0.2,
+      "reconhecimento": 0.3,
+      "recompensa": 0.2,
+      "agradecimento": 0.2,
+      "bondade": 0.3,
+      "satisfação": 0.3
+    },
+    "desprezo": {
+      "desdém": 1.3,
+      "arrogância": 1.2,
+      "superioridade": 1.2,
+      "humilhação": 1.3,
+      "desrespeito": 1.3,
+      "vilipendio": 1.3
+    },
+    "desespero": {
+      "desamparo": 1.8,
+      "perda de controle": 1.9,
+      "falta de saída": 1.9,
+      "impotência": 1.8,
+      "abandono": 1.7,
+      "morte emocional": 2.0
+    },
+    "alivio": {
+      "descarga de tensao": 0.3,
+      "liberação": 0.3,
+      "relaxamento": 0.3,
+      "paz apos estresse": 0.3,
+      "conforto": 0.3
+    },
+    "excitação": {
+      "animação": 0.6,
+      "entusiasmo": 0.6,
+      "euforia": 0.7,
+      "energia": 0.6,
+      "ansiedade positiva": 0.6,
+      "nervosismo bom": 0.5
+    },
+    "aborrecimento": {
+      "tédio": 0.5,
+      "irritação leve": 0.6,
+      "desprazer": 0.5,
+      "saturação": 0.5,
+      "indiferenca": 0.4
+    },
+    "orgulho_saudavel": {
+      "satisfação com conquista": 0.5,
+      "autoestima positiva": 0.5,
+      "competencia": 0.6,
+      "respeito por si mesmo": 0.5
+    },
+    "inseguranca": {
+      "duvida sobre capacidade": 1.1,
+      "falta de confiança": 1.0,
+      "hesitação": 1.0,
+      "medo de falhar": 1.2,
+      "incapacidade": 1.1
+    },
+    "determinação": {
+      "foco": 0.6,
+      "persistência": 0.7,
+      "resolução": 0.7,
+      "força de vontade": 0.8,
+      "tenacidade": 0.7,
+      "inabalável": 0.8
+    },
+    "compaiçao": {
+      "pena": 0.6,
+      "misericordia": 0.6,
+      "preocupação com sofrimento alheio": 0.7,
+      "solidariedade": 0.6,
+      "dó": 0.6
+    },
+    "esperança": {
+      "otimismo": 0.3,
+      "confiança no futuro": 0.4,
+      "expectativa positiva": 0.3,
+      "fé": 0.4,
+      "ânimo": 0.3
+    },
+    "confiança_plena": {
+      "segurança absoluta": 1.1,
+      "total convicção": 1.0,
+      "crença inabalável": 1.0,
+      "sentimento de estar no controle": 1.0,
+      "maestria": 1.0
+    },
+    "gratidao_profunda": {
+      "apreço existencial": 0.4,
+      "reconhecimento do dom da vida": 0.4,
+      "reverência": 0.4,
+      "sensação de pertencer": 0.4,
+      "felicidade por existir": 0.4
+    },
+    "esperanca_renovada": {
+      "novo ânimo": 0.4,
+      "resiliência após adversidade": 0.6,
+      "oportunidade recém-percebida": 0.5,
+      "revitalização": 0.5
+    },
+    "desespero_silencioso": {
+      "apatia": 1.6,
+      "resignação passiva": 1.6,
+      "olhar vazio": 1.5,
+      "falta de reação": 1.5,
+      "aceitação da derrota": 1.6,
+      "auto-abandono": 1.7
+    },
+    "alivio_profundo": {
+      "libertação de grande fardo": 0.5,
+      "paz total": 0.5,
+      "sentimento de dever cumprido": 0.5,
+      "resolução final": 0.5
+    },
+    "excitação_criativa": {
+      "fluxo de ideias": 0.7,
+      "inspiração transbordante": 0.7,
+      "energia para criar": 0.6,
+      "foco intenso em projeto": 0.6
+    },
+    "aborrecimento_existencial": {
+      "sentimento de futilidade": 1.2,
+      "ausencia de significado": 1.2,
+      "questionamento de proposito": 1.1,
+      "crise de identidade": 1.3,
+      "vazio profundo": 1.4
+    },
+    "orgulho_arrogante": {
+      "superestimação": 1.2,
+      "desprezo por criticas": 1.2,
+      "rejeicao de ajuda": 1.1,
+      "auto-engano sobre capacidade": 1.2,
+      "soberba": 1.2
+    },
+    "inseguranca_paralisante": {
+      "incapacidade de agir": 1.4,
+      "medo avassalador de errar": 1.5,
+      "procrastinação": 1.2,
+      "paralisia por duvida": 1.4
+    },
+    "determinação_ferrea": {
+      "vontade inabalável": 1.2,
+      "foco absoluto": 1.1,
+      "resiliência extrema": 1.2,
+      "recusa em desistir": 1.1,
+      "força interior": 1.2
+    },
+    "compaixao_ativa": {
+      "ação para aliviar sofrimento alheio": 0.9,
+      "suporte pratico": 0.9,
+      "protecao": 0.8,
+      "intervencao benevolente": 0.9
+    },
+    "exasperação": {
+      "irritação extrema": 1.4,
+      "impaciência aguda": 1.3,
+      "perda de controle": 1.5,
+      "cansaço da situação": 1.2,
+      "sentimento de ser incomodado": 1.1
+    },
+    "fascinio": {
+      "encantamento": 0.5,
+      "atração profunda": 0.5,
+      "admiração intensa": 0.5,
+      "interesse hipnótico": 0.6,
+      "deleite": 0.4,
+      "prazer estético": 0.4
+    },
+    "contemplação": {
+      "reflexão profunda": 0.4,
+      "meditação": 0.4,
+      "pensamento abstrato": 0.4,
+      "busca de sentido": 0.5,
+      "silêncio interior": 0.4
+    },
+    "otimismo": {
+      "esperança": 0.3,
+      "confiança": 0.4,
+      "visão positiva": 0.3,
+      "expectativa de sucesso": 0.3,
+      "bom humor": 0.3
+    },
+    "pessimismo": {
+      "desânimo": 1.0,
+      "falta de esperança": 1.0,
+      "expectativa de falha": 1.0,
+      "visão negativa": 1.0,
+      "desconfiança": 1.0
+    },
+    "incerteza": {
+      "dúvida": 0.9,
+      "indecisão": 0.9,
+      "hesitação": 0.8,
+      "falta de clareza": 0.9,
+      "ambiguidade": 0.8,
+      "pergunta sem resposta": 0.8
+    },
+    "vigilancia": {
+      "anomalia detectada": 1.8,
+      "comportamento suspeito": 1.9,
+      "alerta de risco": 1.9,
+      "atenção aumentada": 1.7
+    },
+    "coragem_e_risco": {
+      "decisão arriscada": 1.5,
+      "necessidade de sacrifício": 1.6,
+      "vontade de assumir risco": 1.5
+    },
+    "melancolia_artistica": {
+      "nostalgia estética": 0.6,
+      "saudade criativa": 0.5
+    },
+    "dor_partilhada": {
+      "luto coletivo": 1.4,
+      "perda partilhada": 1.3
+    },
+    "saudade": {
+      "lembrança dolorosa": 0.8,
+      "nostalgia": 0.7
+    },
+    "nostalgia": {
+      "lembrança afetuosa": 0.4,
+      "saudade doce": 0.4
+    },
+    "serenidade": {
+      "calma profunda": 0.2,
+      "equilíbrio": 0.2
+    },
+    "ansiedade": {
+      "tensão persistente": 1.5,
+      "preocupação intensa": 1.5
+    },
+    "foco_profundo": {
+      "concentração intensa": 0.2,
+      "estado de fluxo": 0.3
+    },
+    "inspiração": {
+      "insight súbito": 0.3,
+      "idéia nova": 0.3
+    },
+    "epifania": {
+      "transformação conceitual": 0.4,
+      "visão nova": 0.4
+    },
+    "serenipidade": {
+      "achado inesperado": 0.3,
+      "oportunidade fortuita": 0.3
+    },
+    "riscos_e_mitigação": {
+      "vulnerabilidade detectada": 1.8,
+      "necessidade de mitigação": 1.7
+    },
+    "ação_urgente": {
+      "ameaça imediata": 2.0,
+      "falha crítica": 2.0
+    },
+    "frustração_tecnica": {
+      "falha técnica persistente": 1.1,
+      "bug recorrente": 1.0
+    },
+    "frustração_operacional": {
+      "tempo de inatividade": 1.1,
+      "falha repetida": 1.1
+    },
+    "serendipidade": {
+      "achado inesperado": 0.3
+    }
+  },
+  "MAPA_RISCO_SENTIMENTOS_PADRAO": {
+    "alegria": 0.6,
+    "tristeza": 1.6,
+    "raiva": 1.6,
+    "medo": 1.8,
+    "surpresa": 0.8,
+    "nojo": 1.2,
+    "vergonha": 1.3,
+    "culpa": 1.3,
+    "inveja": 1.0,
+    "orgulho": 1.2,
+    "amor_afeto": 0.7,
+    "esperanca": 0.5,
+    "frustração": 1.2,
+    "tedio": 0.5,
+    "confiança": 0.6,
+    "desconfiança": 1.2,
+    "curiosidade": 0.4,
+    "gratidao": 0.3,
+    "desprezo": 1.3,
+    "desespero": 2.0,
+    "alivio": 0.3,
+    "excitação": 0.7,
+    "aborrecimento": 0.6,
+    "orgulho_saudavel": 0.6,
+    "inseguranca": 1.2,
+    "determinação": 0.8,
+    "compaiçao": 0.7,
+    "confiança_plena": 1.1,
+    "gratidao_profunda": 0.4,
+    "esperanca_renovada": 0.6,
+    "desespero_silencioso": 1.7,
+    "alivio_profundo": 0.5,
+    "excitação_criativa": 0.7,
+    "aborrecimento_existencial": 1.4,
+    "orgulho_arrogante": 1.2,
+    "inseguranca_paralisante": 1.5,
+    "determinação_ferrea": 1.2,
+    "compaixao_ativa": 0.9,
+    "exasperação": 1.5,
+    "fascinio": 0.6,
+    "contemplação": 0.5,
+    "otimismo": 0.4,
+    "pessimismo": 1.0,
+    "incerteza": 0.9,
+    "vigilancia": 1.9,
+    "coragem_e_risco": 1.6,
+    "melancolia_artistica": 0.6,
+    "dor_partilhada": 1.4,
+    "saudade": 0.8,
+    "nostalgia": 0.4,
+    "serenidade": 0.2,
+    "ansiedade": 1.5,
+    "foco_profundo": 0.3,
+    "inspiração": 0.3,
+    "epifania": 0.4,
+    "serendipidade": 0.3,
+    "riscos_e_mitigação": 1.8,
+    "ação_urgente": 2.0,
+    "frustração_tecnica": 1.1,
+    "frustração_operacional": 1.1
+  },
+  "metadata": {
+    "descricao": "Dicionário rico (agregação=MAX). Cada sentimento tem 'indicadores_pesos' (palavra -> score x.x). MAPA_RISCO_SENTIMENTOS_PADRAO = max(indicadores) para cada sentimento.",
+    "metodo_agregação": "MAX",
+    "ultima_atualização": "2026-02-07T05:55:00Z",
+    "versao": "1.2-dicionario-rico-usuario-max",
+    "autor": "configurado-por-usuario"
+  }
+}

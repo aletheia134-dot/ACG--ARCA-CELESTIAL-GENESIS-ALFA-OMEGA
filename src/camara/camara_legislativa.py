@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 try:
     import PyPDF2
 except:
-    logging.getLogger(__name__).warning("âš ï¸ PyPDF2 não disponível")
+    logging.getLogger(__name__).warning("[AVISO] PyPDF2 no disponível")
     PyPDF2 = None
 
 logger = logging.getLogger("CamaraLegislativa")
@@ -65,6 +65,7 @@ def _safe_datetime_from_iso(s: Optional[str]) -> datetime:
             return datetime.now()
 
 def _atomic_write_json(path: Path, obj: Any) -> None:
+    import tempfile
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp = tempfile.mkstemp(dir=str(path.parent), prefix=".tmp_", suffix=".json")
     try:
@@ -188,7 +189,7 @@ class ConsultorBibliaLegislativa:
     def _carregar_biblia(self) -> Dict[str, Any]:
         try:
             if not self.caminho_biblia.exists():
-                logger.warning("Arquivo da Bíblia não encontrado: %s", self.caminho_biblia)
+                logger.warning("Arquivo da Bblia no encontrado: %s", self.caminho_biblia)
                 return {}
             suffix = self.caminho_biblia.suffix.lower()
             if suffix == ".json":
@@ -206,9 +207,9 @@ class ConsultorBibliaLegislativa:
                                 parts.append("")
                         return {"texto_completo": "\n".join(parts)}
                 except Exception:
-                    logger.exception("Falha lendo PDF da Bíblia")
+                    logger.exception("Falha lendo PDF da Bblia")
         except Exception:
-            logger.exception("Erro ao carregar Bíblia")
+            logger.exception("Erro ao carregar Bblia")
         return {}
 
     def consultar_fundamento_biblico(self, tema: str) -> Dict[str, Any]:
@@ -238,7 +239,7 @@ class ConsultorBibliaLegislativa:
                             if len(resultados) >= limite:
                                 break
         except Exception:
-            logger.exception("Erro ao buscar na Bíblia")
+            logger.exception("Erro ao buscar na Bblia")
         return resultados
 
 class LivroDaLei:
@@ -251,7 +252,7 @@ class LivroDaLei:
     def _carregar_livro(self):
         try:
             if not self.caminho_livro.exists():
-                logger.warning("Arquivo do Livro da Lei não encontrado: %s", self.caminho_livro)
+                logger.warning("Arquivo do Livro da Lei no encontrado: %s", self.caminho_livro)
                 return
             with self.caminho_livro.open("r", encoding="utf-8") as f:
                 dados = json.load(f)
@@ -264,7 +265,7 @@ class LivroDaLei:
                             continue
                         self.leis[lei.id] = lei
                     except Exception:
-                        logger.exception("Item inválido no Livro da Lei: %s", item)
+                        logger.exception("Item invlido no Livro da Lei: %s", item)
             logger.info("Livro da Lei carregado: %d leis", len(self.leis))
         except Exception:
             logger.exception("Erro ao carregar Livro da Lei")
@@ -281,7 +282,7 @@ class LivroDaLei:
     def adicionar_lei(self, lei: Lei):
         with self._lock:
             if any(existing.numero_protocolo == lei.numero_protocolo for existing in self.leis.values()):
-                raise ValueError(f"Protocolo já existente: {lei.numero_protocolo}")
+                raise ValueError(f"Protocolo j existente: {lei.numero_protocolo}")
             self.leis[lei.id] = lei
         self.salvar_livro()
 
@@ -330,8 +331,8 @@ class ArquivoNovasLeis:
                         lei = Lei.from_dict(item)
                         self.novas_leis[lei.id] = lei
                     except Exception:
-                        logger.exception("Item inválido em novas_leis: %s", item)
-            logger.info("Novas leis carregadas: %d aguardando aprovação", len(self.novas_leis))
+                        logger.exception("Item invlido em novas_leis: %s", item)
+            logger.info("Novas leis carregadas: %d aguardando aprovao", len(self.novas_leis))
         except Exception:
             logger.exception("Erro ao carregar novas leis")
 
@@ -349,7 +350,7 @@ class ArquivoNovasLeis:
         with self._lock:
             self.novas_leis[lei.id] = lei
         self.salvar_novas_leis()
-        logger.info("Lei adicionada para aprovação do Criador: %s", lei.titulo)
+        logger.info("Lei adicionada para aprovao do Criador: %s", lei.titulo)
 
     def remover_lei(self, id_lei: str):
         with self._lock:
@@ -446,15 +447,19 @@ class CamaraLegislativa:
         self.logger = logging.getLogger(self.__class__.__name__)
         self._lock = threading.RLock()
 
-        repo_root = Path(self.config.get("repo_root")) if self.config.get("repo_root") else Path.cwd()
+        # CORREÇÃO: usar diretorio_raiz do config.ini
+        repo_root = Path(self.config.get("PATHS", "diretorio_raiz", Path.cwd()))
 
-        self.caminho_livro_lei = Path(self.config.get("caminho_livro_lei", repo_root / "Santuarios/legislativo/leis_fundamentais.json"))
-        self.caminho_biblia = Path(self.config.get("caminho_biblia", repo_root / "datasets_fine_tuning/novos_documentos_jw/Biblia.json"))
-        self.caminho_novas_leis = Path(self.config.get("caminho_novas_leis", repo_root / "Santuarios/legislativo/novas_leis.json"))
-        self.caminho_categorias = Path(self.config.get("caminho_categorias", repo_root / "Santuarios/legislativo/leis_aceitas"))
-        self.caminho_protocol_counter = Path(self.config.get("caminho_protocol_counter", repo_root / "Santuarios/legislativo/protocol_counter.json"))
-        self.caminho_users = Path(self.config.get("caminho_users", repo_root / "Santuarios/legislativo/users.json"))
-        self.auth_secret = self.config.get("auth_secret", "change-this-secret")
+        # CORREÇÃO: usar caminho_leis_fundamentais (config.ini) em vez de caminho_livro_lei
+        self.caminho_livro_lei = Path(self.config.get("LEGISLATIVO", "caminho_leis_fundamentais", str(repo_root / "Santuarios/legislativo/leis_fundamentais.json")))
+        self.caminho_biblia = Path(self.config.get("LEGISLATIVO", "caminho_biblia", str(repo_root / "datasets_fine_tuning/novos_documentos_jw/Biblia.json")))
+        self.caminho_novas_leis = Path(self.config.get("LEGISLATIVO", "caminho_novas_leis", str(repo_root / "Santuarios/legislativo/novas_leis.json")))
+        self.caminho_categorias = Path(self.config.get("LEGISLATIVO", "caminho_categorias", str(repo_root / "Santuarios/legislativo/leis_aceitas")))
+        self.caminho_protocol_counter = Path(self.config.get("LEGISLATIVO", "caminho_protocol_counter", str(repo_root / "Santuarios/legislativo/protocol_counter.json")))
+        self.caminho_users = Path(self.config.get("LEGISLATIVO", "caminho_users", str(repo_root / "Santuarios/legislativo/users.json")))
+        # auth_secret: garantir que nunca seja None independente do tipo de config
+        _raw_secret = self.config.get("LEGISLATIVO", "auth_secret", "change-this-secret")
+        self.auth_secret = str(_raw_secret) if _raw_secret else "change-this-secret"
 
         self.livro_da_lei = LivroDaLei(self.caminho_livro_lei)
         self.consultor_biblia = ConsultorBibliaLegislativa(self.caminho_biblia)
@@ -466,12 +471,13 @@ class CamaraLegislativa:
         self._carregar_categorias()
 
         self.propostas_leis: Dict[str, PropostaLei] = {}
-        self.membros_legislativos = list(self.config.get("MEMBROS_LEGISLATIVOS", ["EVA", "LUMINA", "NYRA", "YUNA", "KAIYA", "WELLINGTON"]))
+        self.membros_legislativos = list(self.config.get("ALMAS", "lista_almas_votantes_csv", ["EVA", "LUMINA", "NYRA", "YUNA", "KAIYA", "WELLINGTON"]))
 
-        self.audit_path = self.config.get("audit_path", repo_root / "Santuarios/legislativo/audit.log")
-        Path(self.audit_path).parent.mkdir(parents=True, exist_ok=True)
+        audit_path_str = self.config.get("LEGISLATIVO", "audit_path", str(repo_root / "Santuarios/legislativo/audit.log"))
+        self.audit_path = Path(audit_path_str)
+        self.audit_path.parent.mkdir(parents=True, exist_ok=True)
 
-        self.logger.info("âœ… Câmara Legislativa inicializada with %d leis", len(self.livro_da_lei.leis))
+        self.logger.info("[OK] Cmara Legislativa inicializada with %d leis", len(self.livro_da_lei.leis))
 
     def _carregar_categorias(self):
         try:
@@ -507,11 +513,11 @@ class CamaraLegislativa:
             try:
                 self.notificar_falta_lei(descricao_caso)
             except Exception:
-                logger.debug("Erro notificando falta de lei (não crítico).")
+                logger.debug("Erro notificando falta de lei (no crítico).")
         return leis
 
     def notificar_falta_lei(self, descricao_caso: str):
-        logger.warning("Falta lei aplicável para caso: %s", descricao_caso)
+        logger.warning("Falta lei aplicvel para caso: %s", descricao_caso)
         if self.sistema_julgamento and hasattr(self.sistema_julgamento, "notificar_falta_lei_legislativa"):
             try:
                 self.sistema_julgamento.notificar_falta_lei_legislativa(descricao_caso)
@@ -521,13 +527,13 @@ class CamaraLegislativa:
     def propor_nova_lei(self, token: str, titulo: str, justificativa: str, necessidade: str, fundamento_biblico: str, detalhes: Dict[str, Any]) -> Tuple[bool, str]:
         username = self.auth.verify_token(token)
         if not username:
-            return False, "Token inválido ou expirado"
+            return False, "Token invlido ou expirado"
         if not (self.auth.has_role(username, "legislativo") or username == "SISTEMA_LEGISLATIVO"):
-            return False, "Usuário não autorizado"
+            return False, "Usurio no autorizado"
         if not necessidade or len(str(necessidade).strip()) < 50:
-            return False, "Necessidade deve explicar por que as leis existentes não bastam (mín.50 caracteres)"
+            return False, "Necessidade deve explicar por que as leis existentes no bastam (mn.50 caracteres)"
         if not isinstance(detalhes, dict):
-            return False, "Detalhes deve ser um objeto/dicionário"
+            return False, "Detalhes deve ser um objeto/dicionrio"
         id_proposta = str(uuid.uuid4())
         proposta = PropostaLei(
             id=id_proposta,
@@ -547,8 +553,8 @@ class CamaraLegislativa:
             try:
                 self.coracao.sistema_propostas.registrar_proposta_legislativa(username, proposta.to_dict())
             except Exception:
-                logger.debug("Erro ao notificar sistema de propostas (não crítico).")
-        self.logger.info("ðŸ“œ Nova lei proposta por %s: %s", username, titulo)
+                logger.debug("Erro ao notificar sistema de propostas (no crítico).")
+        self.logger.info(" Nova lei proposta por %s: %s", username, titulo)
         return True, id_proposta
 
     def votar_proposta_lei(self, token: str, id_proposta: str, voto: bool) -> bool:
@@ -580,10 +586,10 @@ class CamaraLegislativa:
             except Exception:
                 logger.exception("Erro ao persistir nova lei aguardando Criador")
             proposta.status = "APROVADA_AGUARDANDO_CRIADOR"
-            self.logger.info("ðŸ“œ Lei aprovada pelas AIs, aguardando Criador: %s", proposta.titulo_proposto)
+            self.logger.info(" Lei aprovada pelas AIs, aguardando Criador: %s", proposta.titulo_proposto)
         else:
             proposta.status = "REJEITADA"
-            self.logger.info("ðŸ“œ Lei rejeitada pelas AIs: %s", proposta.titulo_proposto)
+            self.logger.info(" Lei rejeitada pelas AIs: %s", proposta.titulo_proposto)
 
     def _criar_lei_da_proposta(self, proposta: PropostaLei) -> Lei:
         counter_file = self.caminho_protocol_counter
@@ -637,26 +643,26 @@ class CamaraLegislativa:
                 try:
                     self.arquivo_novas_leis.remover_lei(id_lei)
                 except Exception:
-                    logger.debug("Erro ao remover lei das novas_leis após aprovação (não crítico).")
+                    logger.debug("Erro ao remover lei das novas_leis aps aprovao (no crítico).")
                 if self.sistema_precedentes and hasattr(self.sistema_precedentes, "registrar_precedente"):
                     try:
                         self.sistema_precedentes.registrar_precedente(
                             id_decisao_judicial=f"CRIADOR-APROVACAO-{id_lei}",
                             descricao_caso=lei.instrucao_base,
-                            decisao="LEI_APROVADA_CRIADOR",
+                            decisão="LEI_APROVADA_CRIADOR",
                             justificativa=motivo,
                             leis_aplicaveis=[],
                             autor_julgador="CRIADOR",
                         )
                     except Exception:
-                        logger.debug("Erro ao registrar precedente (não crítico).")
-                self.logger.critical("ðŸ“œ Lei aprovada pelo Criador e entrou em vigor: %s", lei.titulo)
+                        logger.debug("Erro ao registrar precedente (no crítico).")
+                self.logger.critical(" Lei aprovada pelo Criador e entrou em vigor: %s", lei.titulo)
             else:
                 lei.status = StatusLei.EM_DELIBERACAO
                 try:
                     self.arquivo_novas_leis.remover_lei(id_lei)
                 except Exception:
-                    logger.debug("Erro ao remover lei das novas_leis após rejeição (não crítico).")
+                    logger.debug("Erro ao remover lei das novas_leis aps rejeio (no crítico).")
                 with self._lock:
                     proposta_rejeitada = PropostaLei(
                         id=str(uuid.uuid4()),
@@ -670,7 +676,7 @@ class CamaraLegislativa:
                         status="REJEITADA_CRIADOR",
                     )
                     self.propostas_leis[proposta_rejeitada.id] = proposta_rejeitada
-                self.logger.critical("ðŸ“œ Lei rejeitada pelo Criador, voltou para legislativo: %s", lei.titulo)
+                self.logger.critical(" Lei rejeitada pelo Criador, voltou para legislativo: %s", lei.titulo)
             self._audit("voto_final_criador", username, {"id_lei": id_lei, "aprovado": aprovado})
             return True
         except Exception:
@@ -694,7 +700,7 @@ class CamaraLegislativa:
                     self.sistema_precedentes.registrar_precedente(
                         id_decisao_judicial=f"REVOGACAO-{id_lei}",
                         descricao_caso=motivo,
-                        decisao="LEI_REVOGADA",
+                        decisão="LEI_REVOGADA",
                         justificativa=motivo,
                         leis_aplicaveis=[lei.numero_protocolo],
                         autor_julgador="CAMARA_LEGISLATIVA",
@@ -728,16 +734,16 @@ class CamaraLegislativa:
                 "categorias_classificadas": list(self.categorias_classificadas.keys()),
             }
         except Exception:
-            logger.exception("Erro ao compilar estatísticas")
+            logger.exception("Erro ao compilar estatsticas")
             return {}
 
     def shutdown(self):
         try:
             self.livro_da_lei.salvar_livro()
         except Exception:
-            logger.debug("Erro ao salvar Livro da Lei no shutdown (não crítico).")
+            logger.debug("Erro ao salvar Livro da Lei no shutdown (no crítico).")
         try:
             self.arquivo_novas_leis.salvar_novas_leis()
         except Exception:
-            logger.debug("Erro ao salvar Novas Leis no shutdown (não crítico).")
-        self.logger.info("Câmara Legislativa desligada")
+            logger.debug("Erro ao salvar Novas Leis no shutdown (no crítico).")
+        self.logger.info("Cmara Legislativa desligada")

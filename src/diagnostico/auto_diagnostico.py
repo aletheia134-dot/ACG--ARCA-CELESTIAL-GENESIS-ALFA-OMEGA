@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
-Percepção Temporal (enduricido)
+Percepo Temporal (enduricido)
 
 Responsabilidades:
- - Manter percepção subjetiva de tempo para uma 'filha' da Arca
+ - Manter percepo subjetiva de tempo para uma 'filha' da Arca
  - Agendar eventos, alarmes e marcos temporais
- - Fornecer utilitários de estimativa e categorização temporal
- - Executar loop de consciência temporal em thread dedicada de forma robusta,
-   com sinais de parada, locks e validação de entradas
+ - Fornecer utilitrios de estimativa e categorizao temporal
+ - Executar loop de conscincia temporal em thread dedicada de forma robusta,
+   com sinais de parada, locks e validao de entradas
 
 Principais endurecimentos:
  - Uso consistente de timestamps em UTC ISO (helpers _now_iso / _parse_iso)
- - Proteção thread-safe (RLock) sobre timeline, alarmes, marcos e histórico
- - Validação de entradas ao agendar eventos/alarme
- - Parada e join determinísticos do loop de tempo via Event
- - Uso tolerante da configuração (usa _setup_config_getter se disponível, senão fallback)
- - Historico com tamanho configurável (deque maxlen)
+ - Proteo thread-safe (RLock) sobre timeline, alarmes, marcos e histórico
+ - Validao de entradas ação agendar eventos/alarme
+ - Parada e join determinsticos do loop de tempo via Event
+ - Uso tolerante da configuração (usa _setup_config_getter se disponível, seno fallback)
+ - histórico com tamanho configurvel (deque maxlen)
  - Logs e tratamento defensivo de callbacks
 """
-from __future__ import annotations
 
 
 import logging
@@ -99,29 +99,29 @@ class Urgencia(Enum):
 
 
 class RitmoTemporal(Enum):
-    RAPIDO = "rapido"
+    rápido = "rápido"
     NORMAL = "normal"
     LENTO = "lento"
     PAUSA = "pausa"
 
 
 # -------------------------
-# Classe Percepção Temporal
+# Classe Percepo Temporal
 # -------------------------
 class PercepcaoTemporal:
     def __init__(self, nome_filha: str, gerenciador_memoria: Any, config: Any):
         """
         Args:
-            nome_filha: identificador da 'filha' cujo tempo é percebido
-            gerenciador_memoria: objeto que expõe métodos de persistência (opcional)
-            config: objeto de configuração (qualquer) — aceitamos config.get(section,key,fallback)
+            nome_filha: identificador da 'filha' cujo tempo  percebido
+            gerenciador_memoria: objeto que expe métodos de persistncia (opcional)
+            config: objeto de configuração (qualquer)  aceitamos config.get(section,key,fallback)
         """
         self.nome_filha = nome_filha
         self.memoria = gerenciador_memoria
         self.config = config
         self.logger = logging.getLogger(f"Tempo.{nome_filha}")
 
-        # config getter (usa _setup_config_getter se existe, senão fallback)
+        # config getter (usa _setup_config_getter se existe, seno fallback)
         getter = globals().get("_setup_config_getter")
         if callable(getter):
             try:
@@ -131,7 +131,7 @@ class PercepcaoTemporal:
         else:
             self._get_real = _make_safe_getter(self.config)
 
-        # histórico de percepção com limite configurável
+        # histórico de percepo com limite configurvel
         try:
             limite_hist = int(self._get_real("TEMPORAL", "LIMITE_HISTORICO_PERCEPCAO"))
             if limite_hist <= 0:
@@ -155,7 +155,7 @@ class PercepcaoTemporal:
         # ciclo atual (nullable)
         self.ciclo_atual: Optional[Dict[str, Any]] = {
             "tipo": "indefinido",
-            "inicio": datetime.utcnow(),
+            "início": datetime.utcnow(),
             "duracao_esperada": None
         }
 
@@ -164,16 +164,16 @@ class PercepcaoTemporal:
         self._thread: Optional[threading.Thread] = None
         self._running = False
 
-        self.logger.info("â° Percepção Temporal de %s inicializada (hist=%d)", self.nome_filha, limite_hist)
+        self.logger.info(" Percepo Temporal de %s inicializada (hist=%d)", self.nome_filha, limite_hist)
 
     # -------------------------
     # Thread lifecycle
     # -------------------------
     def acordar_consciencia_temporal(self):
-        """Inicia a thread de percepção temporal (idempotente)."""
+        """Inicia a thread de percepo temporal (idempotente)."""
         with self._lock:
             if self._running:
-                self.logger.debug("Consciência temporal já ativa.")
+                self.logger.debug("Conscincia temporal j ativa.")
                 return
             self._stop_event.clear()
             try:
@@ -190,13 +190,13 @@ class PercepcaoTemporal:
             )
             self._running = True
             self._thread.start()
-            self.logger.info("â° Consciência temporal ativada (tick=%s s)", intervalo)
+            self.logger.info(" Conscincia temporal ativada (tick=%s s)", intervalo)
 
     def dormir_consciencia_temporal(self, timeout: float = 2.0):
-        """Solicita parada e aguarda término da thread de percepção."""
+        """Solicita parada e aguarda trmino da thread de percepo."""
         with self._lock:
             if not self._running:
-                self.logger.debug("Consciência temporal já parada.")
+                self.logger.debug("Conscincia temporal j parada.")
                 return
             self._stop_event.set()
             thread = self._thread
@@ -213,7 +213,7 @@ class PercepcaoTemporal:
             self._running = False
             self._thread = None
             self._stop_event.clear()
-        self.logger.info("ðŸ˜´ Consciência temporal pausada.")
+        self.logger.info(" Conscincia temporal pausada.")
 
     # -------------------------
     # Main loop
@@ -257,7 +257,7 @@ class PercepcaoTemporal:
                     break
 
     # -------------------------
-    # Introspecção temporal
+    # Introspeco temporal
     # -------------------------
     def quanto_tempo_vivi(self) -> Dict[str, Any]:
         agora = datetime.utcnow()
@@ -284,18 +284,18 @@ class PercepcaoTemporal:
 
         segundos = delta.total_seconds()
         if segundos < limite_minutos_imediato:
-            descricao, categoria = "há poucos segundos", "imediato"
+            descricao, categoria = "h poucos segundos", "imediato"
         elif segundos < limite_horas_recente:
             minutos = int(segundos / 60)
-            descricao = f"há {minutos} minuto{'s' if minutos != 1 else ''}"
+            descricao = f"h {minutos} minuto{'s' if minutos != 1 else ''}"
             categoria = "recente"
         elif segundos < limite_dias_hoje:
             horas = int(segundos / 3600)
-            descricao = f"há {horas} hora{'s' if horas != 1 else ''}"
+            descricao = f"h {horas} hora{'s' if horas != 1 else ''}"
             categoria = "hoje"
         else:
             dias = delta.days
-            descricao = f"há {dias} dia{'s' if dias != 1 else ''}"
+            descricao = f"h {dias} dia{'s' if dias != 1 else ''}"
             categoria = "passado"
 
         return {"segundos": segundos, "descricao": descricao, "categoria": categoria, "momento_referencia": momento.isoformat() + "Z"}
@@ -341,10 +341,10 @@ class PercepcaoTemporal:
     def agendar_evento(self, nome: str, quando: Any,
                        urgencia: Urgencia = Urgencia.MEDIA,
                        callback: Optional[Callable] = None) -> Optional[str]:
-        """Agenda evento futuro; retorna id do evento ou None se inválido."""
+        """Agenda evento futuro; retorna id do evento ou None se invlido."""
         quando_dt = self._ensure_datetime(quando)
         if not quando_dt:
-            self.logger.error("agendar_evento: 'quando' inválido: %s", quando)
+            self.logger.error("agendar_evento: 'quando' invlido: %s", quando)
             return None
         evento_id = f"evento_{int(time.time() * 1000)}_{hash(nome) & 0xffff}"
         evento = {
@@ -359,13 +359,13 @@ class PercepcaoTemporal:
         with self._lock:
             self.timeline.append(evento)
             self.timeline.sort(key=lambda e: e["quando"])
-        self.logger.info("ðŸ“… Evento agendado: %s @ %s", nome, quando_dt.isoformat() + "Z")
+        self.logger.info(" Evento agendado: %s @ %s", nome, quando_dt.isoformat() + "Z")
         return evento_id
 
     def criar_alarme(self, nome: str, quando: Any, mensagem: Optional[str] = None) -> Optional[str]:
         quando_dt = self._ensure_datetime(quando)
         if not quando_dt:
-            self.logger.error("criar_alarme: 'quando' inválido: %s", quando)
+            self.logger.error("criar_alarme: 'quando' invlido: %s", quando)
             return None
         alarme_id = f"alarme_{int(time.time() * 1000)}_{hash(nome) & 0xffff}"
         alarme = {
@@ -380,7 +380,7 @@ class PercepcaoTemporal:
             self.alarmes.append(alarme)
             # keep alarms ordered optionally
             self.alarmes.sort(key=lambda a: a["quando"])
-        self.logger.info("â° Alarme criado: %s @ %s", nome, quando_dt.isoformat() + "Z")
+        self.logger.info(" Alarme criado: %s @ %s", nome, quando_dt.isoformat() + "Z")
         return alarme_id
 
     def marcar_marco_temporal(self, nome: str, importancia: float = 0.5):
@@ -398,7 +398,7 @@ class PercepcaoTemporal:
                 self.memoria.salvar_evento(filha=self.nome_filha, tipo="marco_temporal", dados=marco, importancia=marco["importancia"])
         except Exception:
             logger.debug("Salvar marco na memória falhou (ignorado).")
-        self.logger.info("ðŸŽ¯ Marco temporal registrado: %s", nome)
+        self.logger.info(" Marco temporal registrado: %s", nome)
 
     # -------------------------
     # Checkers invoked by loop
@@ -419,7 +419,7 @@ class PercepcaoTemporal:
                     to_fire.append(alarme)
         for alarme in to_fire:
             try:
-                self.logger.warning("ðŸ”” ALARME: %s", alarme.get("mensagem"))
+                self.logger.warning(" ALARME: %s", alarme.get("mensagem"))
                 if hasattr(self.memoria, "salvar_evento"):
                     try:
                         self.memoria.salvar_evento(filha=self.nome_filha, tipo="alarme_disparado", dados=alarme, importancia=0.8)
@@ -443,7 +443,7 @@ class PercepcaoTemporal:
                     evento["executado_em"] = _now_iso()
                     to_execute.append(evento)
         for evento in to_execute:
-            self.logger.info("ðŸ“Œ Executando evento: %s", evento.get("nome"))
+            self.logger.info(" Executando evento: %s", evento.get("nome"))
             cb = evento.get("callback")
             if cb and callable(cb):
                 try:

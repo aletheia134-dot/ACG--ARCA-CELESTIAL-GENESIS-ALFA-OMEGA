@@ -6,6 +6,8 @@ import time
 import hmac
 import traceback
 import gc
+import signal
+import sys
 from typing import Optional, Dict, Any
 from pydantic import BaseModel, Field
 from fastapi import FastAPI, BackgroundTasks, HTTPException, Header, Depends
@@ -16,20 +18,60 @@ from dataclasses import field
 logger = logging.getLogger("src.api.encarnacao")
 logger.addHandler(logging.NullHandler())
 
+# ── Semáforo global de GPU (compartilhado com LlamaExeClient) ─────────────
+# Importar do LlamaExeClient para garantir que é o MESMO objeto
+try:
+    # tenta importar o semáforo já criado pelo LlamaExeClient
+    from src.core.llama_exe_client import _GPU_LOCK
+    logger.info("[EncarnacaoAPI] _GPU_LOCK importado de llama_exe_client")
+except Exception:
+    # fallback: cria um semáforo local (funciona se LlamaExeClient ainda não importado)
+    _GPU_LOCK = threading.Semaphore(1)
+    logger.info("[EncarnacaoAPI] _GPU_LOCK criado localmente")
+
+# ============================================================================
+# HANDLER DE SINAIS PARA DESLIGAMENTO LIMPO
+# ============================================================================
+
+def handle_shutdown(signum, frame):
+    """Manipulador de sinais para desligamento graceful"""
+    logger.info(f"\n🛑 Recebido sinal {signum}. Desligando Encarnação API...")
+    sys.exit(0)
+
+# Registrar handlers
+signal.signal(signal.SIGINT, handle_shutdown)   # Ctrl+C
+signal.signal(signal.SIGTERM, handle_shutdown)  # kill
+
+# No Windows, também tratar CTRL_BREAK_EVENT
+if sys.platform == 'win32':
+    signal.signal(signal.SIGBREAK, handle_shutdown)
+
 # ------------------------------------------------------------------
 # Imports opcionais (tratados de forma defensiva para evitar crash
 # na inicialização quando bibliotecas nativas/DLLs estiverem ausentes)
 # ------------------------------------------------------------------
 
-# Torch (pytorch) - captura qualquer exceção (ImportError, OSError, etc.)
-try:
-    import torch  # type: ignore
-    TORCH_AVAILABLE = True
-except Exception as e:
-    torch = None  # type: ignore
+# Torch (pytorch) - import LAZY para não corromper CUDA antes dos LLMs carregarem
+TORCH_AVAILABLE = False
+torch = None  # type: ignore
+
+def _tentar_carregar_torch():
+    """Tenta importar torch de forma isolada. Chamar apenas após LLMs carregados."""
+    global torch, TORCH_AVAILABLE
+    if TORCH_AVAILABLE:
+        return True
+    try:
+        import torch as _torch  # type: ignore
+        torch = _torch
+        TORCH_AVAILABLE = True
+        return True
+    except Exception as e:
+        torch = None
+        TORCH_AVAILABLE = False
+        return False
     TORCH_AVAILABLE = False
     logging.getLogger(__name__).warning(
-        "torch não disponível ou falha ao carregar: %s. Funcionalidades GPU/encarnação estarão limitadas.", e
+        "torch no disponível ou falha ao carregar: %s. Funcionalidades GPU/encarnao estaro limitadas.", e
     )
 
 # Llama.cpp (llama-cpp-python)
@@ -45,7 +87,7 @@ except Exception as e:
     Llama = None  # type: ignore
     LLAMA_AVAILABLE = False
     LLAMA_CPP_VERSION = None
-    logging.getLogger(__name__).warning("Llama.cpp não instalado ou falha ao importar: %s. Inferência local desabilitada.", e)
+    logging.getLogger(__name__).warning("Llama.cpp no instalado ou falha ao importar: %s. Inferncia local desabilitada.", e)
 
 # OpenAI
 try:
@@ -54,7 +96,7 @@ try:
 except Exception as e:
     openai = None  # type: ignore
     OPENAI_AVAILABLE = False
-    logging.getLogger(__name__).warning("OpenAI SDK não instalado: %s. Fallback API desabilitada.", e)
+    logging.getLogger(__name__).warning("OpenAI SDK no instalado: %s. Fallback API desabilitada.", e)
 
 # ------------------------------------------------------------------
 # Configurações de runtime / flags
@@ -63,8 +105,11 @@ except Exception as e:
 API_HOST = os.getenv("API_HOST", "127.0.0.1")
 API_PORT = int(os.getenv("API_PORT", os.getenv("PORT", "8000")))
 
-# Se usuário solicitar uso de GPU via variável de ambiente (default true)
+# Se usurio solicitar uso de GPU via varivel de ambiente (default true)
 USE_GPU = os.getenv("USE_GPU", "true").lower() == "true"
+
+# Tentar carregar torch ANTES de verificar disponibilidade de GPU
+_tentar_carregar_torch()
 
 # Determinar disponibilidade real de GPU (defensivo)
 GPU_AVAILABLE = False
@@ -121,7 +166,7 @@ class EncarnacaoAPI:
     def __init__(self, coracao_ref, allow_origins: Optional[list] = None):
         self.coracao = coracao_ref
         self.allow_origins = allow_origins or ["*"]
-        self.app: FastAPI = FastAPI(title="Arca Celestial Genesis - Encarnação 3D", version="1.0.0")
+        self.app: FastAPI = FastAPI(title="Arca Celestial Genesis - Encarnao 3D", version="1.0.0")
         self._server_thread: Optional[threading.Thread] = None
         self._server_running = False
         self._uvicorn_config: Optional[uvicorn.Config] = None
@@ -132,24 +177,24 @@ class EncarnacaoAPI:
         self._gpu_model_attempted = False
         self._gpu_model_failed = False
 
-        # Inicialização defensiva do modelo Llama em modo GPU quando aplicável.
+        # Inicialização defensiva do modelo Llama em modo GPU quando aplicvel.
         if GPU_AVAILABLE and LLAMA_AVAILABLE:
-            # não falhar aqui; delegar a rotina dedicada que tenta múltiplas estratégias
+            # no falhar aqui; delegar a rotina dedicada que tenta mltiplas estratgias
             try:
                 ok = self._try_load_llama_gpu(MODEL_PATH)
                 if ok:
                     logger.info("Modelo GPU carregado com sucesso de %s", MODEL_PATH)
                 else:
-                    logger.error("Tentativas de carregar modelo GPU falharam. O modelo local não está disponível.")
+                    logger.error("Tentativas de carregar modelo GPU falharam. O modelo local no est disponível.")
                     self._gpu_model_failed = True
             except Exception:
                 logger.exception("Erro inesperado durante tentativa de carga do modelo GPU")
                 self._gpu_model_failed = True
         else:
             if not LLAMA_AVAILABLE:
-                logger.info("Llama.cpp não disponível — inferência local/GPU desabilitada.")
+                logger.info("Llama.cpp no disponível  inferncia local/GPU desabilitada.")
             elif not GPU_AVAILABLE:
-                logger.info("GPU não disponível ou desabilitada — inferência local/GPU desabilitada.")
+                logger.info("GPU no disponível ou desabilitada  inferncia local/GPU desabilitada.")
 
         self.app.add_middleware(
             CORSMiddleware,
@@ -166,21 +211,21 @@ class EncarnacaoAPI:
     # --- rotina robusta de carregamento --- #
     def _try_load_llama_gpu(self, gguf_path: str) -> bool:
         """
-        Tenta carregar o modelo gguf via llama_cpp usando diferentes estratégias de n_gpu_layers.
+        Tenta carregar o modelo gguf via llama_cpp usando diferentes estratgias de n_gpu_layers.
         Retorna True se carregou com sucesso (self.llm_model preenchido).
         Em caso de falha, registra informações detalhadas e marca _gpu_model_failed=True.
         """
         if self._gpu_model_attempted and self.llm_model:
-            logger.info("Load GPU já foi tentado e modelo está carregado.")
+            logger.info("Load GPU j foi tentado e modelo est carregado.")
             return True
         if self._gpu_model_attempted and self._gpu_model_failed:
-            logger.info("Load GPU já foi tentado antes e falhou; não repetindo automaticamente.")
+            logger.info("Load GPU j foi tentado antes e falhou; no repetindo automaticamente.")
             return False
 
         self._gpu_model_attempted = True
 
-        logger.info("Iniciando sequência de tentativas para carregar GGUF na GPU: %s", gguf_path)
-        # log de ambiente e versões para diagnóstico
+        logger.info("Iniciando sequncia de tentativas para carregar GGUF na GPU: %s", gguf_path)
+        # log de ambiente e verses para diagnstico
         try:
             logger.info("TORCH_AVAILABLE=%s, torch.cuda.is_available=%s, torch.version.cuda=%s",
                         TORCH_AVAILABLE, (torch.cuda.is_available() if TORCH_AVAILABLE else False),
@@ -189,51 +234,50 @@ class EncarnacaoAPI:
         except Exception:
             logger.debug("Falha ao obter info torch/llama para logs: \n%s", traceback.format_exc())
 
-        # Estratégia: testar uma sequência de n_gpu_layers mais conservadora para evitar access violations / OOM
-        # Ordem: 1,2,4,8,-1 (onde -1 é 'auto' / default)
-        candidates = [1, 2, 4, 8, -1]
-        # Em alguns backends Windows, n_gpu_layers muito alto causa acesso inválido; por isso começamos pequeno.
-        for n_layers in candidates:
+        # Estratégia: tentar máximo de camadas primeiro (GTX 1070 8GB aguenta modelos Q4 completos)
+        # Ordem: 99 (todas) → 22 (TinyLlama completo) → 16 → 8 → 4 → 1
+        candidates = [99, 22, 16, 8, 4, 1]
+
+        # Adquirir lock de GPU antes de carregar — evita conflito com LlamaExeClient
+        logger.info("[EncarnacaoAPI] Aguardando GPU livre...")
+        got_lock = _GPU_LOCK.acquire(timeout=120)
+        if not got_lock:
+            logger.warning("[EncarnacaoAPI] GPU nao liberou em 120s — carregando mesmo assim")
+
+        try:
+          for n_layers in candidates:
             try:
                 logger.info("Tentativa de carga: n_gpu_layers=%s", n_layers)
-                # liberar caches antes de tentar
                 try:
                     if TORCH_AVAILABLE:
                         torch.cuda.empty_cache()  # type: ignore
                 except Exception:
                     logger.debug("torch.cuda.empty_cache() falhou: %s", traceback.format_exc())
 
-                # pequena pausa para estabilizar alocação
                 time.sleep(0.2)
-                # chamada principal de load (se levantar exceção, será capturada)
-                # nota: se Llama constructor aceitar -1 como auto; ajustar conforme versão
                 kwargs = {"model_path": gguf_path}
-                # many versions of llama_cpp accept n_gpu_layers parameter
                 if n_layers != -1:
                     kwargs["n_gpu_layers"] = n_layers
-                else:
-                    # deixar sem n_gpu_layers para a lib decidir (auto)
-                    pass
 
                 model = Llama(**kwargs)  # type: ignore
-                # se chegou aqui sem exceção, assumimos sucesso
                 self.llm_model = model
                 self._gpu_model_failed = False
-                logger.info("âœ… Modelo GGUF carregado com sucesso na GPU (n_gpu_layers=%s)", n_layers)
+                logger.info("[OK] Modelo GGUF carregado com sucesso na GPU (n_gpu_layers=%s)", n_layers)
                 return True
             except Exception as e:
                 logger.error("Falha ao carregar modelo com n_gpu_layers=%s: %s", n_layers, e)
                 logger.debug("Traceback:\n%s", traceback.format_exc())
-                # tentativa de mitigação: coletar lixo e liberar VRAM, depois continuar
                 try:
                     gc.collect()
                     if TORCH_AVAILABLE:
                         torch.cuda.empty_cache()  # type: ignore
                 except Exception:
-                    logger.debug("Erro durante limpeza pós-falha: %s", traceback.format_exc())
-                # aguardar um pouquinho antes de próxima tentativa
+                    logger.debug("Erro durante limpeza ps-falha: %s", traceback.format_exc())
                 time.sleep(0.5)
                 continue
+        finally:
+            if got_lock:
+                _GPU_LOCK.release()
 
         # se todas as tentativas falharem:
         self.llm_model = None
@@ -241,11 +285,11 @@ class EncarnacaoAPI:
         logger.error("Todas as tentativas de carregar GGUF na GPU falharam. Consulte os logs detalhados acima.")
         return False
 
-    # --- verificação de acesso via header X-API-Key
+    # --- verificao de acesso via header X-API-Key
     def _verificar_acesso(self, x_api_key: Optional[str] = Header(None)) -> str:
         if not x_api_key:
             logger.warning("Acesso sem chave de API")
-            raise HTTPException(status_code=401, detail="Chave de API não fornecida")
+            raise HTTPException(status_code=401, detail="Chave de API no fornecida")
 
         api_key_admin = os.getenv("API_KEY_ADMINISTRADOR")
         api_key_visitante = os.getenv("API_KEY_VISITANTE")
@@ -257,16 +301,16 @@ class EncarnacaoAPI:
             logger.debug("Acesso VISITANTE verificado")
             return "VISITANTE"
 
-        logger.warning("Tentativa de acesso com chave inválida")
-        raise HTTPException(status_code=401, detail="Chave de API inválida")
+        logger.warning("Tentativa de acesso com chave invlida")
+        raise HTTPException(status_code=401, detail="Chave de API invlida")
 
     # --- fallback usando OpenAI (quando disponível e quando explicitamente permitido)
     def _fallback_api(self, comando: dict) -> Optional[str]:
         if not USE_API_FALLBACK:
-            logger.info("USE_API_FALLBACK desativado — não usar API externa como fallback.")
+            logger.info("USE_API_FALLBACK desativado  no usar API externa como fallback.")
             return None
         if not OPENAI_AVAILABLE or not OPENAI_API_KEY:
-            logger.error("OpenAI não disponível ou API_KEY não configurada.")
+            logger.error("OpenAI no disponível ou API_KEY no configurada.")
             return None
         try:
             openai.api_key = OPENAI_API_KEY  # type: ignore
@@ -300,11 +344,11 @@ class EncarnacaoAPI:
                     except Exception:
                         logger.exception("Falha ao enfileirar comando")
             else:
-                logger.error("Coracao não expõe 'command_queue'; comando descartado")
+                logger.error("Coracao no expe 'command_queue'; comando descartado")
         except Exception:
             logger.exception("Erro ao enfileirar comando")
 
-    # --- processa inferência LLM (GPU/Local). NÍO usa API automaticamente (a menos que USE_API_FALLBACK true).
+    # --- processa inferncia LLM (GPU/Local). NO usa API automaticamente (a menos que USE_API_FALLBACK true).
     def _processar_inferencia_llm(self, comando: dict) -> Optional[str]:
         # se tivermos um modelo carregado (local/GPU) e GPU_AVAILABLE, use-o
         if GPU_AVAILABLE and self.llm_model:
@@ -321,15 +365,15 @@ class EncarnacaoAPI:
                 logger.info("Resposta gerada com GPU/local: %s", resposta[:50])
                 return resposta
             except Exception as e:
-                logger.exception("Erro na inferência local/GPU: %s.", e)
-                # se USE_API_FALLBACK ativo, usar API; caso contrário, não.
+                logger.exception("Erro na inferncia local/GPU: %s.", e)
+                # se USE_API_FALLBACK ativo, usar API; caso contrrio, no.
                 if USE_API_FALLBACK:
                     logger.info("Tentando fallback API por configuração USE_API_FALLBACK=true")
                     return self._fallback_api(comando)
                 return None
 
-        # sem modelo local -> não usar API por padrão
-        logger.info("GPU/local indisponível ou modelo não carregado; não gerando resposta localmente.")
+        # sem modelo local -> no usar API por padrão
+        logger.info("GPU/local indisponível ou modelo no carregado; no gerando resposta localmente.")
         if USE_API_FALLBACK:
             logger.info("USE_API_FALLBACK=true -> tentando fallback API")
             return self._fallback_api(comando)
@@ -346,7 +390,7 @@ class EncarnacaoAPI:
                     estado_almas[nome] = {
                         "estado_emocional": getattr(alma, "estado_emocional_atual", "desconhecido"),
                         "na_capela": bool(getattr(alma, "na_capela", False)),
-                        "avatar_3d_preferido": getattr(alma, "avatar_3d_preferido", "padrao"),
+                        "avatar_3d_preferido": getattr(alma, "avatar_3d_preferido", "padrão"),
                         "quarto_3d_preferido": getattr(alma, "quarto_3d_preferido", "santuario"),
                     }
 
@@ -358,7 +402,7 @@ class EncarnacaoAPI:
                 }
             except Exception as e:
                 logger.exception("Erro ao buscar estado_familia: %s", e)
-                raise HTTPException(status_code=500, detail="Erro interno ao buscar estado")
+                raise HTTPException(status_code=500, detail="Erro interno ação buscar estado")
 
         @self.app.post("/enviar_comando_3d")
         async def post_comando_3d(comando: Comando3D, background_tasks: BackgroundTasks, acesso: str = Depends(self._verificar_acesso)):
@@ -368,7 +412,7 @@ class EncarnacaoAPI:
                 payload = comando.payload or {}
 
                 if acesso == "VISITANTE" and tipo_comando != "CHAT":
-                    logger.warning("VISITANTE tentou comando não-permitido: %s", tipo_comando)
+                    logger.warning("VISITANTE tentou comando no-permitido: %s", tipo_comando)
                     raise HTTPException(status_code=403, detail="Acesso VISITANTE: apenas CHAT permitido")
 
                 cmd = {"tipo": tipo_comando, "autor": autor_comando, "payload": payload, "timestamp": time.time()}
@@ -419,7 +463,7 @@ class EncarnacaoAPI:
                 ok = self._try_load_llama_gpu(MODEL_PATH)
                 return {"ok": ok, "modelo_carregado": bool(self.llm_model)}
             except Exception as e:
-                logger.exception("Erro ao forçar recarregamento do modelo: %s", e)
+                logger.exception("Erro ao forar recarregamento do modelo: %s", e)
                 raise HTTPException(status_code=500, detail="Falha ao recarregar modelo")
 
     def _processar_inferencia_llm_background(self, comando: dict) -> None:
@@ -429,12 +473,12 @@ class EncarnacaoAPI:
             self._enqueue_command(comando)
         else:
             logger.warning("Nenhuma resposta gerada para comando LLM.")
-            # Não enfileirar comando sem resposta
+            # No enfileirar comando sem resposta
 
     # iniciar servidor uvicorn em thread separado (daemon)
     def start(self, host: Optional[str] = None, port: Optional[int] = None, log_level: str = "warning") -> None:
         if self._server_running:
-            logger.info("Servidor já em execução")
+            logger.info("Servidor j em execução")
             return
 
         host = host or API_HOST
@@ -457,20 +501,20 @@ class EncarnacaoAPI:
 
     def stop(self, timeout: float = 5.0) -> None:
         if not self._server_running:
-            logger.info("Servidor não está rodando")
+            logger.info("Servidor no est rodando")
             return
 
         try:
             if self._uvicorn_server:
                 self._uvicorn_server.should_exit = True
-                logger.info("Solicitado shutdown ao uvicorn.Server")
+                logger.info("Solicitado shutdown ação uvicorn.Server")
         except Exception:
-            logger.exception("Não foi possível solicitar shutdown ao uvicorn.Server diretamente")
+            logger.exception("No foi possível solicitar shutdown ação uvicorn.Server diretamente")
 
         if self._server_thread and self._server_thread.is_alive():
             self._server_thread.join(timeout=timeout)
             if self._server_thread.is_alive():
-                logger.warning("Thread de servidor não finalizou após timeout")
+                logger.warning("Thread de servidor no finalizou aps timeout")
         self._server_running = False
         logger.info("Servidor EncarnacaoAPI parado (sinal enviado)")
 

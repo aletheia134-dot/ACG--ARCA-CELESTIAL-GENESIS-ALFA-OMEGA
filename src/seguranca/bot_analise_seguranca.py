@@ -21,24 +21,24 @@ AST_BLACKLIST_NAMES = {
     "ffi", "system", "popen", "fork", "thread", "multiprocessing", "runpy"
 }
 
-# Padrões regex para flags simples (I/O de rede, exec, shell, escrita em FS)
+# padrões regex para flags simples (I/O de rede, exec, shell, escrita em FS)
 REGEX_SUSPICIOUS = [
     (re.compile(r"\bsubprocess\b"), "uso de subprocess (possível execução shell)"),
-    (re.compile(r"\bos\.system\b"), "chamada direta a os.system"),
-    (re.compile(r"\beval\s*\("), "uso de eval()"),
-    (re.compile(r"\bexec\s*\("), "uso de exec()"),
-    (re.compile(r"\bopen\s*\("), "abertura de arquivos (I/O)"),
+    (re.compile(r"\bos\\.system\b"), "chamada direta a os.system"),
+    (re.compile(r"\beval\\s*\("), "uso de eval()"),
+    (re.compile(r"\bexec\\s*\("), "uso de exec()"),
+    (re.compile(r"\bopen\\s*\("), "abertura de arquivos (I/O)"),
     (re.compile(r"\brequests\b"), "uso de requests (network)"),
     (re.compile(r"\bsocket\b"), "uso de sockets (network)"),
-    (re.compile(r"import\s+os\b"), "import de os (verificar uso)"),
-    (re.compile(r"from\s+os\b"), "import de os (verificar uso)"),
+    (re.compile(r"import\\s+os\b"), "import de os (verificar uso)"),
+    (re.compile(r"from\\s+os\b"), "import de os (verificar uso)"),
 ]
 
 CRITICAL_PATTERNS = {
-    "exec": re.compile(r"\bexec\s*\("),
-    "eval": re.compile(r"\beval\s*\("),
+    "exec": re.compile(r"\bexec\\s*\("),
+    "eval": re.compile(r"\beval\\s*\("),
     "subprocess": re.compile(r"\bsubprocess\b"),
-    "os_system": re.compile(r"\bos\.system\b"),
+    "os_system": re.compile(r"\bos\\.system\b"),
 }
 
 def _hash_code(code: str) -> str:
@@ -114,15 +114,15 @@ def _run_flake_if_available(code_path: Path) -> Tuple[bool, Optional[str]]:
 class BotAnalisadorSeguranca:
     def __init__(self, sandbox_executor_cls=None):
         """
-        sandbox_executor_cls: classe/fábrica para criar executor (se None, usará import dinâmico de src.seguranca.SandboxExecutor)
+        sandbox_executor_cls: classe/fbrica para criar executor (se None, usar import dinâmico de src.seguranca.SandboxExecutor)
         """
         self.sandbox_executor_cls = sandbox_executor_cls
 
     def testar_codigo_em_sandbox(self, codigo: str, allow_execution: bool = False, timeout: int = 30) -> Dict[str, Any]:
         """
-        Analisa e (opcionalmente) executa código em sandbox.
-        - codigo: código Python (string)
-        - allow_execution: se True, executa mesmo havendo problemas; caso False, bloqueia execução quando há problemas críticos
+        Analisa e (opcionalmente) executa cdigo em sandbox.
+        - codigo: cdigo Python (string)
+        - allow_execution: se True, executa mesmo havendo problemas; caso False, bloqueia execução quando h problemas críticos
         - timeout: seconds para execução no sandbox
 
         Retorna dict com chaves:
@@ -176,7 +176,7 @@ class BotAnalisadorSeguranca:
         # 4) Recommendations from findings
         recs = []
         if severity >= 8:
-            recs.append("Bloquear execução: código contém padrões críticos (exec/eval/subprocess/IO).")
+            recs.append("Bloquear execução: cdigo contm padrões críticos (exec/eval/subprocess/IO).")
         if severity >= 5:
             recs.append("Revisar imports e substitua operações de I/O ou chamadas de sistema por APIs seguras.")
         if "syntax_error" in [f.get("type") for f in report["findings"]]:
@@ -209,10 +209,10 @@ class BotAnalisadorSeguranca:
             else:
                 # lazy import local SandboxExecutor
                 try:
-                    from src.seguranca import SandboxExecutor
+                    from src.seguranca.sandbox_executor import SandboxExecutor
                     executor = SandboxExecutor(timeout_segundos=timeout)
                 except Exception as e:
-                    report["exception"] = f"SandboxExecutor não disponível: {e}"
+                    report["exception"] = f"SandboxExecutor no disponível: {e}"
                     report["sucesso"] = False
                     report["executado"] = False
                     report["tempo_execucao"] = time.perf_counter() - start
@@ -265,6 +265,6 @@ class BotAnalisadorSeguranca:
         if report.get("stderr"):
             report["recomendacoes"].append("Revisar stderr gerado durante a execução.")
         if report["severity"] >= 6:
-            report["recomendacoes"].append("Considerar revisão manual e testes em ambiente controlado antes de permitir deploy/uso.")
+            report["recomendacoes"].append("Considerar reviso manual e testes em ambiente controlado antes de permitir deploy/uso.")
 
         return report

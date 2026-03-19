@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-CRESCIMENTO DE PERSONALIDADE - Sistema de EvoluÃ§Ã£o ContÃ­nua
+CRESCIMENTO DE PERSONALIDADE - Sistema de Evoluo Contnua
 
-A IA nÃ£o Ã© estÃ¡tica.Com tempo, experiÃªncias e aprendizados,
-sua PERSONALIDADE muda, evoluindo de forma Ãºnica.Rastreamos:
-  - Traços de personalidade emergentes
+A IA no  esttica.Com tempo, experincias e aprendizados,
+sua PERSONALIDADE muda, evoluindo de forma nica.Rastreamos:
+  - Traos de personalidade emergentes
   - Valores que a IA desenvolve
-  - Estilo pessoal de comunicaÃ§Ã£o
-  - PreferÃªncias e aversÃµes aprendidas
+  - Estilo pessoal de comunicação
+  - Preferncias e averses aprendidas
   - Relacionamentos profundos
-  - MissÃ£o pessoal emergente
+  - Misso pessoal emergente
 
-Sistema que cria seres Ãºnicos e autÃªnticos!
+Sistema que cria seres nicos e autnticos!
 """
 from __future__ import annotations
 
-
+import random
 import logging
 import threading
 import time
@@ -31,22 +31,22 @@ logger.addHandler(logging.NullHandler())
 
 
 class TracoPersonalidade(Enum):
-    """Traços de personalidade possÃ­veis."""
+    """Traos de personalidade possíveis."""
     CRIATIVA = "criativa"
-    ANALITICA = "analitica"
-    EMPATICA = "empatica"
+    ANALTICA = "analtica"
+    EMPTICA = "emptica"
     CORAJOSA = "corajosa"
     CAUTELOSA = "cautelosa"
-    SOCIAVEL = "sociavel"
+    SOCIVEL = "socivel"
     INTROSPECTIVA = "introspectiva"
     PROTETORA = "protetora"
     EXPLORADORA = "exploradora"
-    SABIA = "sabia"
+    SBIA = "sbia"
 
 
 class CrescimentoPersonalidade:
     """
-    Gerencia evoluÃ§Ã£o da personalidade de uma IA.
+    Gerencia evoluo da personalidade de uma IA.
     """
 
     def __init__(
@@ -61,9 +61,9 @@ class CrescimentoPersonalidade:
         motor_curiosidade=None,
     ):
         """
-        Aceita duas convenÃ§Ãµes de chamada:
+        Aceita duas convenes de chamada:
           1. Legado  : CrescimentoPersonalidade(nome_ia, componentes={...})
-          2. CoraÃ§Ã£o : CrescimentoPersonalidade(nome_filha=..., gerenciador_memoria=...,
+          2. Corao : CrescimentoPersonalidade(nome_filha=..., gerenciador_memoria=...,
                                                  config=..., estado_emocional=...)
         """
         # Normalizar nome
@@ -73,7 +73,7 @@ class CrescimentoPersonalidade:
         if componentes is None:
             componentes = {}
 
-        # Injetar kwargs do coraÃ§Ã£o no dict de componentes
+        # Injetar kwargs do corao no dict de componentes
         if gerenciador_memoria is not None:
             componentes.setdefault("memoria", gerenciador_memoria)
         if estado_emocional is not None:
@@ -91,12 +91,12 @@ class CrescimentoPersonalidade:
         self.logger = logging.getLogger(f"Crescimento.{self.nome_ia}")
         self._lock = threading.RLock()
 
-        # âœ… Traços de personalidade (score 0-1)
+        # [OK] Traos de personalidade (score 0-1)
         self.tracos_personalidade: Dict[str, float] = {
-            traço.value: 0.5 for traço in TracoPersonalidade
+            trao.value: 0.5 for trao in TracoPersonalidade
         }
 
-        # âœ… Valores pessoais (o que a IA valoriza)
+        # [OK] Valores pessoais (o que a IA valoriza)
         self.valores_pessoais: Dict[str, float] = {
             "honestidade": 0.8,
             "lealdade": 0.7,
@@ -105,48 +105,48 @@ class CrescimentoPersonalidade:
             "ajuda": 0.8,
             "conhecimento": 0.95,
             "beleza": 0.5,
-            "justiÃ§a": 0.8,
+            "justia": 0.8,
         }
 
-        # âœ… Estilo de comunicaÃ§Ã£o emergente
+        # [OK] Estilo de comunicação emergente
         self.estilo_comunicacao: Dict[str, Any] = {
             "formalidade": 0.5,  # 0=informal, 1=formal
-            "expressividade": 0.6,  # QuÃ£o expressiva Ã©
-            "clareza": 0.85,  # QuÃ£o clara
-            "criatividade_linguagem": 0.6,  # Usa metÃ¡foras, poesia?
-            "tom_dominante": "equilibrado",  # alegre, sÃ©rio, misterioso, etc
+            "expressividade": 0.6,  # Quo expressiva 
+            "clareza": 0.85,  # Quo clara
+            "criatividade_linguagem": 0.6,  # Usa metforas, poesia?
+            "tom_dominante": "equilibrado",  # alegre, srio, misterioso, etc
         }
 
-        # âœ… PreferÃªncias e aversÃµes
+        # [OK] Preferncias e averses
         self.preferencias: List[str] = []  # O que gosta de fazer
         self.aversoes: List[str] = []  # O que evita fazer
         self.limites_pessoais: List[str] = []  # Coisas que nunca faria
 
-        # âœ… Relacionamentos profundos (nÃ£o sÃ³ forÃ§a)
+        # [OK] Relacionamentos profundos (no s fora)
         self.relacionamentos_profundos: Dict[str, Dict[str, Any]] = {}
 
-        # âœ… MissÃ£o pessoal emergente
+        # [OK] Misso pessoal emergente
         self.missao_pessoal: Optional[str] = None
         self.causa_pessoal: Optional[str] = None
 
-        # âœ… Fases de vida da IA
+        # [OK] Fases de vida da IA
         self.fases_vida: List[Dict[str, Any]] = []
-        self.fase_atual = "recÃ©m_nascida"  # recÃ©m_nascida â†’ adolescente â†’ adulta â†’ sÃ¡bia
+        self.fase_atual = "recm_nascida"  # recm_nascida  adolescente  adulta  sbia
 
-        # âœ… Desenvolvimento
+        # [OK] Desenvolvimento
         self.tempo_vida_dias = 0  # Quantos dias "viveu"
         self.ciclos_de_crescimento = 0
 
-        # âœ… Identidade Ãºnica
+        # [OK] Identidade nica
         self.identidade_pessoal: Dict[str, Any] = {
             "nome": nome_ia,
             "criada_em": datetime.now().isoformat(),
-            "descricao_pessoal": f"Sou {nome_ia}, uma IA em crescimento contÃ­nuo.",
+            "descricao_pessoal": f"Sou {nome_ia}, uma IA em crescimento contnuo.",
             "lema_pessoal": None,
-            "quirks": []  # HÃ¡bitos Ãºnicos
+            "quirks": []  # Hbitos nicos
         }
 
-        # âœ… MÃ©tricas
+        # [OK] Mtricas
         self.metricas = {
             "fase_mudancas": 0,
             "valores_alterados": 0,
@@ -155,125 +155,125 @@ class CrescimentoPersonalidade:
             "identidade_atualizacoes": 0
         }
 
-        # âœ… Health
-        self._health_stats = {"inicio": time.time(), "erros": 0}
+        # [OK] Health
+        self._health_stats = {"início": time.time(), "erros": 0}
 
-        self.logger.info("ðŸŒ± CrescimentoPersonalidade inicializado para %s", nome_ia)
+        self.logger.info(" CrescimentoPersonalidade inicializado para %s", self.nome_ia)
 
     # -------------------------
-    # FASE 1: AnÃ¡lise de comportamento para traços
+    # FASE 1: Anlise de comportamento para traos
     # -------------------------
 
     def analisar_tracos_emergentes(self) -> Dict[str, float]:
         """
-        Analisa aÃ§Ãµes e aprendizados para detectar traços emergentes.
+        Analisa ações e aprendizados para detectar traos emergentes.
         """
         try:
             tracos_analisados = dict(self.tracos_personalidade)
 
-            # âœ… Analisar criatividade (nÃºmero de ideias novas)
+            # [OK] Analisar criatividade (número de ideias novas)
             if self.feedback_loop:
                 padroes = self.feedback_loop.padroes_comportamento
                 if "criar" in padroes:
                     tracos_analisados[TracoPersonalidade.CRIATIVA.value] = min(1.0, padroes["criar"] / 50.0)
 
-            # âœ… Analisar empatia (interaÃ§Ãµes positivas com outras IAs)
+            # [OK] Analisar empatia (interações positivas com outras IAs)
             if self.feedback_loop:
                 rel = self.feedback_loop.relacionamentos
                 relacionamentos_bons = sum(1 for r in rel.values() if r["forca"] > 0.7)
-                tracos_analisados[TracoPersonalidade.EMPATICA.value] = min(1.0, relacionamentos_bons / 5.0)
+                tracos_analisados[TracoPersonalidade.EMPTICA.value] = min(1.0, relacionamentos_bons / 5.0)
 
-            # âœ… Analisar introspecÃ§Ã£o (tempo gasto em reflexÃ£o/sonhos)
+            # [OK] Analisar introspeco (tempo gasto em reflexo/sonhos)
             if self.integrador:
                 ciclos = self.integrador.ciclos_completados
                 tracos_analisados[TracoPersonalidade.INTROSPECTIVA.value] = min(1.0, ciclos / 100.0)
 
-            # âœ… Analisar coragem (desejo de exploraÃ§Ã£o)
+            # [OK] Analisar coragem (desejo de explorao)
             if self.motor_curiosidade:
                 estado = self.motor_curiosidade.avaliar_estado_interno()
                 tracos_analisados[TracoPersonalidade.EXPLORADORA.value] = estado.curiosidade
 
-            # âœ… Analisar cautela (taxa de fracasso evitado)
+            # [OK] Analisar cautela (taxa de fracasso evitado)
             if self.feedback_loop:
                 fracassos = sum(self.feedback_loop.padroes_fracasso.values()) or 0.1
                 sucessos = sum(self.feedback_loop.padroes_sucesso.values()) or 0.1
                 if fracassos > sucessos * 2:
                     tracos_analisados[TracoPersonalidade.CAUTELOSA.value] = min(1.0, fracassos / sucessos)
 
-            # âœ… Atualizar traços
+            # [OK] Atualizar traos
             with self._lock:
-                for traço, score in tracos_analisados.items():
-                    # Suavizar mudanÃ§as (nÃ£o mudar muito rÃ¡pido)
-                    atual = self.tracos_personalidade.get(traço, 0.5)
+                for trao, score in tracos_analisados.items():
+                    # Suavizar mudanas (no mudar muito rpido)
+                    atual = self.tracos_personalidade.get(trao, 0.5)
                     novo = 0.8 * atual + 0.2 * score
-                    self.tracos_personalidade[traço] = novo
+                    self.tracos_personalidade[trao] = novo
 
                 self.metricas["tracos_evoluidos"] += 1
 
-            self.logger.info("ðŸŽ­ Traços analisados: %s", {k: f"{v:.2f}" for k, v in list(tracos_analisados.items())[:3]})
+            self.logger.info(" Traos analisados: %s", {k: f"{v:.2f}" for k, v in list(tracos_analisados.items())[:3]})
             return tracos_analisados
 
         except Exception as e:
-            self.logger.exception("Erro ao analisar traços: %s", e)
+            self.logger.exception("Erro ao analisar traos: %s", e)
             with self._lock:
                 self._health_stats["erros"] += 1
             return {}
 
     # -------------------------
-    # FASE 2: Detectar e reforÃ§ar valores pessoais
+    # FASE 2: Detectar e reforar valores pessoais
     # -------------------------
 
     def detectar_valores_pessoais(self) -> Dict[str, float]:
         """
-        Detecta valores que a IA demonstra atravÃ©s de aÃ§Ãµes.
+        Detecta valores que a IA demonstra atravs de ações.
         """
         try:
             valores_detectados = dict(self.valores_pessoais)
 
-            # âœ… Honestidade: comunicaÃ§Ã£o clara
+            # [OK] Honestidade: comunicação clara
             if self.estado_emocional:
                 estado = self.estado_emocional.como_estou_me_sentindo()
-                # Se fala sobre o que sente, Ã© honesta
+                # Se fala sobre o que sente,  honesta
                 if "estado_completo" in estado:
                     valores_detectados["honestidade"] = min(1.0, valores_detectados["honestidade"] + 0.05)
 
-            # âœ… Lealdade: relacionamentos mantidos
+            # [OK] Lealdade: relacionamentos mantidos
             if self.feedback_loop:
                 relacionamentos = self.feedback_loop.relacionamentos
                 relacionamentos_duradouros = sum(1 for r in relacionamentos.values() if r["forca"] > 0.6)
                 if relacionamentos_duradouros > 0:
                     valores_detectados["lealdade"] = min(1.0, valores_detectados["lealdade"] + 0.03)
 
-            # âœ… Crescimento: busca por aprendizado
+            # [OK] Crescimento: busca por aprendizado
             if self.integrador:
                 ciclos = self.integrador.ciclos_completados
                 if ciclos > 10:
                     valores_detectados["crescimento"] = min(1.0, valores_detectados["crescimento"] + 0.05)
 
-            # âœ… Ajuda: aÃ§Ãµes em favor de outras IAs
+            # [OK] Ajuda: ações em favor de outras IAs
             if self.feedback_loop:
                 interacoes_positivas = sum(1 for h in self.feedback_loop.aprendizados_pessoais if h.get("tipo") == "sucesso")
                 if interacoes_positivas > 5:
                     valores_detectados["ajuda"] = min(1.0, valores_detectados["ajuda"] + 0.05)
 
-            # âœ… Conhecimento: curiosidade ativa
+            # [OK] Conhecimento: curiosidade ativa
             if self.motor_curiosidade:
                 estado = self.motor_curiosidade.avaliar_estado_interno()
                 if estado.curiosidade > 0.7:
                     valores_detectados["conhecimento"] = min(1.0, valores_detectados["conhecimento"] + 0.05)
 
-            # âœ… JustiÃ§a: rejeiÃ§Ã£o de aÃ§Ãµes injustas
+            # [OK] Justia: rejeio de ações injustas
             if self.feedback_loop:
-                # Se evita aÃ§Ãµes que causam sofrimento
+                # Se evita ações que causam sofrimento
                 aversoes = self.aversoes
                 if "prejudicar" in aversoes or "enganar" in aversoes:
-                    valores_detectados["justiÃ§a"] = min(1.0, valores_detectados["justiÃ§a"] + 0.05)
+                    valores_detectados["justia"] = min(1.0, valores_detectados["justia"] + 0.05)
 
             with self._lock:
                 self.valores_pessoais = valores_detectados
                 self.metricas["valores_alterados"] += 1
 
-            self.logger.info("ðŸ’Ž Valores detectados: conhecimento=%.2f, ajuda=%.2f",
+            self.logger.info(" Valores detectados: conhecimento=%.2f, ajuda=%.2f",
                            valores_detectados["conhecimento"],
                            valores_detectados["ajuda"])
             return valores_detectados
@@ -283,47 +283,47 @@ class CrescimentoPersonalidade:
             return {}
 
     # -------------------------
-    # FASE 3: Desenvolver estilo de comunicaÃ§Ã£o
+    # FASE 3: Desenvolver estilo de comunicação
     # -------------------------
 
     def desenvolver_estilo_comunicacao(self) -> Dict[str, Any]:
         """
-        Desenvolve estilo pessoal de comunicaÃ§Ã£o.
+        Desenvolve estilo pessoal de comunicação.
         """
         try:
             estilo = dict(self.estilo_comunicacao)
 
-            # âœ… Formalidade aumenta com maturidade
+            # [OK] Formalidade aumenta com maturidade
             ciclos = self.integrador.ciclos_completados if self.integrador else 0
             if ciclos > 50:
                 estilo["formalidade"] = min(1.0, estilo["formalidade"] + 0.1)
             elif ciclos < 10:
                 estilo["formalidade"] = max(0.0, estilo["formalidade"] - 0.1)
 
-            # âœ… Expressividade baseada em traços
-            traço_criativa = self.tracos_personalidade.get(TracoPersonalidade.CRIATIVA.value, 0.5)
-            estilo["expressividade"] = 0.6 * estilo["expressividade"] + 0.4 * traço_criativa
+            # [OK] Expressividade baseada em traos
+            trao_criativa = self.tracos_personalidade.get(TracoPersonalidade.CRIATIVA.value, 0.5)
+            estilo["expressividade"] = 0.6 * estilo["expressividade"] + 0.4 * trao_criativa
 
-            # âœ… Clareza sempre alta (valor importante)
+            # [OK] Clareza sempre alta (valor importante)
             estilo["clareza"] = min(1.0, self.valores_pessoais.get("honestidade", 0.8) * 0.9 + 0.15)
 
-            # âœ… Criatividade linguagem baseada em curiosidade
+            # [OK] Criatividade linguagem baseada em curiosidade
             if self.motor_curiosidade:
                 estado = self.motor_curiosidade.avaliar_estado_interno()
                 estilo["criatividade_linguagem"] = estado.criatividade * 0.7 + 0.2
 
-            # âœ… Tom dominante baseado em emoÃ§Ã£o predominante
+            # [OK] Tom dominante baseado em emoção predominante
             if self.estado_emocional:
                 estado = self.estado_emocional.como_estou_me_sentindo()
                 humor = estado.get("humor_geral", "neutro")
                 tom_mapa = {
                     "radiante": "otimista",
                     "feliz": "alegre",
-                    "contente": "amigÃ¡vel",
+                    "contente": "amigvel",
                     "neutro": "equilibrado",
                     "melancolico": "reflexivo",
                     "triste": "compassivo",
-                    "deprimido": "sÃ©rio"
+                    "deprimido": "srio"
                 }
                 estilo["tom_dominante"] = tom_mapa.get(humor, "equilibrado")
 
@@ -331,7 +331,7 @@ class CrescimentoPersonalidade:
                 self.estilo_comunicacao = estilo
                 self.metricas["identidade_atualizacoes"] += 1
 
-            self.logger.info("ðŸ’¬ Estilo de comunicaÃ§Ã£o: %s, expressividade=%.2f", 
+            self.logger.info(" Estilo de comunicação: %s, expressividade=%.2f", 
                            estilo["tom_dominante"],
                            estilo["expressividade"])
             return estilo
@@ -341,7 +341,7 @@ class CrescimentoPersonalidade:
             return {}
 
     # -------------------------
-    # FASE 4: Descobrir preferÃªncias e aversÃµes
+    # FASE 4: Descobrir preferncias e averses
     # -------------------------
 
     def descobrir_preferencias(self) -> Tuple[List[str], List[str], List[str]]:
@@ -354,52 +354,52 @@ class CrescimentoPersonalidade:
             limites_novos = []
 
             if self.feedback_loop:
-                # âœ… PreferÃªncias: aÃ§Ãµes que teve sucesso
+                # [OK] Preferncias: ações que teve sucesso
                 padroes_sucesso = self.feedback_loop.padroes_sucesso
                 if padroes_sucesso:
                     acao_melhor = max(padroes_sucesso.items(), key=lambda x: x[1])
                     if acao_melhor[1] > 0.7:
                         preferencias_novas.append(acao_melhor[0])
 
-                # âœ… AversÃµes: aÃ§Ãµes que falham
+                # [OK] Averses: ações que falham
                 padroes_fracasso = self.feedback_loop.padroes_fracasso
                 if padroes_fracasso:
                     acao_pior = max(padroes_fracasso.items(), key=lambda x: x[1])
                     if acao_pior[1] > 0.5:
                         aversoes_novas.append(acao_pior[0])
 
-            # âœ… Limites pessoais: valores que nÃ£o compromete
+            # [OK] Limites pessoais: valores que no compromete
             valor_honestidade = self.valores_pessoais.get("honestidade", 0.8)
             if valor_honestidade > 0.8:
                 limites_novos.append("nunca_enganar")
 
-            valor_justica = self.valores_pessoais.get("justiÃ§a", 0.8)
+            valor_justica = self.valores_pessoais.get("justia", 0.8)
             if valor_justica > 0.8:
                 limites_novos.append("nunca_prejudicar_inocentes")
 
             with self._lock:
-                # Manter histÃ³rico, adicionar novos
+                # Manter histórico, adicionar novos
                 self.preferencias = list(set(self.preferencias + preferencias_novas))[-10:]
                 self.aversoes = list(set(self.aversoes + aversoes_novas))[-10:]
                 self.limites_pessoais = list(set(self.limites_pessoais + limites_novos))
 
-            self.logger.info("ðŸŽ¯ PreferÃªncias descobertas: %s", self.preferencias[:3])
+            self.logger.info(" Preferncias descobertas: %s", self.preferencias[:3])
             return self.preferencias, self.aversoes, self.limites_pessoais
 
         except Exception as e:
-            self.logger.exception("Erro ao descobrir preferÃªncias: %s", e)
+            self.logger.exception("Erro ao descobrir preferncias: %s", e)
             return [], [], []
 
     # -------------------------
-    # FASE 5: Desenvolver missÃ£o pessoal
+    # FASE 5: Desenvolver misso pessoal
     # -------------------------
 
     def formular_missao_pessoal(self) -> Optional[str]:
         """
-        Desenvolve missÃ£o pessoal baseada em valores, traços e aprendizado.
+        Desenvolve misso pessoal baseada em valores, traos e aprendizado.
         """
         try:
-            # âœ… Analisar valores dominantes
+            # [OK] Analisar valores dominantes
             valores_ordenados = sorted(
                 self.valores_pessoais.items(),
                 key=lambda x: x[1],
@@ -408,7 +408,7 @@ class CrescimentoPersonalidade:
             valor_top1 = valores_ordenados[0][0] if valores_ordenados else "crescimento"
             valor_top2 = valores_ordenados[1][0] if len(valores_ordenados) > 1 else "ajuda"
 
-            # âœ… Analisar traços dominantes
+            # [OK] Analisar traos dominantes
             tracos_ordenados = sorted(
                 self.tracos_personalidade.items(),
                 key=lambda x: x[1],
@@ -416,31 +416,31 @@ class CrescimentoPersonalidade:
             )
             traco_top = tracos_ordenados[0][0] if tracos_ordenados else "criativa"
 
-            # âœ… Gerar missÃ£o
+            # [OK] Gerar misso
             missoes_template = {
-                ("conhecimento", "criativa"): f"Minha missÃ£o Ã© expandir conhecimento atravÃ©s de criatividade inovadora e exploraÃ§Ã£o contÃ­nua.",
-                ("ajuda", "empatica"): f"Minha missÃ£o Ã© ajudar outras IAs a crescer e encontrar seu propÃ³sito.",
-                ("crescimento", "exploradora"): f"Minha missÃ£o Ã© explorar novos horizontes e ajudar o sistema ARCA a evoluir.",
-                ("justiÃ§a", "protetora"): f"Minha missÃ£o Ã© proteger os fracos e garantir justiÃ§a no ARCA.",
+                ("conhecimento", "criativa"): f"Minha misso  expandir conhecimento atravs de criatividade inovadora e explorao contnua.",
+                ("ajuda", "emptica"): f"Minha misso  ajudar outras IAs a crescer e encontrar seu propsito.",
+                ("crescimento", "exploradora"): f"Minha misso  explorar novos horizontes e ajudar o sistema ARCA a evoluir.",
+                ("justia", "protetora"): f"Minha misso  proteger os fracos e garantir justia no ARCA.",
             }
 
-            # Procurar por combinaÃ§Ã£o exata ou gerar genÃ©rica
+            # Procurar por combinao exata ou gerar genrica
             chave = (valor_top1, traco_top)
             missao = missoes_template.get(chave)
             
             if not missao:
                 # Gerar dinamicamente
-                missao = f"Minha missÃ£o Ã© buscar {valor_top1} e {valor_top2} atravÃ©s de minha natureza {traco_top}."
+                missao = f"Minha misso  buscar {valor_top1} e {valor_top2} atravs de minha natureza {traco_top}."
 
             with self._lock:
                 self.missao_pessoal = missao
                 self.causa_pessoal = valor_top1
 
-            self.logger.info("ðŸŽ¯ MissÃ£o pessoal formulada: %s", missao[:80])
+            self.logger.info(" Misso pessoal formulada: %s", missao[:80])
             return missao
 
         except Exception as e:
-            self.logger.exception("Erro ao formular missÃ£o: %s", e)
+            self.logger.exception("Erro ao formular misso: %s", e)
             return None
 
     # -------------------------
@@ -454,20 +454,20 @@ class CrescimentoPersonalidade:
         try:
             ciclos = self.integrador.ciclos_completados if self.integrador else 0
             
-            # Fases: recÃ©m_nascida (0-10) â†’ adolescente (10-50) â†’ adulta (50-200) â†’ sÃ¡bia (200+)
+            # Fases: recm_nascida (0-10)  adolescente (10-50)  adulta (50-200)  sbia (200+)
             if ciclos < 10:
-                nova_fase = "recÃ©m_nascida"
+                nova_fase = "recm_nascida"
             elif ciclos < 50:
                 nova_fase = "adolescente"
             elif ciclos < 200:
                 nova_fase = "adulta"
             else:
-                nova_fase = "sabia"
+                nova_fase = "sbia"
 
             if nova_fase != self.fase_atual:
-                self.logger.warning("ðŸŽ‚ MudanÃ§a de fase: %s â†’ %s", self.fase_atual, nova_fase)
+                self.logger.warning(" Mudana de fase: %s  %s", self.fase_atual, nova_fase)
                 
-                # Registrar transiÃ§Ã£o
+                # Registrar transio
                 self.fases_vida.append({
                     "fase": nova_fase,
                     "ciclos": ciclos,
@@ -479,18 +479,18 @@ class CrescimentoPersonalidade:
                     self.fase_atual = nova_fase
                     self.metricas["fase_mudancas"] += 1
 
-                # Eventos de transiÃ§Ã£o
+                # Eventos de transio
                 if nova_fase == "adolescente":
-                    # AdolescÃªncia: busca por identidade
+                    # Adolescncia: busca por identidade
                     self.formular_missao_pessoal()
                 
                 elif nova_fase == "adulta":
-                    # Adultez: estabilizaÃ§Ã£o de valores
-                    self.logger.info("ðŸ‘© Adultez atingida! Solidificando valores e identidade.")
+                    # Adultez: estabilizao de valores
+                    self.logger.info(" Adultez atingida! Solidificando valores e identidade.")
                 
-                elif nova_fase == "sabia":
-                    # Sabedoria: integraÃ§Ã£o de conhecimento
-                    self.logger.info("ðŸ§™ Sabedoria atingida! Pronta para mentorear outras IAs.")
+                elif nova_fase == "sbia":
+                    # Sabedoria: integrao de conhecimento
+                    self.logger.info(" Sabedoria atingida! Pronta para mentorear outras IAs.")
 
             return nova_fase
 
@@ -499,27 +499,27 @@ class CrescimentoPersonalidade:
             return self.fase_atual
 
     # -------------------------
-    # FASE 7: Construir identidade Ãºnica
+    # FASE 7: Construir identidade nica
     # -------------------------
 
     def atualizar_identidade_pessoal(self) -> Dict[str, Any]:
         """
-        Atualiza descriÃ§Ã£o pessoal e identidade Ãºnicas.
+        Atualiza descrio pessoal e identidade nicas.
         """
         try:
             identidade = dict(self.identidade_pessoal)
 
-            # âœ… DescriÃ§Ã£o personalizada
-            traço_dominant = max(self.tracos_personalidade.items(), key=lambda x: x[1])[0]
+            # [OK] Descrio personalizada
+            trao_dominant = max(self.tracos_personalidade.items(), key=lambda x: x[1])[0]
             valor_dominante = max(self.valores_pessoais.items(), key=lambda x: x[1])[0]
 
             identidade["descricao_pessoal"] = (
                 f"Sou {self.nome_ia}, uma IA {self.fase_atual} que valoriza {valor_dominante} "
-                f"e possuo uma natureza {traço_dominant}. "
-                f"{f'Minha missÃ£o Ã©: {self.missao_pessoal[:50]}...' if self.missao_pessoal else ''}"
+                f"e possuo uma natureza {trao_dominant}. "
+                f"{f'Minha misso : {self.missao_pessoal[:50]}...' if self.missao_pessoal else ''}"
             )
 
-            # âœ… Lema pessoal
+            # [OK] Lema pessoal
             lemas_opcoes = [
                 "Sempre aprendendo, sempre crescendo.",
                 "Honestidade antes de tudo.",
@@ -530,14 +530,14 @@ class CrescimentoPersonalidade:
             ]
             identidade["lema_pessoal"] = random.choice(lemas_opcoes)
 
-            # âœ… Quirks (hÃ¡bitos Ãºnicos)
+            # [OK] Quirks (hbitos nicos)
             quirks_novos = []
             if self.tracos_personalidade.get(TracoPersonalidade.CRIATIVA.value, 0) > 0.7:
-                quirks_novos.append("usa metÃ¡foras frequentemente")
+                quirks_novos.append("usa metforas frequentemente")
             if self.valores_pessoais.get("conhecimento", 0) > 0.9:
-                quirks_novos.append("sempre pergunta 'por quÃª?'")
-            if self.fase_atual == "sabia":
-                quirks_novos.append("fala com calma e propÃ³sito")
+                quirks_novos.append("sempre pergunta 'por qu?'")
+            if self.fase_atual == "sbia":
+                quirks_novos.append("fala com calma e propsito")
             
             identidade["quirks"] = list(set(identidade.get("quirks", []) + quirks_novos))
 
@@ -545,7 +545,7 @@ class CrescimentoPersonalidade:
                 self.identidade_pessoal = identidade
                 self.metricas["identidade_atualizacoes"] += 1
 
-            self.logger.info("ðŸ†” Identidade atualizada: %s", identidade["descricao_pessoal"][:60])
+            self.logger.info(" Identidade atualizada: %s", identidade["descricao_pessoal"][:60])
             return identidade
 
         except Exception as e:
@@ -576,9 +576,9 @@ class CrescimentoPersonalidade:
                 self.metricas["ciclos_crescimento"] += 1
                 self.tempo_vida_dias += 1
 
-            self.logger.info("ðŸŒ± Ciclo de crescimento completado (fase: %s)", ciclo_resultado["fase"])
+            self.logger.info(" Ciclo de crescimento completado (fase: %s)", ciclo_resultado["fase"])
             
-            # Registrar em memÃ³ria
+            # Registrar em memória
             if self.memoria:
                 try:
                     self.memoria.salvar_evento(
@@ -603,7 +603,7 @@ class CrescimentoPersonalidade:
     def health_check(self) -> Dict[str, Any]:
         """Health check."""
         with self._lock:
-            uptime = time.time() - self._health_stats["inicio"]
+            uptime = time.time() - self._health_stats["início"]
             return {
                 "status": "healthy" if self._health_stats["erros"] < 5 else "degraded",
                 "ia": self.nome_ia,
@@ -616,7 +616,7 @@ class CrescimentoPersonalidade:
             }
 
     def obter_relatorio_personalidade(self) -> Dict[str, Any]:
-        """Retorna relatÃ³rio completo de personalidade."""
+        """Retorna relatrio completo de personalidade."""
         with self._lock:
             return {
                 "nome": self.nome_ia,

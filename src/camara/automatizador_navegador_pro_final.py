@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-"""
-AutomatizadorNavegadorPro Final (Núcleo da Arca para Interação IA-to-IA Web)
-
-Integra permissões, cache, emergência, e automação web supervisionada.Foca em navegador para chats IA (ex.: Gemini).
-"""
 from __future__ import annotations
+"""
+AutomatizadorNavegadorPro Final (Ncleo da Arca para Interao IA-to-IA Web)
+
+Integra permisses, cache, emergncia, e automao web supervisionada.Foca em navegador para chats IA (ex.: Gemini).
+"""
 
 import logging
 import time
@@ -56,7 +56,7 @@ TEMPLATES_TERMOS = {
     "ACESSO_INTERNET_TEMPORARIO": {
         "tipo_acao": "ACESSAR_INTERNET",
         "validade_horas": 1,
-        "justificativa_padrao": "Solicitação de acesso temporário para pesquisa."
+        "justificativa_padrao": "solicitação de acesso temporrio para pesquisa."
     }
 }
 
@@ -192,7 +192,7 @@ class AutomatizadorNavegadorPro:
         caminho = Path(self.configuracoes['caminho_historico_termos'])
         if not caminho.exists():
             self._historico_termos = []
-            logger.info("Arquivo de histórico de termos não encontrado; iniciando vazio.")
+            logger.info("Arquivo de histórico de termos no encontrado; iniciando vazio.")
             return
         try:
             with open(caminho, 'r', encoding='utf-8') as f:
@@ -206,10 +206,10 @@ class AutomatizadorNavegadorPro:
                         if termo.status == "CONCEDIDO" and termo.esta_valido():
                             self._termos_concedidos[termo.id_termo] = termo
                     except Exception:
-                        logger.debug("Registro de termo inválido no histórico (ignorado).")
-                logger.info("Histórico de termos carregado (%d entradas).", len(self._historico_termos))
+                        logger.debug("Registro de termo invlido no histórico (ignorado).")
+                logger.info("histórico de termos carregado (%d entradas).", len(self._historico_termos))
             else:
-                raise ValueError("Formato inválido do arquivo de histórico (esperado lista).")
+                raise ValueError("Formato invlido do arquivo de histórico (esperado lista).")
         except Exception as e:
             logger.exception("Falha ao carregar histórico de termos: %s.Movendo para quarantine e iniciando arquivo vazio.", e)
             try:
@@ -232,7 +232,7 @@ class AutomatizadorNavegadorPro:
                     json.dump(dados, f, indent=2, ensure_ascii=False, default=str)
             else:
                 _atomic_write_json(caminho, dados)
-            logger.debug("Histórico de termos salvo com sucesso: %s", caminho)
+            logger.debug("histórico de termos salvo com sucesso: %s", caminho)
         except Exception:
             logger.exception("Erro ao salvar histórico de termos (ignorado).")
 
@@ -248,7 +248,7 @@ class AutomatizadorNavegadorPro:
         with self._lock_acesso:
             cached = self._cache_permissoes.get(chave_cache)
             if cached and time.time() < cached[0]:
-                self.logger.debug("Permissão retornada do cache para %s: %s", chave_cache, cached[1])
+                self.logger.debug("Permisso retornada do cache para %s: %s", chave_cache, cached[1])
                 return cached[1], "Retornado do cache."
 
         with self._lock_acesso:
@@ -256,7 +256,7 @@ class AutomatizadorNavegadorPro:
                 if termo.solicitante == solicitante and termo.tipo_acao == tipo_acao and (caminho_alvo is None or termo.caminho_alvo == caminho_alvo):
                     if termo.esta_valido():
                         self._cache_permissoes[chave_cache] = (time.time() + self._tempo_exp_permissoes, True)
-                        return True, f"Termo já concedido (ID: {termo.id_termo})"
+                        return True, f"Termo j concedido (ID: {termo.id_termo})"
                     else:
                         termo.status = "EXPIRADO"
 
@@ -273,14 +273,14 @@ class AutomatizadorNavegadorPro:
             self._historico_termos.append(novo)
             self._salvar_historico_termos()
             self._cache_permissoes[chave_cache] = (time.time() + self._tempo_exp_permissoes, False)
-        self.logger.info("Solicitação de termo criada: %s (pendente)", id_solicitacao)
-        return False, f"Solicitação registrada (ID: {id_solicitacao}). Aguardando aprovação."
+        self.logger.info("solicitação de termo criada: %s (pendente)", id_solicitacao)
+        return False, f"solicitação registrada (ID: {id_solicitacao}). Aguardando aprovao."
 
     def aprovar_solicitacao_termo(self, id_solicitacao: str, autorizador: str = "Pai-Criador") -> bool:
         with self._lock_acesso:
             alvo = next((t for t in self._historico_termos if t.id_termo == id_solicitacao and t.status == "PENDENTE"), None)
             if not alvo:
-                self.logger.warning("Solicitação não encontrada ou já processada: %s", id_solicitacao)
+                self.logger.warning("solicitação no encontrada ou j processada: %s", id_solicitacao)
                 return False
             alvo.status = "CONCEDIDO"
             alvo.timestamp_concessao = time.time()
@@ -293,11 +293,11 @@ class AutomatizadorNavegadorPro:
             self._notificar_ui({"tipo": "TERMO_APROVADO", "id": id_solicitacao})
             return True
 
-    def rejeitar_solicitacao_termo(self, id_solicitacao: str, autorizador: str = "Pai-Criador", motivo: str = "Não especificado.") -> bool:
+    def rejeitar_solicitacao_termo(self, id_solicitacao: str, autorizador: str = "Pai-Criador", motivo: str = "No especificado.") -> bool:
         with self._lock_acesso:
             alvo = next((t for t in self._historico_termos if t.id_termo == id_solicitacao and t.status == "PENDENTE"), None)
             if not alvo:
-                self.logger.warning("Solicitação não encontrada ou já processada: %s", id_solicitacao)
+                self.logger.warning("solicitação no encontrada ou j processada: %s", id_solicitacao)
                 return False
             alvo.status = "NEGADO"
             alvo.timestamp_revogacao = time.time()
@@ -327,21 +327,21 @@ class AutomatizadorNavegadorPro:
                 continue
         return False
 
-    def _verificar_permissoes_arquivo(self, caminho: Path, operacao: str) -> Tuple[bool, str]:
+    def _verificar_permissoes_arquivo(self, caminho: Path, operação: str) -> Tuple[bool, str]:
         try:
             caminho_absoluto = caminho.resolve()
         except Exception:
-            return False, "Caminho inválido ou inacessível."
+            return False, "Caminho invlido ou inacessvel."
 
         if not self._is_path_allowed(caminho_absoluto):
-            return False, f"Caminho '{caminho_absoluto}' não permitido."
+            return False, f"Caminho '{caminho_absoluto}' no permitido."
 
-        if operacao in ('ler', 'escrever'):
+        if operação in ('ler', 'escrever'):
             ext = caminho.suffix.lower()
             if ext not in self.configuracoes['extensoes_permitidas']:
-                return False, f"Extensão {ext} não permitida."
+                return False, f"Extenso {ext} no permitida."
 
-        if operacao == 'ler' and caminho_absoluto.exists():
+        if operação == 'ler' and caminho_absoluto.exists():
             try:
                 tamanho = caminho_absoluto.stat().st_size
                 if tamanho > self.configuracoes['max_tamanho_arquivo_bytes']:
@@ -361,7 +361,7 @@ class AutomatizadorNavegadorPro:
             caminho = Path(caminho_alvo)
             ok, motivo = self._verificar_permissoes_arquivo(caminho, 'ler' if tipo_acao.startswith('LER') else 'escrever')
             if not ok:
-                self.logger.error("Permissão arquivo negada: %s", motivo)
+                self.logger.error("Permisso arquivo negada: %s", motivo)
                 return False
 
         chave = (solicitante, tipo_acao, caminho_alvo)
@@ -378,14 +378,14 @@ class AutomatizadorNavegadorPro:
                     break
             self._cache_permissoes[chave] = (time.time() + self._tempo_exp_permissoes, sucesso)
         if sucesso:
-            logger.debug("Termo válido encontrado para %s", chave)
+            logger.debug("Termo vlido encontrado para %s", chave)
         else:
-            logger.warning("Termo ausente/inválido para %s", chave)
+            logger.warning("Termo ausente/invlido para %s", chave)
         return sucesso
 
     def modo_emergencia(self, senha_mestre: str) -> bool:
         if not self._habilitar_modo_emergencia:
-            logger.warning("Modo emergência desabilitado nas configs.")
+            logger.warning("Modo emergncia desabilitado nas configs.")
             return False
         try:
             senha_hash = hashlib.sha256(senha_mestre.encode()).hexdigest()
@@ -393,7 +393,7 @@ class AutomatizadorNavegadorPro:
                 with self._lock_acesso:
                     self._modo_emergencia = True
                     self._cache_permissoes.clear()
-                logger.critical("MODO EMERGÍŠNCIA ATIVADO.")
+                logger.critical("MODO EMERGNCIA ATIVADO.")
                 return True
         except Exception:
             logger.exception("Erro verificando senha mestre para modo emergencia.")
@@ -423,7 +423,7 @@ class AutomatizadorNavegadorPro:
                 return f"Conversa IA-to-IA iniciada com {ai_arca} em {plataforma}."
             return "Falha ao iniciar conversa."
         
-        return "Comando não reconhecido."
+        return "Comando no reconhecido."
 
     def iniciar_conversa_ia_to_ia_web(self, ai_arca: str, plataforma: str, url_chat: str, topico: str) -> bool:
         if not getattr(self, "chat_supervisionado_ativo", False):
@@ -461,9 +461,9 @@ class AutomatizadorNavegadorPro:
             try:
                 self.controlador_gui.put_ui_message(payload)
             except Exception:
-                logger.debug("UI indisponível para notificação.")
+                logger.debug("UI indisponível para notificao.")
         else:
-            logger.debug("Controlador GUI não definido; notificação ignorada.")
+            logger.debug("Controlador GUI no definido; notificao ignorada.")
 
     def shutdown(self):
         logger.info("Shutdown do AutomatizadorNavegadorPro iniciado.")

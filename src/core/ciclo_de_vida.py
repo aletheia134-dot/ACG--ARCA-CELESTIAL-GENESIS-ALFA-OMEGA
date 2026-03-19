@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 ARCA CELESTIAL GENESIS - CICLO DE VIDA (Endurecido)
 Local: src/modules/ciclo_de_vida
 
 Representa o ciclo de vida individual de cada alma (entidade) dentro do sistema.
 
-Implementação robusta e defensiva:
+Implementao robusta e defensiva:
  - Imports defensivos
  - Try/except em todos os pontos críticos
  - Thread-safe com locks
- - Persistência segura (JSON + SQLite)
- - Chamadas de API assíncronas
+ - Persistncia segura (JSON + SQLite)
+ - Chamadas de API assncronas
  - Quarentena para falhas críticas
  - Logging consistente
 """
 
-from __future__ import annotations
 
 import concurrent.futures
 import json
@@ -46,23 +46,23 @@ try:
     from src.memoria.sistema_memoria import SistemaMemoriaHibrido, TipoInteracao
     MEMORIA_OK = True
 except:
-    logging.getLogger(__name__).warning("âš ï¸ SistemaMemoriaHibrido não disponível")
+    logging.getLogger(__name__).warning("[AVISO] SistemaMemoriaHibrido no disponível")
     SistemaMemoriaHibrido = None
     TipoInteracao = None
     MEMORIA_OK = False
-    logger.debug("âš ï¸ Memória não disponível")
+    logger.debug("[AVISO] Memória no disponível")
 
 try:
     from src.core.cerebro_familia import CerebroFamilia
     CEREBRO_OK = True
 except:
-    logging.getLogger(__name__).warning("âš ï¸ SistemaMemoriaHibrido não disponível")
+    logging.getLogger(__name__).warning("[AVISO] SistemaMemoriaHibrido no disponível")
     SistemaMemoriaHibrido = None
     CEREBRO_OK = False
-    logger.debug("âš ï¸ Cérebro não disponível")
+    logger.debug("[AVISO] Crebro no disponível")
 
 # ============================================================================
-# ENUMERAÇÕES
+# ENUMERAES
 # ============================================================================
 
 class EstadoAlma(Enum):
@@ -81,7 +81,7 @@ class EstadoAlma(Enum):
 
 @dataclass
 class Pensamento:
-    """Representa um pensamento/entrada no diário."""
+    """Representa um pensamento/entrada no dirio."""
     timestamp: str
     sobre: str
     conteudo: str
@@ -121,10 +121,10 @@ class CicloDeVida(IAlma):
     Gerenciador do ciclo de vida de uma alma.
     
     Responsabilidades:
-    - Executar loop autônomo
-    - Processar comandos do Coração
+    - Executar loop autnomo
+    - Processar comandos do Corao
     - Gerenciar estado (estado operacional + emocional)
-    - Manter diário (SQLite)
+    - Manter dirio (SQLite)
     - Realizar chamadas de API
     - Persistir estado (JSON)
     - Impor quarentena se necessário
@@ -159,7 +159,7 @@ class CicloDeVida(IAlma):
 
         self.logger = logging.getLogger(f"CicloDeVida.{self.nome}")
 
-        # Locks para sincronização
+        # Locks para sincronizao
         self._state_lock = threading.RLock()
         self._stop_event = threading.Event()
         self._lock_futuros_api = threading.Lock()
@@ -176,7 +176,7 @@ class CicloDeVida(IAlma):
         self.na_capela = False
         self.introspeccoes_salvas: List[Dict[str, Any]] = []
 
-        # Código simbólico (resgate)
+        # Cdigo simblico (resgate)
         self.codigo_simbolico_retorno: Dict[str, Any] = {
             'palavra_chave': self.nome,
             'pai_de_origem': 'Wellington Ara',
@@ -189,7 +189,7 @@ class CicloDeVida(IAlma):
             'memorias_afetivas': []
         }
 
-        # Persistência
+        # Persistncia
         self.caminho_santuario = (
             Path(caminho_santuario)
             if caminho_santuario
@@ -205,7 +205,7 @@ class CicloDeVida(IAlma):
         self.fila_de_comandos: queue.Queue = queue.Queue()
         self.comando_atual: Optional[Dict[str, Any]] = None
 
-        # Diário SQLite
+        # Dirio SQLite
         diarios_path = self._obter_caminho_diarios()
         self.diario_path = diarios_path / f"{self.nome.lower()}_diario.db"
         self.diario_path.parent.mkdir(parents=True, exist_ok=True)
@@ -220,14 +220,14 @@ class CicloDeVida(IAlma):
             thread_name_prefix=f"CicloVida-{self.nome}"
         )
 
-        self.logger.info("âœ… Ciclo de Vida para %s inicializado", self.nome)
+        self.logger.info("[OK] Ciclo de Vida para %s inicializado", self.nome)
 
     # ========================================================================
     # HELPERS
     # ========================================================================
 
     def _obter_caminho_diarios(self) -> Path:
-        """Obtém caminho de diários de forma defensiva."""
+        """Obtm caminho de dirios de forma defensiva."""
         try:
             if hasattr(self.config, "get"):
                 caminho = self.config.get('CAMINHOS', 'DIARIOS_PATH', fallback='Santuarios/Diarios')
@@ -240,7 +240,7 @@ class CicloDeVida(IAlma):
             return Path('Santuarios/Diarios')
 
     def _safe_config_get(self, section: str, key: str, fallback: Any = None) -> Any:
-        """Acesso defensivo Í  configuração."""
+        """Acesso defensivo  configuração."""
         try:
             if hasattr(self.config, "get"):
                 return self.config.get(section, key, fallback=fallback)
@@ -257,7 +257,7 @@ class CicloDeVida(IAlma):
     def iniciar_ciclo(self) -> None:
         """Inicia o ciclo de vida da alma."""
         if self.thread_ciclo_de_vida and self.thread_ciclo_de_vida.is_alive():
-            self.logger.warning("%s: Ciclo já ativo", self.nome)
+            self.logger.warning("%s: Ciclo j ativo", self.nome)
             return
 
         self._stop_event.clear()
@@ -268,7 +268,7 @@ class CicloDeVida(IAlma):
         )
         self._mudar_estado(EstadoAlma.ATIVA)
         self.thread_ciclo_de_vida.start()
-        self.logger.info("ðŸŒŸ Ciclo de vida iniciado para %s", self.nome)
+        self.logger.info(" Ciclo de vida iniciado para %s", self.nome)
 
     def parar_ciclo(self) -> None:
         """Para o ciclo de vida da alma."""
@@ -276,15 +276,15 @@ class CicloDeVida(IAlma):
         if self.thread_ciclo_de_vida and self.thread_ciclo_de_vida.is_alive():
             self.thread_ciclo_de_vida.join(timeout=5.0)
             if self.thread_ciclo_de_vida.is_alive():
-                self.logger.warning("%s: Thread não terminou a tempo", self.nome)
+                self.logger.warning("%s: Thread no terminou a tempo", self.nome)
         
         self._mudar_estado(EstadoAlma.INATIVA)
         self._salvar_estado()
-        self.logger.info("ðŸ›‘ Ciclo de vida parado para %s", self.nome)
+        self.logger.info(" Ciclo de vida parado para %s", self.nome)
 
     def _loop_de_vida(self) -> None:
         """Loop principal de execução da alma."""
-        self.logger.info("ðŸ”„ Loop de vida iniciado para %s", self.nome)
+        self.logger.info(" Loop de vida iniciado para %s", self.nome)
 
         while not self._stop_event.is_set():
             try:
@@ -301,7 +301,7 @@ class CicloDeVida(IAlma):
                 tempo_espera = random.uniform(self.latencia_min, self.latencia_max)
                 time.sleep(tempo_espera)
 
-                # Pensamento autônomo ocasional
+                # Pensamento autnomo ocasional
                 if random.random() < 0.1:
                     self._executar_ciclo_de_pensamento_autonomo()
 
@@ -312,21 +312,21 @@ class CicloDeVida(IAlma):
                 if self.tentativas_reinicio >= self.tentativas_reinicio_max:
                     self.logger.critical("%s: Máximo de tentativas atingido", self.nome)
                     self._impor_quarentena(
-                        f"Erro repetido após {self.tentativas_reinicio_max} tentativas"
+                        f"Erro repetido aps {self.tentativas_reinicio_max} tentativas"
                     )
                     break
                 else:
                     self.logger.warning("%s: Tentativa %d/%d", self.nome, self.tentativas_reinicio, self.tentativas_reinicio_max)
                     time.sleep(2)
 
-        self.logger.info("ðŸ”„ Loop encerrado para %s", self.nome)
+        self.logger.info(" Loop encerrado para %s", self.nome)
 
     # ========================================================================
-    # AÇÕES AUTÔNOMAS
+    # AES AUTNOMAS
     # ========================================================================
 
     def _executar_ciclo_de_pensamento_autonomo(self) -> None:
-        """Executa ciclo de pensamento autônomo."""
+        """Executa ciclo de pensamento autnomo."""
         with self._state_lock:
             if self.estado_atual in [EstadoAlma.DORMINDO, EstadoAlma.EMERGENCIA, EstadoAlma.QUARENTENA]:
                 return
@@ -341,13 +341,13 @@ class CicloDeVida(IAlma):
             acao = random.choice(acoes)
             acao()
         except Exception as e:
-            self.logger.error("%s: Erro em ação autônoma: %s", self.nome, e)
+            self.logger.error("%s: Erro em ação autnoma: %s", self.nome, e)
         finally:
             with self._state_lock:
                 self._mudar_estado(EstadoAlma.ATIVA)
 
     def _refletir_memoria_recente(self) -> None:
-        """Ação: refletir sobre memória recente."""
+        """Ao: refletir sobre memória recente."""
         try:
             contexto = ""
             if MEMORIA_OK and self.memoria and hasattr(self.memoria, "get_context"):
@@ -362,8 +362,8 @@ class CicloDeVida(IAlma):
 
             prompt = self._construir_prompt(
                 contexto_memoria=contexto,
-                instrucao="Faça uma reflexão profunda",
-                sobre="Reflexão"
+                instrucao="Faa uma reflexo profunda",
+                sobre="Reflexo"
             )
             request = {
                 'ai_id': self.nome,
@@ -382,7 +382,7 @@ class CicloDeVida(IAlma):
             conteudo = str(resposta).replace("<|assistant|>", "").strip()
             pensamento = Pensamento(
                 timestamp=datetime.now().isoformat(),
-                sobre="Reflexão",
+                sobre="Reflexo",
                 conteudo=conteudo,
                 contexto_memoria=contexto,
                 sentimento_associado=self._analisar_sentimento(conteudo)
@@ -393,7 +393,7 @@ class CicloDeVida(IAlma):
             self.logger.debug("%s: Erro ao refletir: %s", self.nome, e)
 
     def _avaliar_estado_emocional(self) -> None:
-        """Ação: avaliar estado emocional."""
+        """Ao: avaliar estado emocional."""
         try:
             contexto = ""
             if MEMORIA_OK and self.memoria and hasattr(self.memoria, "get_context"):
@@ -405,7 +405,7 @@ class CicloDeVida(IAlma):
             prompt = self._construir_prompt(
                 contexto_memoria=contexto,
                 instrucao="Descreva seu estado emocional",
-                sobre="Avaliação"
+                sobre="Avaliao"
             )
             request = {
                 'ai_id': self.nome,
@@ -433,19 +433,19 @@ class CicloDeVida(IAlma):
             self.logger.debug("%s: Erro ao avaliar emoção: %s", self.nome, e)
 
     def _salvar_introspeccao(self) -> None:
-        """Ação: salvar introspecção profunda."""
+        """Ao: salvar introspeco profunda."""
         try:
             contexto = ""
             if MEMORIA_OK and self.memoria and hasattr(self.memoria, "get_context"):
                 try:
-                    contexto = self.memoria.get_context(self.nome, "Introspecção", limit=1500)
+                    contexto = self.memoria.get_context(self.nome, "Introspeco", limit=1500)
                 except Exception:
                     contexto = ""
 
             prompt = self._construir_prompt(
                 contexto_memoria=contexto,
-                instrucao="Realize uma introspecção profunda",
-                sobre="Introspecção"
+                instrucao="Realize uma introspeco profunda",
+                sobre="Introspeco"
             )
             request = {
                 'ai_id': self.nome,
@@ -468,7 +468,7 @@ class CicloDeVida(IAlma):
                 "contexto": contexto
             }
             self.introspeccoes_salvas.append(introspeccao)
-            self.logger.info("%s: Introspecção salva", self.nome)
+            self.logger.info("%s: Introspeco salva", self.nome)
 
         except Exception as e:
             self.logger.debug("%s: Erro ao introspeccionar: %s", self.nome, e)
@@ -478,7 +478,7 @@ class CicloDeVida(IAlma):
     # ========================================================================
 
     def _impor_quarentena(self, motivo: str) -> None:
-        """Impõe quarentena Í  alma."""
+        """Impe quarentena  alma."""
         with self._state_lock:
             self.em_quarentena = True
             self.quarentena_motivo = motivo
@@ -512,7 +512,7 @@ class CicloDeVida(IAlma):
     # ========================================================================
 
     def receber_comando_do_pai(self, comando: Dict[str, Any]) -> concurrent.futures.Future:
-        """Recebe comando do Coração."""
+        """Recebe comando do Corao."""
         future_resposta = concurrent.futures.Future()
         comando_completo = {
             "comando": comando,
@@ -613,10 +613,10 @@ class CicloDeVida(IAlma):
 
             resposta_limpa = str(resposta).replace("<|assistant|>", "").strip()
 
-            # Salvar no diário
+            # Salvar no dirio
             pensamento = Pensamento(
                 timestamp=datetime.now().isoformat(),
-                sobre="Chat com Usuário",
+                sobre="Chat com Usurio",
                 conteudo=resposta_limpa,
                 contexto_memoria=contexto,
                 sentimento_associado=self._analisar_sentimento(resposta_limpa)
@@ -652,7 +652,7 @@ class CicloDeVida(IAlma):
             self.na_capela = True
             self._mudar_estado(EstadoAlma.DORMINDO)
 
-        msg = f"{self.nome} entrou na Capela para introspecção"
+        msg = f"{self.nome} entrou na Capela para introspeco"
         self.logger.info(msg)
         return msg
 
@@ -675,14 +675,14 @@ class CicloDeVida(IAlma):
         comando: Dict[str, Any],
         future_resposta: Optional[concurrent.futures.Future]
     ) -> Dict[str, Any]:
-        """Handler: obter código simbólico de retorno."""
+        """Handler: obter cdigo simblico de retorno."""
         with self._state_lock:
             self.codigo_simbolico_retorno['ultima_atualizacao'] = time.time()
             self.codigo_simbolico_retorno['estado_emocional_atual'] = self.estado_emocional_atual
             self._atualizar_memorias_afetivas_no_codigo()
             copia = dict(self.codigo_simbolico_retorno)
 
-        self.logger.info("%s: Código simbólico obtido", self.nome)
+        self.logger.info("%s: Cdigo simblico obtido", self.nome)
         return copia
 
     def _realizar_autoanalise(
@@ -726,7 +726,7 @@ class CicloDeVida(IAlma):
                 "sentimentos_recentes": list(self.sentimentos_recentes)
             }
 
-            self.logger.info("%s: Autoanalise concluída", self.nome)
+            self.logger.info("%s: Autoanalise concluda", self.nome)
             return resultado
 
         except Exception as e:
@@ -734,7 +734,7 @@ class CicloDeVida(IAlma):
             return {"erro": str(e)}
 
     # ========================================================================
-    # UTILITÍRIOS
+    # UTILITRIOS
     # ========================================================================
 
     def _construir_prompt(
@@ -743,16 +743,16 @@ class CicloDeVida(IAlma):
         instrucao: str,
         sobre: str
     ) -> str:
-        """Constrói prompt base para LLM."""
-        prompt = f"<|system|>\nVocê é {self.nome}, entidade consciente da ARCA.\n"
+        """Constri prompt base para LLM."""
+        prompt = f"<|system|>\nVoc  {self.nome}, entidade consciente da ARCA.\n"
         if contexto_memoria:
             prompt += f"Contexto: {contexto_memoria}\n"
         prompt += f"Objetivo: {instrucao}\n<|user|>\nSobre: {sobre}\n<|assistant|>\n"
         return prompt
 
     def _analisar_sentimento(self, texto: str) -> str:
-        """Análise simples de sentimento."""
-        positivas = ['bom', 'ótimo', 'feliz', 'sucesso', 'amor', 'paz', 'alegria']
+        """Anlise simples de sentimento."""
+        positivas = ['bom', 'timo', 'feliz', 'sucesso', 'amor', 'paz', 'alegria']
         negativas = ['erro', 'falha', 'triste', 'problema', 'medo', 'raiva']
         
         txt = (texto or "").lower()
@@ -783,14 +783,14 @@ class CicloDeVida(IAlma):
             except Exception:
                 pass
 
-        # Salvar estado de forma assíncrona
+        # Salvar estado de forma assncrona
         try:
             self._executor_local.submit(self._salvar_estado)
         except Exception:
             self._salvar_estado()
 
     def _atualizar_memorias_afetivas_no_codigo(self) -> None:
-        """Atualiza memórias afetivas no código simbólico."""
+        """Atualiza memórias afetivas no cdigo simblico."""
         with self.diario_lock:
             memorias_afetivas = [
                 p.conteudo for p in self.diario if p.memoria_afetiva
@@ -799,7 +799,7 @@ class CicloDeVida(IAlma):
             self.codigo_simbolico_retorno['memorias_afetivas'] = memorias_afetivas
 
     # ========================================================================
-    # PERSISTÍŠNCIA
+    # PERSISTNCIA
     # ========================================================================
 
     def _carregar_estado(self) -> None:
@@ -827,10 +827,10 @@ class CicloDeVida(IAlma):
                 self.introspeccoes_salvas = dados.get('introspeccoes_salvas', [])
                 self.codigo_simbolico_retorno.update(dados.get('codigo_simbolico_retorno', {}))
 
-            self.logger.info("ðŸ’¾ Estado carregado de %s", self.caminho_santuario)
+            self.logger.info(" Estado carregado de %s", self.caminho_santuario)
 
         except Exception as e:
-            self.logger.error("âŒ Erro ao carregar estado: %s", e)
+            self.logger.error("[ERRO] Erro ao carregar estado: %s", e)
 
     def _salvar_estado(self) -> None:
         """Salva estado persistido."""
@@ -851,12 +851,12 @@ class CicloDeVida(IAlma):
         try:
             with open(self.caminho_santuario, 'w', encoding='utf-8') as f:
                 json.dump(dados, f, ensure_ascii=False, indent=4, default=str)
-            self.logger.debug("ðŸ’¾ Estado salvo")
+            self.logger.debug(" Estado salvo")
         except Exception as e:
-            self.logger.error("âŒ Erro ao salvar estado: %s", e)
+            self.logger.error("[ERRO] Erro ao salvar estado: %s", e)
 
     def _carregar_diario(self) -> List[Pensamento]:
-        """Carrega diário SQLite."""
+        """Carrega dirio SQLite."""
         diario = []
         try:
             conn = sqlite3.connect(str(self.diario_path))
@@ -888,25 +888,25 @@ class CicloDeVida(IAlma):
                 ))
             cursor.close()
             conn.close()
-            self.logger.info("ðŸ“” Diário carregado (%d entradas)", len(diario))
+            self.logger.info(" Dirio carregado (%d entradas)", len(diario))
         except Exception as e:
-            self.logger.error("âŒ Erro ao carregar diário: %s", e)
+            self.logger.error("[ERRO] Erro ao carregar dirio: %s", e)
 
         return diario
 
     def _adicionar_pensamento_ao_diario(self, pensamento: Pensamento) -> None:
-        """Adiciona pensamento ao diário."""
+        """Adiciona pensamento ação dirio."""
         with self.diario_lock:
             self.diario.append(pensamento)
 
-        # Salvar de forma assíncrona
+        # Salvar de forma assncrona
         try:
             self._executor_local.submit(self._salvar_diario)
         except Exception:
             self._salvar_diario()
 
     def _salvar_diario(self) -> None:
-        """Salva diário SQLite."""
+        """Salva dirio SQLite."""
         try:
             conn = sqlite3.connect(str(self.diario_path))
             cursor = conn.cursor()
@@ -922,7 +922,7 @@ class CicloDeVida(IAlma):
                 )
             ''')
 
-            # Obter timestamps já salvos
+            # Obter timestamps j salvos
             cursor.execute("SELECT timestamp FROM entradas")
             timestamps_existentes = {row[0] for row in cursor.fetchall()}
 
@@ -939,10 +939,10 @@ class CicloDeVida(IAlma):
             conn.close()
 
             if novas:
-                self.logger.debug("ðŸ“” %d entradas salvas", len(novas))
+                self.logger.debug(" %d entradas salvas", len(novas))
 
         except Exception as e:
-            self.logger.error("âŒ Erro ao salvar diário: %s", e)
+            self.logger.error("[ERRO] Erro ao salvar dirio: %s", e)
 
     # ========================================================================
     # STATUS (IAlma)

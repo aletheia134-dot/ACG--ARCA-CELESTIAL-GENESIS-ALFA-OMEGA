@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS, USAR_GPU, IDIOMAS_OCR
 
 import easyocr
@@ -22,11 +22,11 @@ class FerramentaOCR:
     def __init__(self, usar_gpu=True):
         self.usar_gpu = usar_gpu and self._check_cuda()
         self.reader = None
-        self.idiomas = ['pt', 'en']  # português e inglês padrão
+        self.idiomas = ['pt', 'en']  # portugus e ingls padrão
         self.carregar_modelo()
     
     def _check_cuda(self):
-        """Verifica se CUDA está disponível para EasyOCR"""
+        """Verifica se CUDA est disponível para EasyOCR"""
         try:
             import torch
             return torch.cuda.is_available()
@@ -45,18 +45,18 @@ class FerramentaOCR:
                 model_storage_directory=str(Path("C:/Ferramentas_IA/modelos/easyocr")),
                 download_enabled=True
             )
-            print(f"âœ… EasyOCR carregado (GPU: {self.usar_gpu})")
+            print(f"[OK] EasyOCR carregado (GPU: {self.usar_gpu})")
         except Exception as e:
-            print(f"âŒ Erro ao carregar EasyOCR: {e}")
+            print(f"[ERRO] Erro ao carregar EasyOCR: {e}")
             self.reader = None
     
     def processar(self, caminho_imagem, detalhado=False):
         """Extrai texto da imagem"""
         if self.reader is None:
-            return None, "Modelo não carregado"
+            return None, "Modelo no carregado"
         
         try:
-            # Lê imagem
+            # L imagem
             resultado = self.reader.readtext(
                 caminho_imagem,
                 paragraph=False,
@@ -75,7 +75,7 @@ class FerramentaOCR:
                     })
                 return textos, "Sucesso"
             else:
-                # Só texto puro
+                # S texto puro
                 textos = [deteccao[1] for deteccao in resultado]
                 return '\n'.join(textos), "Sucesso"
                 
@@ -83,7 +83,7 @@ class FerramentaOCR:
             return None, str(e)
     
     def processar_lote(self, pasta_entrada, pasta_saida):
-        """Processa várias imagens em lote"""
+        """Processa vrias imagens em lote"""
         resultados = []
         imagens = list(Path(pasta_entrada).glob("*.jpg")) + \
                   list(Path(pasta_entrada).glob("*.png")) + \
@@ -97,35 +97,35 @@ class FerramentaOCR:
                 nome_saida = f"ocr_{img_path.stem}.txt"
                 with open(Path(pasta_saida) / nome_saida, 'w', encoding='utf-8') as f:
                     f.write(texto)
-                resultados.append(f"âœ… {img_path.name} -> {nome_saida}")
+                resultados.append(f"[OK] {img_path.name} -> {nome_saida}")
             else:
-                resultados.append(f"âŒ {img_path.name}: {msg}")
+                resultados.append(f"[ERRO] {img_path.name}: {msg}")
         
         return resultados
 
 class InterfaceOCR(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸ” OCR - Extrair Texto de Imagens", "700x600")
+        super().__init__(" OCR - Extrair Texto de Imagens", "700x600")
         self.ferramenta = FerramentaOCR(usar_gpu=USAR_GPU)
         self.caminho_imagem = None
         self.texto_extraido = None
         self.setup_interface()
     
     def setup_interface(self):
-        # Título
+        # Ttulo
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸ“ Extrair Texto de Imagens (OCR)",
+            text=" Extrair Texto de Imagens (OCR)",
             font=("Arial", 22, "bold")
         )
         titulo.pack(pady=10)
         
         # Status GPU
-        status = "âœ… GPU Ativa (GTX 1070)" if self.ferramenta.usar_gpu else "âš ï¸ CPU"
+        status = "[OK] GPU Ativa (GTX 1070)" if self.ferramenta.usar_gpu else "[AVISO] CPU"
         self.lbl_gpu = ctk.CTkLabel(self.frame, text=status)
         self.lbl_gpu.pack(pady=5)
         
-        # Seleção de idiomas
+        # Seleo de idiomas
         self.frame_idiomas = ctk.CTkFrame(self.frame)
         self.frame_idiomas.pack(pady=10)
         
@@ -148,10 +148,10 @@ class InterfaceOCR(InterfaceBase):
         )
         self.btn_idiomas.pack(side="left", padx=5)
         
-        # Botão selecionar imagem
+        # Boto selecionar imagem
         self.btn_imagem = ctk.CTkButton(
             self.frame,
-            text="ðŸ“ Selecionar Imagem",
+            text=" Selecionar Imagem",
             command=self.selecionar_imagem,
             width=200,
             height=40
@@ -172,15 +172,15 @@ class InterfaceOCR(InterfaceBase):
         
         self.lbl_preview = ctk.CTkLabel(
             self.frame_preview,
-            text="Preview da imagem aparecerá aqui",
+            text="Preview da imagem aparecer aqui",
             height=150
         )
         self.lbl_preview.pack(expand=True)
         
-        # Botão processar
+        # Boto processar
         self.btn_processar = ctk.CTkButton(
             self.frame,
-            text="ðŸ” Extrair Texto",
+            text=" Extrair Texto",
             command=self.processar,
             width=200,
             height=40,
@@ -190,20 +190,20 @@ class InterfaceOCR(InterfaceBase):
         )
         self.btn_processar.pack(pady=10)
         
-        # Írea de texto resultado
-        self.lbl_resultado = ctk.CTkLabel(self.frame, text="Texto extraído:")
+        # rea de texto resultado
+        self.lbl_resultado = ctk.CTkLabel(self.frame, text="Texto extrado:")
         self.lbl_resultado.pack(pady=(10,0))
         
         self.texto_resultado = ctk.CTkTextbox(self.frame, height=150)
         self.texto_resultado.pack(pady=5, padx=10, fill="both", expand=True)
         
-        # Botões salvar e copiar
+        # Botes salvar e copiar
         self.frame_botoes = ctk.CTkFrame(self.frame)
         self.frame_botoes.pack(pady=5)
         
         self.btn_copiar = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ“‹ Copiar",
+            text=" Copiar",
             command=self.copiar_texto,
             width=100,
             state="disabled"
@@ -212,7 +212,7 @@ class InterfaceOCR(InterfaceBase):
         
         self.btn_salvar = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ’¾ Salvar TXT",
+            text=" Salvar TXT",
             command=self.salvar_texto,
             width=100,
             state="disabled"
@@ -246,7 +246,7 @@ class InterfaceOCR(InterfaceBase):
         if not self.caminho_imagem:
             return
         
-        self.btn_processar.configure(text="â³ Processando...", state="disabled")
+        self.btn_processar.configure(text=" Processando...", state="disabled")
         self.frame.update()
         
         texto, msg = self.ferramenta.processar(self.caminho_imagem)
@@ -260,12 +260,12 @@ class InterfaceOCR(InterfaceBase):
         else:
             self.utils.mostrar_erro("Erro", f"Falha ao extrair: {msg}")
         
-        self.btn_processar.configure(text="ðŸ” Extrair Texto", state="normal")
+        self.btn_processar.configure(text=" Extrair Texto", state="normal")
     
     def copiar_texto(self):
         self.frame.clipboard_clear()
         self.frame.clipboard_append(self.texto_resultado.get('1.0', 'end'))
-        self.utils.mostrar_info("Copiado", "Texto copiado para área de transferência")
+        self.utils.mostrar_info("Copiado", "Texto copiado para rea de transferncia")
     
     def salvar_texto(self):
         if self.texto_extraido:
@@ -304,7 +304,7 @@ class ModoIA_OCR:
             return {
                 "sucesso": True,
                 "texto": texto,
-                "mensagem": "Texto extraído com sucesso"
+                "mensagem": "Texto extrado com sucesso"
             }
         else:
             return {

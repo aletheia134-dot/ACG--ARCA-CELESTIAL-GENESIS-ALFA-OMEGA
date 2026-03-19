@@ -1,3 +1,3 @@
-﻿from .api_manager import APIManager
+from .api_manager import APIManager
 
 

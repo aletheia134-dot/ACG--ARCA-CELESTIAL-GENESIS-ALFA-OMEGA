@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 ARCA CELESTIAL GENESIS - BIBLIOTECA PRINCIPAL (Atualizada com paralelização, fallbacks e ligações).
 """
-from __future__ import annotations
 import asyncio
 import logging
 import time
@@ -43,7 +43,7 @@ class BibliotecaJWOtimizada:
         self.config = config or {}
         self.caminho_cache = caminho_cache
 
-        # Inicializar componentes com tolerância
+        # Inicializar componentes com tolerncia
         try:
             self.cache = CacheConsultas(caminho_arquivo=self.caminho_cache)
         except Exception:
@@ -58,8 +58,8 @@ class BibliotecaJWOtimizada:
         self.monitor = MonitorBiblioteca() if MonitorBiblioteca else None
 
         if not MEMORIA_DISPONIVEL:
-            logger.warning("Sistema de Memória não disponível.")
-        logger.info("Biblioteca Teológica Otimizada inicializada.")
+            logger.warning("Sistema de Memória no disponível.")
+        logger.info("Biblioteca Teolgica Otimizada inicializada.")
 
     def consultar(
         self,
@@ -72,7 +72,7 @@ class BibliotecaJWOtimizada:
         rerankear: bool = True,
         exportar: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Consulta síncrona (pode chamar async internamente)."""
+        """Consulta sncrona (pode chamar async internamente)."""
         # Usar asyncio.run para sync wrapper
         return asyncio.run(self.consultar_async(pergunta, fonte_preferida, n_resultados, usar_cache, gerar_preview, analisar_contexto, rerankear, exportar))
 
@@ -95,7 +95,7 @@ class BibliotecaJWOtimizada:
             try:
                 self.monitor.registrar_consulta(pergunta)
             except Exception:
-                logger.debug("Falha no monitor (não crítico).")
+                logger.debug("Falha no monitor (no crítico).")
 
         # Cache
         cache_key = self._gerar_chave_cache(pergunta, fonte_preferida or "tudo", n_resultados)
@@ -106,15 +106,15 @@ class BibliotecaJWOtimizada:
                     self.monitor.registrar_hit_cache()
                 return cached
 
-        # Análise de contexto
+        # Anlise de contexto
         analise = {}
         if analisar_contexto and self.analisador_contexto:
             try:
                 analise = self.analisador_contexto.analisar(pergunta)
             except Exception:
-                logger.exception("Falha na análise.")
+                logger.exception("Falha na anlise.")
 
-        # Ajustar parâmetros
+        # Ajustar parmetros
         n_resultados_final = analise.get('recomendacao_n_results', n_resultados)
         fonte_final = analise.get('recomendacao_fonte', fonte_preferida or "tudo")
 
@@ -164,7 +164,7 @@ class BibliotecaJWOtimizada:
                 caminho = self.exportador.exportar(resultado, formato=exportar)
                 resultado['caminho_exportado'] = str(caminho)
             except Exception:
-                logger.exception("Falha na exportação.")
+                logger.exception("Falha na exportao.")
 
         # Monitor: sucesso
         if self.monitor:

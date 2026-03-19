@@ -13,25 +13,27 @@ try:
     try:
         PersistentClient = getattr(chromadb, "PersistentClient", None) or getattr(chromadb, "Client", None)
     except:
-        logging.getLogger(__name__).warning("âš ï¸ PersistentClient nÃ£o disponÃ­vel")
+        pass
+    logging.getLogger(__name__).warning("? PersistentClient no disponível")
     PersistentClient = None
     try:
         from chromadb.utils import embedding_functions  # type: ignore
     except:
-        logging.getLogger(__name__).warning("âš ï¸ PersistentClient nÃ£o disponÃ­vel")
+        pass
+    logging.getLogger(__name__).warning("? PersistentClient no disponível")
     PersistentClient = None
     if PersistentClient is not None and embedding_functions is not None:
         CHROMADB_DISPONIVEL = True
     else:
         CHROMADB_DISPONIVEL = False
 except Exception as e:
-    logging.critical("ERRO CRÃTICO: DependÃªncias de MemÃ³ria/RAG nÃ£o instaladas.Detalhe: %s", e)
+    logging.critical("ERRO CR?TICO: Dependncias de Memória/RAG no instaladas.Detalhe: %s", e)
 
 try:
     from memoria.metabolismo import MetabolismoMemoria  # type: ignore
     METABOLISMO_DISPONIVEL = True
 except:
-    logging.getLogger(__name__).warning("âš ï¸ PersistentClient nÃ£o disponÃ­vel")
+    logging.getLogger(__name__).warning("? PersistentClient no disponível")
     PersistentClient = None  # type: ignore
     METABOLISMO_DISPONIVEL = False
 
@@ -57,13 +59,13 @@ class GerenteMemoria:
             self._almas_nomes = []
 
         if not CHROMADB_DISPONIVEL:
-            logger.error("GerenteMemoria desativado: chromadb/embeddings nÃ£o disponÃ­veis.")
+            logger.error("GerenteMemoria desativado: chromadb/embeddings no disponíveis.")
             return
 
         try:
             SentenceTransformerEmbeddingFunction = getattr(embedding_functions, "SentenceTransformerEmbeddingFunction", None)
             if SentenceTransformerEmbeddingFunction is None:
-                raise RuntimeError("embedding_functions.SentenceTransformerEmbeddingFunction nÃ£o encontrado")
+                raise RuntimeError("embedding_functions.SentenceTransformerEmbeddingFunction no encontrado")
             self.embedding_function = SentenceTransformerEmbeddingFunction(
                 model_name=self._embedding_model,
                 device=getattr(self.config, "EMBEDDING_DEVICE", "cpu")
@@ -75,28 +77,28 @@ class GerenteMemoria:
 
     def initialize(self) -> None:
         if self.is_initialized:
-            logger.info("GerenteMemoria jÃ¡ inicializado.")
+            logger.info("GerenteMemoria j inicializado.")
             return
 
         if not CHROMADB_DISPONIVEL or self.embedding_function is None:
-            logger.critical("NÃ£o foi possÃ­vel inicializar GerenteMemoria: dependÃªncias ausentes.")
+            logger.critical("No foi possível inicializar GerenteMemoria: dependncias ausentes.")
             return
 
         if not self._memory_db_path:
-            logger.critical("Caminho do banco de memÃ³ria nÃ£o configurado (config.MEMORY_DB_PATH).")
+            logger.critical("Caminho do banco de memória no configurado (config.MEMORY_DB_PATH).")
             return
 
         try:
             os.makedirs(self._memory_db_path, exist_ok=True)
         except Exception as e:
-            logger.critical("Falha ao criar diretÃ³rio de memÃ³ria '%s': %s", self._memory_db_path, e, exc_info=True)
+            logger.critical("Falha ao criar diretório de memória '%s': %s", self._memory_db_path, e, exc_info=True)
             return
 
         try:
             logger.warning("Se houver erros de ChromaDB ('no such column'), apague '%s' e reinicie.", self._memory_db_path)
             ClientClass = PersistentClient
             if ClientClass is None:
-                raise RuntimeError("PersistentClient/Client nÃ£o disponÃ­vel na versÃ£o instalada do chromadb")
+                raise RuntimeError("PersistentClient/Client no disponível na verso instalada do chromadb")
             try:
                 self.client = ClientClass(path=self._memory_db_path)
             except TypeError:
@@ -113,12 +115,12 @@ class GerenteMemoria:
                     self.metabolismo = MetabolismoMemoria(self.client, self.embedding_function, self.config)
                     colecoes = list(self._almas_nomes) + ["sistema", "todas", "default", "user"]
                     self.metabolismo.inicializar_colecoes(colecoes)
-                    logger.info("Metabolismo de MemÃ³ria inicializado com coleÃ§Ãµes: %s", colecoes)
+                    logger.info("Metabolismo de Memória inicializado com colees: %s", colecoes)
                 except Exception as e:
                     logger.critical("Falha ao inicializar MetabolismoMemoria: %s", e, exc_info=True)
                     self.metabolismo = None
             else:
-                logger.warning("MetabolismoMemoria nÃ£o disponÃ­vel; funcionalidades metabolicas desabilitadas.")
+                logger.warning("MetabolismoMemoria no disponível; funcionalidades metabolicas desabilitadas.")
                 self.metabolismo = None
 
             self.is_initialized = True if self.client is not None else False
@@ -130,14 +132,14 @@ class GerenteMemoria:
 
     def get_context(self, query: str, alma_nome: str = "sistema", k: int = 3) -> List[str]:
         if not self.is_initialized or not self.metabolismo:
-            logger.warning("GerenteMemoria nÃ£o inicializado/metabolismo ausente.Retornando []")
+            logger.warning("GerenteMemoria no inicializado/metabolismo ausente.Retornando []")
             return []
         try:
             contexto, metadados = self.metabolismo.buscar_com_metabolismo(query, alma_nome, k)
             logger.debug("Busca metabolizada: %s -> %d resultados", alma_nome, len(contexto))
             for meta in metadados or []:
                 if meta.get('camada_original') in ('m2', 'm3'):
-                    logger.info("MEMÃ“RIA PROMOVIDA: %s camada=%s id=%s", alma_nome, meta.get('camada_original'), meta.get('id', ''))
+                    logger.info("memória PROMOVIDA: %s camada=%s id=%s", alma_nome, meta.get('camada_original'), meta.get('id', ''))
             return contexto or []
         except Exception as e:
             logger.error("Erro durante busca metabolizada: %s", e, exc_info=True)
@@ -155,7 +157,7 @@ class GerenteMemoria:
 
     def save_memory(self, content: str, alma_nome: str = "sistema", metadata: Optional[Dict[str, Any]] = None) -> bool:
         if not self.is_initialized or not self.metabolismo:
-            logger.warning("GerenteMemoria nÃ£o inicializado/metabolismo ausente.Ignorando save_memory.")
+            logger.warning("GerenteMemoria no inicializado/metabolismo ausente.Ignorando save_memory.")
             return False
         try:
             metadata_completo = dict(metadata) if metadata else {}
@@ -167,10 +169,10 @@ class GerenteMemoria:
             metadata_completo.setdefault('acessos', metadata_completo.get('acessos', 0))
             content_str = str(content) if content is not None else ''
             self.metabolismo.salvar_memoria(alma_nome, content_str, metadata_completo)
-            logger.info("MemÃ³ria salva (metabolismo): alma=%s tipo=%s", alma_nome, metadata_completo.get('tipo'))
+            logger.info("Memória salva (metabolismo): alma=%s tipo=%s", alma_nome, metadata_completo.get('tipo'))
             return True
         except Exception as e:
-            logger.error("Falha ao salvar memÃ³ria com metabolismo: %s", e, exc_info=True)
+            logger.error("Falha ao salvar memória com metabolismo: %s", e, exc_info=True)
             return False
 
     def save_conversation_memory(self, pergunta: str, resposta: str, alma_nome: str, metadata_extra: Optional[Dict[str, Any]] = None) -> bool:
@@ -204,14 +206,14 @@ class GerenteMemoria:
                 estatisticas['almas'][alma] = estatisticas_alma
             return estatisticas
         except Exception as e:
-            logger.error("Erro ao coletar estatÃ­sticas: %s", e, exc_info=True)
+            logger.error("Erro ao coletar estatsticas: %s", e, exc_info=True)
             return {}
 
     def get_historico_promocoes(self, alma_nome: str, limite: int = 10) -> List[Dict[str, Any]]:
         if not self.is_initialized or not self.metabolismo or not hasattr(self.metabolismo, 'colecoes'):
             return []
         try:
-            historico: List[Dict[str, Any]] = []
+            histórico: List[Dict[str, Any]] = []
             alma_key = alma_nome.lower()
             colecoes = self.metabolismo.colecoes.get(alma_key)
             if not colecoes:
@@ -228,16 +230,16 @@ class GerenteMemoria:
                         elif metadata.get('data_demissao'):
                             evento = {'tipo': 'DEMISSAO', 'data': metadata['data_demissao'], 'de': camada, 'para': self._inferir_camada_destino(camada), 'documento': (documents[i][:100] + '...') if documents else '', 'id': metadata.get('id', 'desconhecido')}
                         if evento:
-                            historico.append(evento)
+                            histórico.append(evento)
                 except Exception as e:
-                    logger.error("Erro analisando histÃ³rico na camada %s: %s", camada, e, exc_info=True)
+                    logger.error("Erro analisando histórico na camada %s: %s", camada, e, exc_info=True)
             try:
-                historico.sort(key=lambda x: x.get('data', ''), reverse=True)
+                histórico.sort(key=lambda x: x.get('data', ''), reverse=True)
             except Exception:
                 pass
-            return historico[:limite]
+            return histórico[:limite]
         except Exception as e:
-            logger.error("Erro geral no histÃ³rico de promoÃ§Ãµes: %s", e, exc_info=True)
+            logger.error("Erro geral no histórico de promoes: %s", e, exc_info=True)
             return []
 
     def _inferir_camada_destino(self, camada_origem: str) -> str:
@@ -256,13 +258,13 @@ class GerenteMemoria:
             except Exception as e:
                 logger.exception("Erro ao executar limpeza manual: %s", e)
                 return False
-        logger.info("Metabolismo nÃ£o disponÃ­vel para limpeza manual.")
+        logger.info("Metabolismo no disponível para limpeza manual.")
         return False
 
     def backup_memoria(self, caminho_backup: str) -> bool:
         try:
             if not getattr(self, "client", None) and not os.path.exists(self._memory_db_path):
-                logger.warning("Nenhuma base de memÃ³ria encontrada para backup.")
+                logger.warning("Nenhuma base de memória encontrada para backup.")
                 return False
             shutil.copytree(self._memory_db_path, caminho_backup, dirs_exist_ok=True)
             logger.info("Backup criado: %s", caminho_backup)
@@ -284,11 +286,11 @@ class GerenteMemoria:
 
     def query(self, prompt: str, k_total: int = 5) -> Tuple[str, List[Any]]:
         contexto = self.get_context(prompt, "sistema", k_total)
-        contexto_formatado = "\n".join(contexto) if contexto else "Nenhuma memÃ³ria relevante encontrada."
+        contexto_formatado = "\n".join(contexto) if contexto else "Nenhuma memória relevante encontrada."
         return contexto_formatado, []
 
     def promote_chunk(self, doc: Any) -> bool:
-        logger.info("PromoÃ§Ã£o automÃ¡tica gerenciada pelo metabolismo (proxy).")
+        logger.info("Promoo automtica gerenciada pelo metabolismo (proxy).")
         return True
 
 

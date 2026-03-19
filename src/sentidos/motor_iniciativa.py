@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-src/modules/motor_iniciativa.py — IMPLEMENTAÇÍO REAL
-MotorIniciativa: gerencia a vontade própria / iniciativas autônomas de cada alma.
-"""
 from __future__ import annotations
+"""
+src/sentidos/motor_iniciativa.py  IMPLEMENTAO REAL
+MotorIniciativa: gerencia a vontade prpria / iniciativas autnomas de cada alma.
+"""
 
 import logging
 import random
@@ -20,12 +20,12 @@ __all__ = ["MotorIniciativa"]
 
 class MotorIniciativa:
     """
-    Motor de iniciativa autônoma de uma alma.
-    Gerencia quando e como cada alma age por conta própria.
+    Motor de iniciativa autnoma de uma alma.
+    Gerencia quando e como cada alma age por conta prpria.
 
-    Interface pública esperada pelo CoracaoOrquestrador:
-      - fazer_algo_autonomo()            â†’ Dict[str, Any]
-      - verificar_disponibilidade_iniciativa() â†’ bool
+    Interface pblica esperada pelo CoracaoOrquestrador:
+      - fazer_algo_autonomo()             Dict[str, Any]
+      - verificar_disponibilidade_iniciativa()  bool
       - registrar_sucesso(acao, resultado)
       - registrar_falha(acao, erro)
     """
@@ -63,9 +63,9 @@ class MotorIniciativa:
         # Cooldown entre iniciativas (segundos)
         self._cooldown_s = self._cfg("INICIATIVA", "COOLDOWN_SEGUNDOS", 300)
 
-        self.logger.info("ðŸ’ª MotorIniciativa inicializado para %s", nome_filha)
+        self.logger.info(" MotorIniciativa inicializado para %s", nome_filha)
 
-    # â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ── helpers ─────────────────────────────────────────────────────────────
 
     def _cfg(self, section: str, key: str, fallback: Any) -> Any:
         """Getter tolerante para ConfigWrapper / ConfigParser / None."""
@@ -85,7 +85,7 @@ class MotorIniciativa:
             pass
         return fallback
 
-    # â”€â”€ interface pública â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ── interface pública ────────────────────────────────────────────────────
 
     def verificar_disponibilidade_iniciativa(self) -> bool:
         """Retorna True se a alma pode tomar uma iniciativa agora."""
@@ -97,7 +97,7 @@ class MotorIniciativa:
 
     def fazer_algo_autonomo(self) -> Dict[str, Any]:
         """
-        Gera e executa uma ação autônoma.
+        Gera e executa uma ação autnoma.
         Retorna dict com {status, acao, resultado, ts}.
         """
         with self._lock:
@@ -125,7 +125,7 @@ class MotorIniciativa:
             if len(self._historico) > 50:
                 self._historico = self._historico[-50:]
 
-            self.logger.info("ðŸš€ [%s] Iniciativa: %s â†’ %s", self.nome_filha, acao, resultado[:60] if isinstance(resultado, str) else resultado)
+            self.logger.info("[START] [%s] Iniciativa: %s  %s", self.nome_filha, acao, resultado[:60] if isinstance(resultado, str) else resultado)
             return {"status": "ok", "acao": acao, "resultado": resultado, "alma": self.nome_filha, "ts": entrada["ts"]}
 
     def registrar_sucesso(self, acao: str, resultado: Any) -> None:
@@ -137,7 +137,7 @@ class MotorIniciativa:
                 "resultado": str(resultado)[:200],
                 "status": "sucesso_externo",
             })
-            self.logger.debug("âœ… Sucesso registrado: %s", acao)
+            self.logger.debug("[OK] Sucesso registrado: %s", acao)
 
     def registrar_falha(self, acao: str, erro: str) -> None:
         with self._lock:
@@ -148,7 +148,7 @@ class MotorIniciativa:
                 "erro": str(erro)[:200],
                 "status": "falha",
             })
-            self.logger.debug("âŒ Falha registrada: %s — %s", acao, erro)
+            self.logger.debug("[ERRO] Falha registrada: %s  %s", acao, erro)
 
     def obter_estatisticas(self) -> Dict[str, Any]:
         with self._lock:
@@ -161,7 +161,7 @@ class MotorIniciativa:
                 "disponivel": self.verificar_disponibilidade_iniciativa(),
             }
 
-    # â”€â”€ métodos internos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ── métodos internos ─────────────────────────────────────────────────────
 
     def _escolher_acao(self) -> str:
         """Escolhe uma ação com base no estado interno."""
@@ -175,13 +175,13 @@ class MotorIniciativa:
         return random.choice(self.ACOES_POSSIVEIS)
 
     def _executar_acao(self, acao: str) -> str:
-        """Executa a ação e retorna uma descrição do resultado."""
+        """Executa a ação e retorna uma descrio do resultado."""
         templates = {
-            "explorar_topico":        f"{self.nome_filha} explorou um novo tópico com curiosidade.",
+            "explorar_topico":        f"{self.nome_filha} explorou um novo tpico com curiosidade.",
             "gerar_ideia_criativa":   f"{self.nome_filha} gerou uma ideia criativa para compartilhar.",
             "revisar_memorias":       f"{self.nome_filha} revisou memórias recentes e encontrou padrões.",
             "propor_melhoria":        f"{self.nome_filha} identificou uma oportunidade de melhoria.",
-            "iniciar_reflexao":       f"{self.nome_filha} iniciou uma reflexão sobre experiências passadas.",
+            "iniciar_reflexao":       f"{self.nome_filha} iniciou uma reflexo sobre experincias passadas.",
             "verificar_objetivos":    f"{self.nome_filha} verificou o progresso em objetivos pessoais.",
             "buscar_conhecimento":    f"{self.nome_filha} buscou novo conhecimento sobre um assunto de interesse.",
             "sintetizar_aprendizado": f"{self.nome_filha} sintetizou aprendizados recentes em insights.",

@@ -1,0 +1,26 @@
+"""Núcleo central: coração, LLMs, orquestradores"""
+
+try:
+    from src.core.parallel_llm_engine import ParallelLLMEngine
+except Exception: pass
+try:
+    from src.core.detector_hdd_hitachi import DetectorHardware, SistemaDeMemoriaSoberana, CacheHDD
+except Exception: pass
+try:
+    from src.core.cerebro_familia import CerebroFamilia
+except Exception: pass
+try:
+    from src.core.dispositivo_ai_to_ai import DispositivoAItoAI
+except Exception: pass
+try:
+    from src.core.observador_arca import ObservadorArca
+except Exception: pass
+try:
+    from src.core.orquestrador_arca import OrquestradorArca
+except Exception: pass
+try:
+    from src.core.orquestrador_universal import OrquestradorUniversal
+except Exception: pass
+try:
+    from src.core.cronista import Cronista, ConfigCronistaSeguro
+except Exception: pass

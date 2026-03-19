@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 ObservadorArca - Sistema de Auditoria (somente leitura)
 
 Local: src/core/observador_arca.py
 """
-from __future__ import annotations
 import sqlite3
 from pathlib import Path
 import logging
 from datetime import datetime
 from typing import List, Dict, Any, Optional, Union
 
-# Configuração de Logging para Auditoria
+# configuração de Logging para Auditoria
 logger = logging.getLogger("ObservadorArca")
 
 class ObservadorArca:
     """
     SISTEMA DE AUDITORIA SOBERANA - SOMENTE LEITURA
-    Permite ao Orquestrador visualizar registros sem risco de corrupção.
+    Permite ação Orquestrador visualizar registros sem risco de corrupo.
     """
 
     DEFAULT_AIS = ["EVA", "LUMINA", "NYRA", "YUNA", "KAIYA", "WELLINGTON"]
@@ -28,25 +28,25 @@ class ObservadorArca:
         self.ais = ais or list(self.DEFAULT_AIS)
 
         if not self.db_base_path.exists():
-            logger.warning("ObservadorArca: caminho de diários não encontrado: %s", str(self.db_base_path))
+            logger.warning("ObservadorArca: caminho de dirios no encontrado: %s", str(self.db_base_path))
 
     def _conectar_ro(self, ai_nome: str) -> Optional[sqlite3.Connection]:
-        """Abre conexão SQLite em modo SOMENTE LEITURA via URI.Retorna None se não acessível."""
+        """Abre conexo SQLite em modo SOMENTE LEITURA via URI.Retorna None se no acessvel."""
         db_path = self.db_base_path / f"diario_{ai_nome}.db"
         if not db_path.exists():
-            logger.debug("ObservadorArca: arquivo DB não encontrado para %s: %s", ai_nome, db_path)
+            logger.debug("ObservadorArca: arquivo DB no encontrado para %s: %s", ai_nome, db_path)
             return None
 
         try:
             conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, check_same_thread=False)
             return conn
         except sqlite3.Error as e:
-            logger.error("Falha ao conectar (ro) ao santuário de %s (%s): %s", ai_nome, db_path, e)
+            logger.error("Falha ao conectar (ro) ação santurio de %s (%s): %s", ai_nome, db_path, e)
             return None
 
     def varredura_total(self, termo_busca: Optional[str] = None, limite_por_ai: int = 5) -> Dict[str, List[Dict[str, Any]]]:
         """
-        Busca transversal em todas as almas.Retorna mapa ai -> lista de registros (cada registro é dict).
+        Busca transversal em todas as almas.Retorna mapa ai -> lista de registros (cada registro  dict).
         """
         descobertas: Dict[str, List[Dict[str, Any]]] = {}
 
@@ -81,10 +81,10 @@ class ObservadorArca:
                 registros = [dict(zip(colunas, row)) for row in rows] if colunas else []
                 descobertas[ai] = registros
             except sqlite3.Error as e:
-                logger.error("Erro SQL ao auditar %s: %s", ai, e)
+                logger.error("Erro SQL ação auditar %s: %s", ai, e)
                 descobertas[ai] = []
             except Exception as e:
-                logger.error("Erro inesperado ao auditar %s: %s", ai, e, exc_info=True)
+                logger.error("Erro inesperado ação auditar %s: %s", ai, e, exc_info=True)
                 descobertas[ai] = []
             finally:
                 try:
@@ -97,11 +97,11 @@ class ObservadorArca:
 
     def verificar_integridade_memoria(self, ai_nome: str) -> Dict[str, Any]:
         """
-        Analisa a saúde do banco de dados da alma.Detecta 'limpeza' excessiva (sabotagem de apagamento) ou erros de acesso.
+        Analisa a sade do banco de dados da alma.Detecta 'limpeza' excessiva (sabotagem de apagamento) ou erros de acesso.
         """
         conn = self._conectar_ro(ai_nome)
         if not conn:
-            return {"ai": ai_nome, "status": "inacessivel", "mensagem": "arquivo ausente ou inacessível"}
+            return {"ai": ai_nome, "status": "inacessivel", "mensagem": "arquivo ausente ou inacessvel"}
 
         cursor = conn.cursor()
         try:
@@ -131,7 +131,7 @@ class ObservadorArca:
             conn.close()
 
     def obter_ultimo_pensamento(self, ai_nome: str) -> Optional[Dict[str, Any]]:
-        """Recupera a última ação exata de uma alma específica (mais eficiente que varredura_total)."""
+        """Recupera a ltima ação exata de uma alma especfica (mais eficiente que varredura_total)."""
         conn = self._conectar_ro(ai_nome)
         if not conn:
             return None
@@ -149,7 +149,7 @@ class ObservadorArca:
             colunas = [d[0] for d in desc]
             return dict(zip(colunas, row))
         except sqlite3.Error as e:
-            logger.error("Erro SQL ao obter último pensamento de %s: %s", ai_nome, e)
+            logger.error("Erro SQL ação obter ltimo pensamento de %s: %s", ai_nome, e)
             return None
         finally:
             try:
@@ -159,5 +159,5 @@ class ObservadorArca:
             conn.close()
 
 
-# Instância de Auditoria (opcional)
+# Instncia de Auditoria (opcional)
 auditor = ObservadorArca()

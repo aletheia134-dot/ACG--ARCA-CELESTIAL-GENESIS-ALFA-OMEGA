@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
-integracao_coração_propostas.py - Integra sistema de propostas NO CORAÇÍO v7
+integracao_corao_propostas.py - Integra sistema de propostas NO CORAO v7
 
 Adiciona ao CoracaoOrquestrador:
 - GerenciadorPropostas (subsistema 23)
@@ -9,15 +10,14 @@ Adiciona ao CoracaoOrquestrador:
 - SolicitadorArquivos (subsistema 25)
 - BotAnalisadorSeguranca (subsistema 26)
 
-Métodos públicos para usar o sistema
+Métodos pblicos para usar o sistema
 
-MUDANÇAS v2:
-âœ… Não inicia construção automaticamente na aprovação
-âœ… Adicionado método iniciar_construcao_proposta()
-âœ… Adicionado método atualizar_codigo_proposta()
-âœ… Adicionado método analisar_seguranca_proposta()
+MUDANAS v2:
+[OK] No inicia construo automaticamente na aprovao
+[OK] Adicionado método iniciar_construcao_proposta()
+[OK] Adicionado método atualizar_codigo_proposta()
+[OK] Adicionado método analisar_seguranca_proposta()
 """
-from __future__ import annotations
 
 
 import logging
@@ -41,13 +41,13 @@ class IntegracaoProptas:
 
     def _inicializar_sistema_propostas(self) -> None:
         """
-        Inicializa sistema de propostas (chamado no __init__ do Coração).
+        Inicializa sistema de propostas (chamado no __init__ do Corao).
         
-        Adiciona APÓS inicializar subsistemas base.
+        Adiciona APS inicializar subsistemas base.
         """
         from src.engenharia.sistema_propostas_ferramentas import GerenciadorPropostas
         from src.engenharia.construtor_ferramentas_incremental import ConstrutorFerramentasIncremental
-        from src.modulos.solicitador_arquivos import SolicitadorArquivos
+        from src.engenharia.solicitador_arquivos import SolicitadorArquivos
         from bot_analise_seguranca_v2 import BotAnalisadorSeguranca
         
         try:
@@ -57,7 +57,7 @@ class IntegracaoProptas:
                 db_path="data/propostas_ferramentas.db"
             )
             self.modulos["gerenciador_propostas"] = self.gerenciador_propostas
-            self.logger.info("âœ… Subsistema 23: GerenciadorPropostas")
+            self.logger.info("[OK] Subsistema 23: GerenciadorPropostas")
             
             # 2.Construtor Incremental
             self.construtor_ferramentas = ConstrutorFerramentasIncremental(
@@ -65,28 +65,28 @@ class IntegracaoProptas:
                 coracao_ref=self
             )
             self.modulos["construtor_ferramentas"] = self.construtor_ferramentas
-            self.logger.info("âœ… Subsistema 24: ConstrutorIncremental")
+            self.logger.info("[OK] Subsistema 24: ConstrutorIncremental")
             
             # 3.Solicitador de Arquivos
             self.solicitador_arquivos = SolicitadorArquivos(
                 coracao_ref=self
             )
             self.modulos["solicitador_arquivos"] = self.solicitador_arquivos
-            self.logger.info("âœ… Subsistema 25: SolicitadorArquivos")
+            self.logger.info("[OK] Subsistema 25: SolicitadorArquivos")
             
-            # 4.Bot Analisador de Segurança
+            # 4.Bot Analisador de Segurana
             self.bot_seguranca = BotAnalisadorSeguranca(
                 coracao_ref=self,
                 gerenciador_propostas_ref=self.gerenciador_propostas
             )
             self.modulos["bot_analise_seguranca"] = self.bot_seguranca
-            self.logger.info("âœ… Subsistema 26: BotAnalisadorSeguranca")
+            self.logger.info("[OK] Subsistema 26: BotAnalisadorSeguranca")
             
         except Exception as e:
             self.logger.exception("Erro ao inicializar sistema de propostas: %s", e)
 
     # =========================================================================
-    # API PÚBLICA - IA CRIAR PROPOSTA
+    # API PBLICA - IA CRIAR PROPOSTA
     # =========================================================================
 
     def criar_proposta_ferramenta(
@@ -104,12 +104,12 @@ class IntegracaoProptas:
         IA cria proposta de nova ferramenta.Args:
             ia_solicitante: Nome da IA que solicita
             nome_ferramenta: Nome da ferramenta
-            descricao: Descrição do que faz
+            descricao: Descrio do que faz
             motivo: Por que precisa
-            intencao_uso: Como será usada
+            intencao_uso: Como ser usada
             categoria: Categoria (midia, nlp, ciencia, etc)
             tipo_ferramenta: script_python_dinamico ou comando_sistema
-            codigo_ou_comando: Código/comando (opcional, IA envia depois)
+            codigo_ou_comando: Cdigo/comando (opcional, IA envia depois)
         
         Returns:
             {
@@ -121,7 +121,7 @@ class IntegracaoProptas:
         if not hasattr(self, "gerenciador_propostas"):
             return {
                 "sucesso": False,
-                "mensagem": "Sistema de propostas não disponível"
+                "mensagem": "Sistema de propostas no disponível"
             }
         
         sucesso, msg, proposta_id = self.gerenciador_propostas.criar_proposta(
@@ -142,7 +142,7 @@ class IntegracaoProptas:
         }
 
     # =========================================================================
-    # API PÚBLICA - IA ATUALIZAR CÓDIGO
+    # API PBLICA - IA ATUALIZAR CDIGO
     # =========================================================================
 
     def atualizar_codigo_proposta(
@@ -152,16 +152,16 @@ class IntegracaoProptas:
         codigo: str
     ) -> Dict[str, Any]:
         """
-        IA envia código para proposta já criada.Args:
+        IA envia cdigo para proposta j criada.Args:
             proposta_id: ID da proposta
             ia_solicitante: Nome da IA
-            codigo: Código Python/comando
+            codigo: Cdigo Python/comando
         
         Returns:
             {"sucesso": bool, "mensagem": str}
         """
         if not hasattr(self, "gerenciador_propostas"):
-            return {"sucesso": False, "mensagem": "Sistema não disponível"}
+            return {"sucesso": False, "mensagem": "Sistema no disponível"}
         
         sucesso, msg = self.gerenciador_propostas.atualizar_codigo_proposta(
             proposta_id=proposta_id,
@@ -172,7 +172,7 @@ class IntegracaoProptas:
         return {"sucesso": sucesso, "mensagem": msg}
 
     # =========================================================================
-    # API PÚBLICA - HUMANO APROVAR/REJEITAR
+    # API PBLICA - HUMANO APROVAR/REJEITAR
     # =========================================================================
 
     def aprovar_proposta_ferramenta(
@@ -181,9 +181,9 @@ class IntegracaoProptas:
         por_humano: str,
         motivo: str = ""
     ) -> Dict[str, Any]:
-        """Humano aprova proposta â†’ passa para construção."""
+        """Humano aprova proposta  passa para construo."""
         if not hasattr(self, "gerenciador_propostas"):
-            return {"sucesso": False, "mensagem": "Sistema não disponível"}
+            return {"sucesso": False, "mensagem": "Sistema no disponível"}
         
         sucesso, msg = self.gerenciador_propostas.aprovar_proposta(
             proposta_id=proposta_id,
@@ -191,8 +191,8 @@ class IntegracaoProptas:
             motivo=motivo
         )
         
-        # âœ… FIX: NÍO inicia construção automaticamente
-        # IA vai enviar código e pedir para iniciar
+        # [OK] FIX: NO inicia construo automaticamente
+        # IA vai enviar cdigo e pedir para iniciar
         
         return {"sucesso": sucesso, "mensagem": msg}
 
@@ -204,7 +204,7 @@ class IntegracaoProptas:
     ) -> Dict[str, Any]:
         """Humano rejeita proposta."""
         if not hasattr(self, "gerenciador_propostas"):
-            return {"sucesso": False, "mensagem": "Sistema não disponível"}
+            return {"sucesso": False, "mensagem": "Sistema no disponível"}
         
         sucesso, msg = self.gerenciador_propostas.rejeitar_proposta(
             proposta_id=proposta_id,
@@ -220,9 +220,9 @@ class IntegracaoProptas:
         por_humano: str,
         motivo: str = ""
     ) -> Dict[str, Any]:
-        """Humano marca para análise posterior."""
+        """Humano marca para anlise posterior."""
         if not hasattr(self, "gerenciador_propostas"):
-            return {"sucesso": False, "mensagem": "Sistema não disponível"}
+            return {"sucesso": False, "mensagem": "Sistema no disponível"}
         
         sucesso, msg = self.gerenciador_propostas.mover_para_analise(
             proposta_id=proposta_id,
@@ -233,7 +233,7 @@ class IntegracaoProptas:
         return {"sucesso": sucesso, "mensagem": msg}
 
     # =========================================================================
-    # API PÚBLICA - IA INICIAR CONSTRUÇÍO
+    # API PBLICA - IA INICIAR CONSTRUO
     # =========================================================================
 
     def iniciar_construcao_proposta(
@@ -241,17 +241,17 @@ class IntegracaoProptas:
         proposta_id: str,
         ia_solicitante: str
     ) -> Dict[str, Any]:
-        """âœ… NOVO: IA solicita início da construção (após enviar código)."""
+        """[OK] NOVO: IA solicita incio da construo (aps enviar cdigo)."""
         if not hasattr(self, "construtor_ferramentas"):
-            return {"sucesso": False, "mensagem": "Sistema não disponível"}
+            return {"sucesso": False, "mensagem": "Sistema no disponível"}
         
-        # Verificar que IA é a proprietária
+        # Verificar que IA  a proprietria
         proposta = self.gerenciador_propostas.obter_proposta(proposta_id)
         if not proposta:
-            return {"sucesso": False, "mensagem": "Proposta não encontrada"}
+            return {"sucesso": False, "mensagem": "Proposta no encontrada"}
         
         if proposta.get("ia_solicitante") != ia_solicitante:
-            return {"sucesso": False, "mensagem": "âŒ Você não é a proprietária"}
+            return {"sucesso": False, "mensagem": "[ERRO] você no  a proprietria"}
         
         sucesso, msg = self.construtor_ferramentas.iniciar_construcao(
             proposta_id=proposta_id,
@@ -261,7 +261,7 @@ class IntegracaoProptas:
         return {"sucesso": sucesso, "mensagem": msg}
 
     # =========================================================================
-    # API PÚBLICA - SOLICITAR ARQUIVOS
+    # API PBLICA - SOLICITAR ARQUIVOS
     # =========================================================================
 
     def solicitar_arquivos_para_construcao(
@@ -287,7 +287,7 @@ class IntegracaoProptas:
             return {
                 "sucesso": False,
                 "modulos": {},
-                "mensagem": "Sistema de arquivos não disponível"
+                "mensagem": "Sistema de arquivos no disponível"
             }
         
         sucesso, modulos, msg = self.solicitador_arquivos.solicitar_arquivos(
@@ -311,23 +311,23 @@ class IntegracaoProptas:
         return self.solicitador_arquivos.listar_arquivos_disponiveis()
 
     # =========================================================================
-    # API PÚBLICA - ANÍLISE DE SEGURANÇA
+    # API PBLICA - ANLISE DE SEGURANA
     # =========================================================================
 
     def analisar_seguranca_proposta(
         self,
         proposta_id: str
     ) -> Dict[str, Any]:
-        """âœ… NOVO: Bot analisa segurança de proposta."""
+        """[OK] NOVO: Bot analisa segurana de proposta."""
         if not hasattr(self, "bot_seguranca"):
-            return {"sucesso": False, "mensagem": "Sistema não disponível"}
+            return {"sucesso": False, "mensagem": "Sistema no disponível"}
         
         sucesso, msg = self.bot_seguranca.analisar_proposta(proposta_id)
         
         return {"sucesso": sucesso, "mensagem": msg}
 
     # =========================================================================
-    # API PÚBLICA - LISTAR/OBTER STATUS
+    # API PBLICA - LISTAR/OBTER STATUS
     # =========================================================================
 
     def listar_propostas_pendentes(self) -> Dict[str, Any]:
@@ -353,7 +353,7 @@ class IntegracaoProptas:
         }
 
     def listar_propostas_em_analise(self) -> Dict[str, Any]:
-        """Lista propostas em análise posterior."""
+        """Lista propostas em anlise posterior."""
         if not hasattr(self, "gerenciador_propostas"):
             return {"propostas": []}
         
@@ -361,7 +361,7 @@ class IntegracaoProptas:
         return {"total": len(propostas), "propostas": propostas}
 
     def listar_propostas_em_construcao(self) -> Dict[str, Any]:
-        """Lista propostas em construção."""
+        """Lista propostas em construo."""
         if not hasattr(self, "gerenciador_propostas"):
             return {"propostas": []}
         
@@ -381,15 +381,15 @@ class IntegracaoProptas:
         }
 
     def obter_status_proposta(self, proposta_id: str) -> Dict[str, Any]:
-        """Obtém status completo de uma proposta."""
+        """Obtm status completo de uma proposta."""
         if not hasattr(self, "gerenciador_propostas"):
-            return {"sucesso": False, "mensagem": "Sistema não disponível"}
+            return {"sucesso": False, "mensagem": "Sistema no disponível"}
         
         proposta = self.gerenciador_propostas.obter_proposta(proposta_id)
         if not proposta:
-            return {"sucesso": False, "mensagem": "Proposta não encontrada"}
+            return {"sucesso": False, "mensagem": "Proposta no encontrada"}
         
-        historico = self.gerenciador_propostas.obter_historico(proposta_id)
+        histórico = self.gerenciador_propostas.obter_historico(proposta_id)
         
         return {
             "sucesso": True,
@@ -406,7 +406,7 @@ class IntegracaoProptas:
                 "seguranca": proposta.get("seguranca_json", {}),
                 "deploy": proposta.get("deploy_json", {})
             },
-            "historico": historico
+            "histórico": histórico
         }
 
     # =========================================================================

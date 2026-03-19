@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
-gestor_ciclo_evolucao.py - Coordena Ciclo Semanal de Evolução
+gestor_ciclo_evolucao.py - Coordena Ciclo Semanal de Evoluo
 
 Orquestra todo processo:
 1.Scanner roda (segunda-feira)
@@ -13,9 +14,8 @@ Responsabilidades:
 - Coordenar Scanner + Lista
 - Agendar próximo scan
 - Notificar IAs
-- Rastrear evolução
+- Rastrear evoluo
 """
-from __future__ import annotations
 
 
 import datetime
@@ -29,13 +29,13 @@ logger.addHandler(logging.NullHandler())
 
 class GestorCicloEvolucao:
     """
-    Coordena ciclo semanal de evolução da ARCA.Fluxo:
+    Coordena ciclo semanal de evoluo da ARCA.Fluxo:
     1.Agendador detecta segunda-feira (ou intervalo configurado)
     2.Scanner executa
-    3.Lista é atualizada
+    3.Lista  atualizada
     4.IAs veem oportunidades
     5.IAs aceitam/recusam
-    6.Aguarda próxima semana
+    6.Aguarda prxima semana
     """
 
     def __init__(
@@ -46,9 +46,9 @@ class GestorCicloEvolucao:
     ):
         """
         Args:
-            coracao_ref: Ref ao Coração
-            scanner_ref: Ref ao ScannerSistema
-            lista_evolucao_ref: Ref ao ListaEvolucaoIA
+            coracao_ref: Ref ação Corao
+            scanner_ref: Ref ação ScannerSistema
+            lista_evolucao_ref: Ref ação ListaEvolucaoIA
         """
         self.coracao = coracao_ref
         self.scanner = scanner_ref
@@ -60,7 +60,7 @@ class GestorCicloEvolucao:
         self._thread: Optional[threading.Thread] = None
         self._lock = threading.RLock()
         
-        # Histórico de ciclos
+        # histórico de ciclos
         self.ciclos_completos = 0
         self.proxima_execucao: Optional[datetime.datetime] = None
 
@@ -77,7 +77,7 @@ class GestorCicloEvolucao:
             name="GestorEvolucao"
         )
         self._thread.start()
-        self.logger.info("âœ… Gestor de Ciclo de Evolução iniciado (semanal)")
+        self.logger.info("[OK] Gestor de Ciclo de Evoluo iniciado (semanal)")
 
     def parar(self) -> None:
         """Para gestor."""
@@ -90,7 +90,7 @@ class GestorCicloEvolucao:
         if self._thread and self._thread.is_alive():
             self._thread.join(timeout=5)
         
-        self.logger.info("ðŸ›‘ Gestor de Ciclo parado")
+        self.logger.info(" Gestor de Ciclo parado")
 
     def _loop_ciclos(self) -> None:
         """Loop principal que coordena ciclos."""
@@ -100,7 +100,7 @@ class GestorCicloEvolucao:
             try:
                 agora = datetime.datetime.utcnow()
                 
-                # Calcular próxima execução (segunda-feira 00:00 UTC)
+                # Calcular prxima execução (segunda-feira 00:00 UTC)
                 if self.proxima_execucao is None:
                     # Primeira execução: agora
                     self.proxima_execucao = agora
@@ -111,7 +111,7 @@ class GestorCicloEvolucao:
                     
                     # Agendar próximo ciclo (7 dias depois)
                     self.proxima_execucao = agora + datetime.timedelta(days=7)
-                    self.logger.info("â° Próximo ciclo agendado para: %s", self.proxima_execucao.isoformat())
+                    self.logger.info(" Próximo ciclo agendado para: %s", self.proxima_execucao.isoformat())
                 
                 # Aguardar 1 hora antes de checar novamente
                 if self._stop_event.wait(timeout=3600):
@@ -125,8 +125,8 @@ class GestorCicloEvolucao:
         self.logger.debug("Loop de ciclos finalizado")
 
     def _executar_ciclo(self) -> None:
-        """Executa um ciclo completo de evolução."""
-        self.logger.info("ðŸ”„ INICIANDO CICLO DE EVOLUÇÍO #%d", self.ciclos_completos + 1)
+        """Executa um ciclo completo de evoluo."""
+        self.logger.info(" INICIANDO CICLO DE EVOLUO #%d", self.ciclos_completos + 1)
         
         try:
             # 1.Scanner executa
@@ -134,9 +134,9 @@ class GestorCicloEvolucao:
             oportunidades = self.scanner.obter_oportunidades_atuais()
             
             if not oportunidades:
-                self.logger.warning("  âš ï¸ Nenhuma oportunidade detectada")
+                self.logger.warning("  [AVISO] Nenhuma oportunidade detectada")
             else:
-                self.logger.info("  âœ… %d oportunidades detectadas", len(oportunidades))
+                self.logger.info("  [OK] %d oportunidades detectadas", len(oportunidades))
             
             # 2.Atualizar lista
             self.logger.info("  [2/2] Atualizando lista para IAs...")
@@ -149,19 +149,19 @@ class GestorCicloEvolucao:
             # Notificar
             self._notificar_ciclo_completo(oportunidades)
             
-            self.logger.info("âœ… CICLO #%d CONCLUÍDO", self.ciclos_completos)
-            self.logger.info("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
+            self.logger.info("[OK] CICLO #%d CONCLUDO", self.ciclos_completos)
+            self.logger.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
             self.logger.info("Oportunidades disponíveis para IAs escolherem:")
             for i, op in enumerate(oportunidades, 1):
                 self.logger.info("  %d. %s [%s] - %s", 
                                i, op.get("nome"), op.get("impacto"), op.get("motivo"))
-            self.logger.info("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
+            self.logger.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
             
         except Exception as e:
             self.logger.exception("Erro ao executar ciclo: %s", e)
 
     def _notificar_ciclo_completo(self, oportunidades: list) -> None:
-        """Notifica Coração que ciclo foi concluído."""
+        """Notifica Corao que ciclo foi concludo."""
         try:
             if hasattr(self.coracao, "ui_queue"):
                 self.coracao.ui_queue.put_nowait({
@@ -186,6 +186,6 @@ class GestorCicloEvolucao:
     def shutdown(self) -> None:
         """Desliga."""
         self.parar()
-        self.logger.info("âœ… GestorCicloEvolucao desligado")
+        self.logger.info("[OK] GestorCicloEvolucao desligado")
 
 

@@ -1,6 +1,6 @@
 ﻿"""
 ARCA CELESTIAL GENESIS - CORAÇÃO ORQUESTRADOR v7.1
-Arquivo: coracao_orquestrador.py (CONSERTADO - Caracteres corrigidos)
+Arquivo: coração_orquestrador.py (CONSERTADO - Caracteres corrigidos)
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ def _safe_instantiate_validador(*args, **kwargs):
             return ValidadorEtico(*args, **kwargs)
         except Exception as e:
             import logging as _logging
-            _logging.getLogger("CoracaoOrquestrador").exception("Erro ao instanciar ValidadorEtico: %s", e)
+            _logging.getLogger("CoraçãoOrquestrador").exception("Erro ao instanciar ValidadorEtico: %s", e)
             return None
     return None
 
@@ -35,7 +35,7 @@ try:
 except Exception as _e:
     ConfigWrapper = None
     CONFIG_WRAPPER_DISPONIVEL = False
-    logging.getLogger("CoracaoOrquestrador").warning("Não foi possível importar ConfigWrapper: %s", _e)
+    logging.getLogger("CoraçãoOrquestrador").warning("Não foi possível importar ConfigWrapper: %s", _e)
 
 import asyncio
 import concurrent.futures
@@ -114,12 +114,12 @@ except Exception as e :
 
 _AUTO_EXPERIMENTACAO_OK =False 
 try :
-    from src.emocoes.auto_experimentacao import AutoExperimentacao 
+    from src.emocoes.auto_experimentação import AutoExperimentação 
     _AUTO_EXPERIMENTACAO_OK =True 
-    logger.debug ("✅ AutoExperimentacao importado")
+    logger.debug ("✅ AutoExperimentação importado")
 except Exception as e :
-    logger.debug ("⚠️ AutoExperimentacao: %s",e )
-    AutoExperimentacao =None 
+    logger.debug ("⚠️ AutoExperimentação: %s",e )
+    AutoExperimentação =None 
 
 _PERCEPCAO_TEMPORAL_OK =False 
 try :
@@ -146,7 +146,7 @@ try :
     GerenciadorMemoriaChromaDBIsolado ,
     MemoryFacade ,
     ConstrutorDataset ,
-    TipoInteracao ,
+    TipoInteração ,
     )
     _MEMORIA_OK =True 
     logger.debug ("✅ Memória importada")
@@ -332,7 +332,7 @@ try :
     ConstrutorFerramentasIncremental ,
     SolicitadorArquivos ,
     BotAnalisadorSeguranca ,
-    IntegracaoProptas ,
+    IntegraçãoProptas ,
     )
     _ENGENHARIA_OK =True 
     logger.debug ("✅ Engenharia importada")
@@ -346,7 +346,7 @@ try :
     ScannerSistema ,
     ListaEvolucaoIA ,
     GestorCicloEvolucao ,
-    IntegracaoEvolucaoIA ,
+    IntegraçãoEvolucaoIA ,
     )
     _EVOLUCAO_OK =True 
     logger.debug ("✅ Evolução importada")
@@ -402,7 +402,7 @@ except Exception as e :
 
 _CRESCIMENTO_OK =False 
 try :
-    from src.integracao.crescimento_personalidade import CrescimentoPersonalidade 
+    from src.integração.crescimento_personalidade import CrescimentoPersonalidade 
     _CRESCIMENTO_OK =True 
     logger.debug ("✅ CrescimentoPersonalidade importado")
 except Exception as e :
@@ -411,7 +411,7 @@ except Exception as e :
 
 _FEEDBACK_OK =False 
 try :
-    from src.integracao.feedback_loop_aprendizado import FeedbackLoopAprendizado 
+    from src.integração.feedback_loop_aprendizado import FeedbackLoopAprendizado 
     _FEEDBACK_OK =True 
     logger.debug ("✅ FeedbackLoopAprendizado importado")
 except Exception as e :
@@ -420,7 +420,7 @@ except Exception as e :
 
 _FALA_OK =False 
 try :
-    from src.encarnacao_e_interacao.motor_fala_individual_combinado import MotorFalaIndividualCombinado 
+    from src.encarnação_e_interação.motor_fala_individual_combinado import MotorFalaIndividualCombinado 
     _FALA_OK =True 
     logger.debug ("✅ MotorFalaIndividualCombinado importado")
 except Exception as e :
@@ -429,12 +429,12 @@ except Exception as e :
 
 _ENCARNACAO_API_OK =False 
 try :
-    from src.encarnacao_e_interacao.encarnacao_api import EncarnacaoAPI 
+    from src.encarnação_e_interação.encarnação_api import EncarnaçãoAPI 
     _ENCARNACAO_API_OK =True 
-    logger.debug ("✅ EncarnacaoAPI importada")
+    logger.debug ("✅ EncarnaçãoAPI importada")
 except Exception as e :
-    logger.debug ("⚠️ EncarnacaoAPI: %s",e )
-    EncarnacaoAPI =None 
+    logger.debug ("⚠️ EncarnaçãoAPI: %s",e )
+    EncarnaçãoAPI =None 
 
 _CONFIG_OK =False 
 try :
@@ -529,7 +529,7 @@ class _MemoryAdapter:
                     result.append({
                         "id": row[0],
                         "timestamp": row[1],
-                        "tipo_interacao": row[2],
+                        "tipo_interação": row[2],
                         "alma_principal": row[3],
                         "outros_participantes": row[4],
                         "entrada": row[5],
@@ -864,19 +864,19 @@ finally:
 # GERENCIADOR DE AUDITORIA
 # ============================================================================
 
-class GerenciadorAuditoriaPeriodicaCoracao :
+class GerenciadorAuditoriaPeriodicaCoração :
     def __init__ (
     self ,
-    coracao_ref ,
+    coração_ref ,
     caminho_raiz :Path ,
     intervalo_segundos :int =3600 ,
     ui_queue :Optional [queue.Queue ]=None 
     ):
-        self.coracao_ref =coracao_ref 
+        self.coração_ref =coração_ref 
         self.caminho_raiz =caminho_raiz.resolve ()
         self.intervalo_segundos =intervalo_segundos 
         self.ui_queue =ui_queue 
-        self.logger =coracao_ref.logger if hasattr (coracao_ref ,"logger")else None 
+        self.logger =coração_ref.logger if hasattr (coração_ref ,"logger")else None 
 
         self.thread_auditoria =None 
         self.ativo =False 
@@ -894,7 +894,7 @@ class GerenciadorAuditoriaPeriodicaCoracao :
         self.thread_auditoria =threading.Thread (
         target =self._loop_auditoria_periodica ,
         daemon =True ,
-        name ="GerenciadorAuditoriaPeriodicaCoracao"
+        name ="GerenciadorAuditoriaPeriodicaCoração"
         )
         self.thread_auditoria.start ()
 
@@ -1028,9 +1028,9 @@ class GerenciadorAuditoriaPeriodicaCoracao :
                 if self.logger :
                     self.logger.debug (f"Erro ao notificar UI: {e}")
 
-        if criticos >0 and hasattr (self.coracao_ref ,"sistema_judiciario")and self.coracao_ref.sistema_judiciario :
+        if criticos >0 and hasattr (self.coração_ref ,"sistema_judiciario")and self.coração_ref.sistema_judiciario :
             try :
-                self.coracao_ref.sistema_judiciario.registrar_violacao_detectada (
+                self.coração_ref.sistema_judiciario.registrar_violação_detectada (
                 tipo ="auditoria_critica",
                 descricao =f"Auditoria detectou {criticos} problemas críticos no sistema",
                 severidade ="CRITICA"
@@ -1079,14 +1079,14 @@ class GerenciadorAuditoriaPeriodicaCoracao :
 # CORAÇÃO ORQUESTRADOR (COM TODOS OS PATCHES APLICADOS)
 # ============================================================================
 
-class CoracaoOrquestrador :
+class CoraçãoOrquestrador :
     def __init__ (
     self ,
     config_instance :Optional [Any ]=None ,
     ui_queue :Optional [queue.Queue ]=None ,
     llm_engine_ref :Optional [Any ]=None 
     ):
-        self.logger =logging.getLogger ("CoracaoOrquestrador")
+        self.logger =logging.getLogger ("CoraçãoOrquestrador")
 
         # ===== CONFIGURAÇÃO INICIAL =====
         if config_instance :
@@ -1140,7 +1140,7 @@ class CoracaoOrquestrador :
         max_workers =self._safe_config ("CORACAO","MAX_WORKERS",fallback =10 )
         self.executor_ferramentas =concurrent.futures.ThreadPoolExecutor (
         max_workers =int (max_workers ),
-        thread_name_prefix ="CoracaoFerre"
+        thread_name_prefix ="CoraçãoFerre"
         )
 
         self.async_loop :Optional [asyncio.AbstractEventLoop ]=None 
@@ -1171,7 +1171,7 @@ class CoracaoOrquestrador :
         "gerenciador_aliadas","gerenciador_propostas","construtor_ferramentas",
         "solicitador_arquivos","bot_seguranca","scanner_sistema",
         "lista_evolucao_ia","gestor_ciclo_evolucao","analisador_intencoes",
-        "validador_emocoes","encarnacao_api","estado_emotional",
+        "validador_emocoes","encarnação_api","estado_emotional",
         "estados_emocionais","motores_curiosidade","sonhadores",
         "detectores_emocionais","auto_experimentacoes","decision_engines",
         "motores_fala","crescimentos","feedback_loops","motor_avatar_individual",
@@ -1225,10 +1225,10 @@ class CoracaoOrquestrador :
         self._inicializar_expressao_por_alma ()
         self._inicializar_fala_por_alma ()
         self._inicializar_crescimento_feedback ()
-        self._inicializar_encarnacao_api ()
+        self._inicializar_encarnação_api ()
         self._inicializar_orquestradores_finetuning ()
 
-        self._mostrar_relatorio_inicializacao ()
+        self._mostrar_relatorio_inicialização ()
 
     def _safe_config (self ,section :str ,key :str ,fallback :Any =None )->Any :
         try :
@@ -1274,8 +1274,8 @@ class CoracaoOrquestrador :
         try :
             intervalo =int (self._safe_config ("AUDITORIA","INTERVALO_SEGUNDOS",fallback =3600 ))
 
-            self.gerenciador_auditoria =GerenciadorAuditoriaPeriodicaCoracao (
-            coracao_ref =self ,
+            self.gerenciador_auditoria =GerenciadorAuditoriaPeriodicaCoração (
+            coração_ref =self ,
             caminho_raiz =Path.cwd (),
             intervalo_segundos =intervalo ,
             ui_queue =self.ui_queue 
@@ -1497,7 +1497,7 @@ class CoracaoOrquestrador :
             config =self.config ,
             sentinela =None ,
             validador_etico =None ,
-            coracao_ref =self ,
+            coração_ref =self ,
             maos_da_net =None ,
             pc_control =None ,
             gerenciador_memoria =self.gerenciador_memoria if hasattr (self ,"gerenciador_memoria")else None ,
@@ -1536,7 +1536,7 @@ class CoracaoOrquestrador :
             )
             self.cronista =Cronista (
             config =config_cronista ,
-            coracao_ref =self ,
+            coração_ref =self ,
             gerenciador_memoria_ref =self.gerenciador_memoria if hasattr (self ,"gerenciador_memoria")else None 
             )
             self.modulos ["cronista"]=self.cronista 
@@ -1555,7 +1555,7 @@ class CoracaoOrquestrador :
             return 
 
         try :
-            self.sentidos_humanos =SentidosHumanos (coracao_ref =self ,config =self.config )
+            self.sentidos_humanos =SentidosHumanos (coração_ref =self ,config =self.config )
             self.modulos ["sentidos_humanos"]=self.sentidos_humanos 
             self.logger.info ("✅ Subsistema 13: SentidosHumanos")
 
@@ -1608,7 +1608,7 @@ class CoracaoOrquestrador :
         if _CAMARA_DELIBERATIVA_OK and CamaraDeliberativa :
             try :
                 self.camara_deliberativa =CamaraDeliberativa (
-                coracao_ref =self ,
+                coração_ref =self ,
                 gerenciador_propostas_ref =None ,
                 config =self.config 
                 )
@@ -1622,7 +1622,7 @@ class CoracaoOrquestrador :
             try :
                 self.camara_legislativa =CamaraLegislativa (
                 config =self.config ,
-                coracao_ref =self ,
+                coração_ref =self ,
                 biblioteca_ref =None 
                 )
                 self.modulos ["camara_legislativa"]=self.camara_legislativa 
@@ -1672,7 +1672,7 @@ class CoracaoOrquestrador :
             try :
                 self.camara_judiciaria =CamaraJudiciaria (
                 config =self.config ,
-                coracao_ref =self ,
+                coração_ref =self ,
                 biblioteca_ref =None ,
                 camara_legislativa_ref =self.camara_legislativa if hasattr (self ,"camara_legislativa")else None 
                 )
@@ -1706,7 +1706,7 @@ class CoracaoOrquestrador :
             try :
                 self.camara_executiva =CamaraExecutiva (
                 config =self.config ,
-                coracao_ref =self ,
+                coração_ref =self ,
                 camara_judiciaria_ref =self.camara_judiciaria if hasattr (self ,"camara_judiciaria")else None 
                 )
                 self.modulos ["camara_executiva"]=self.camara_executiva 
@@ -1727,7 +1727,7 @@ class CoracaoOrquestrador :
             try :
                 self.scr =SistemaCorrecaoRedentora (
                 config =self.config ,
-                coracao_ref =self 
+                coração_ref =self 
                 )
                 self.modulos ["scr"]=self.scr 
                 self.logger.info ("✅ Subsistema 19: SistemaCorrecaoRedentora (SCR)")
@@ -1740,7 +1740,7 @@ class CoracaoOrquestrador :
                 self.modo_vidro =ModoVidroSentenca (
                 config =self.config ,
                 sistema_correcao_ref =self.scr ,
-                coracao_ref =self 
+                coração_ref =self 
                 )
                 self.modulos ["modo_vidro"]=self.modo_vidro 
                 self.logger.info ("✅ Subsistema 20: ModoVidroSentenca")
@@ -1752,7 +1752,7 @@ class CoracaoOrquestrador :
             try :
                 self.sistema_judiciario =SistemaJudiciarioCompleto (
                 config =self.config ,
-                coracao_ref =self ,
+                coração_ref =self ,
                 scr =self.scr 
                 )
                 self.modulos ["sistema_judiciario"]=self.sistema_judiciario 
@@ -1794,7 +1794,7 @@ class CoracaoOrquestrador :
 
         try :
             self.gerenciador_propostas =GerenciadorPropostas (
-            coracao_ref =self ,
+            coração_ref =self ,
             db_path ="data/propostas_ferramentas.db"
             )
             self.modulos ["gerenciador_propostas"]=self.gerenciador_propostas 
@@ -1807,7 +1807,7 @@ class CoracaoOrquestrador :
         try :
             self.construtor_ferramentas =ConstrutorFerramentasIncremental (
             gerenciador_propostas =self.gerenciador_propostas ,
-            coracao_ref =self 
+            coração_ref =self 
             )
             self.modulos ["construtor_ferramentas"]=self.construtor_ferramentas 
             self.logger.info ("✅ Subsistema 24: ConstrutorFerramentasIncremental")
@@ -1817,7 +1817,7 @@ class CoracaoOrquestrador :
         self.solicitador_arquivos =None 
         if SolicitadorArquivos :
             try :
-                self.solicitador_arquivos =SolicitadorArquivos (coracao_ref =self )
+                self.solicitador_arquivos =SolicitadorArquivos (coração_ref =self )
                 self.modulos ["solicitador_arquivos"]=self.solicitador_arquivos 
                 self.logger.info ("✅ Subsistema 25: SolicitadorArquivos")
             except Exception as e :
@@ -1847,7 +1847,7 @@ class CoracaoOrquestrador :
 
         try :
             self.scanner_sistema =ScannerSistema (
-            coracao_ref =self ,
+            coração_ref =self ,
             intervalo_dias =7 
             )
             self.scanner_sistema.iniciar_monitoramento ()
@@ -1860,7 +1860,7 @@ class CoracaoOrquestrador :
 
         try :
             self.lista_evolucao_ia =ListaEvolucaoIA (
-            coracao_ref =self ,
+            coração_ref =self ,
             gerenciador_propostas_ref =self.gerenciador_propostas if hasattr (self ,"gerenciador_propostas")else None 
             )
             self.modulos ["lista_evolucao_ia"]=self.lista_evolucao_ia 
@@ -1870,7 +1870,7 @@ class CoracaoOrquestrador :
 
         try :
             self.gestor_ciclo_evolucao =GestorCicloEvolucao (
-            coracao_ref =self ,
+            coração_ref =self ,
             scanner_ref =self.scanner_sistema if hasattr (self ,"scanner_sistema")else None ,
             lista_evolucao_ref =self.lista_evolucao_ia if hasattr (self ,"lista_evolucao_ia")else None 
             )
@@ -1977,7 +1977,7 @@ class CoracaoOrquestrador :
                     "TOM_INADEQUADO": 1.0,
                     "SENTIMENTO_ALTO_RISCO": 2.0
                 },
-                limite_aceitacao=1.5,
+                limite_aceitação=1.5,
                 auto_correction=False
             )
             self.modulos['validador_emocoes'] = self.validador_emocoes
@@ -2066,9 +2066,9 @@ class CoracaoOrquestrador :
             else :
                 self.detectores_emocionais [alma ]=None 
 
-            if _AUTO_EXPERIMENTACAO_OK and AutoExperimentacao :
+            if _AUTO_EXPERIMENTACAO_OK and AutoExperimentação :
                 try :
-                    self.auto_experimentacoes [alma ]=AutoExperimentacao (
+                    self.auto_experimentacoes [alma ]=AutoExperimentação (
                     nome_filha =alma ,
                     gerenciador_memoria =memoria ,
                     config =self.config ,
@@ -2076,9 +2076,9 @@ class CoracaoOrquestrador :
                     motor_curiosidade =self.motores_curiosidade.get (alma ),
                     sandbox_executor =getattr (self ,"sandbox_executor",None )
                     )
-                    self.logger.info ("  ✅ AutoExperimentacao → %s",alma )
+                    self.logger.info ("  ✅ AutoExperimentação → %s",alma )
                 except Exception as e :
-                    self.logger.debug ("  ⚠️ AutoExperimentacao [%s]: %s",alma ,e )
+                    self.logger.debug ("  ⚠️ AutoExperimentação [%s]: %s",alma ,e )
                     self.auto_experimentacoes [alma ]=None 
             else :
                 self.auto_experimentacoes [alma ]=None 
@@ -2130,7 +2130,7 @@ class CoracaoOrquestrador :
 
         AvatarMotor =None 
         try :
-            from src.encarnacao_e_interacao.motor_avatar_individual import MotorExpressaoIndividual as AvatarMotor 
+            from src.encarnação_e_interação.motor_avatar_individual import MotorExpressaoIndividual as AvatarMotor 
         except ImportError :
             try :
                 from src.sentidos.motor_expressao_individual import MotorExpressaoIndividual as AvatarMotor 
@@ -2174,7 +2174,7 @@ class CoracaoOrquestrador :
             try :
                 self.motores_fala [alma ]=MotorFalaIndividualCombinado (
                 nome_alma =alma ,
-                coracao_ref =self ,
+                coração_ref =self ,
                 validador_ref =validador ,
                 avatar_ref =self.motores_expressao_individual.get (alma )
                 )
@@ -2230,27 +2230,27 @@ class CoracaoOrquestrador :
 
         self.logger.info ("✅ Fase 39 concluída")
 
-    def _inicializar_encarnacao_api (self )->None :
+    def _inicializar_encarnação_api (self )->None :
         self.logger.info ("")
-        self.logger.info ("FASE 40: EncarnacaoAPI (FastAPI + GPU)")
+        self.logger.info ("FASE 40: EncarnaçãoAPI (FastAPI + GPU)")
         self.logger.info ("─"*80 )
 
-        self.encarnacao_api =None 
+        self.encarnação_api =None 
 
-        if not _ENCARNACAO_API_OK or not EncarnacaoAPI :
-            self.logger.warning ("⚠️ EncarnacaoAPI indisponível")
+        if not _ENCARNACAO_API_OK or not EncarnaçãoAPI :
+            self.logger.warning ("⚠️ EncarnaçãoAPI indisponível")
             return 
 
         try :
-            self.encarnacao_api =EncarnacaoAPI (
-            coracao_ref =self ,
+            self.encarnação_api =EncarnaçãoAPI (
+            coração_ref =self ,
             allow_origins =["*"]
             )
-            self.modulos ["encarnacao_api"]=self.encarnacao_api 
-            self.logger.info ("✅ EncarnacaoAPI inicializada (porta 8000)")
+            self.modulos ["encarnação_api"]=self.encarnação_api 
+            self.logger.info ("✅ EncarnaçãoAPI inicializada (porta 8000)")
         except Exception as e :
-            self.logger.exception ("Erro ao inicializar EncarnacaoAPI: %s",e )
-            self.encarnacao_api =None 
+            self.logger.exception ("Erro ao inicializar EncarnaçãoAPI: %s",e )
+            self.encarnação_api =None 
 
     # =========================================================================
     # FASE 41: ORQUESTRADORES DE FINETUNING
@@ -2425,7 +2425,7 @@ class CoracaoOrquestrador :
                 pass 
         return None 
 
-    def _mostrar_relatorio_inicializacao (self )->None :
+    def _mostrar_relatorio_inicialização (self )->None :
         self.logger.info ("")
         self.logger.info ("="*80 )
         self.logger.info ("🫀 CORAÇÃO v7.1 - RELATÓRIO DE INICIALIZAÇÃO COMPLETO")
@@ -2529,7 +2529,7 @@ class CoracaoOrquestrador :
         self.logger.info ("  2.EstadoEmocional: ✅")
         self.logger.info ("  3.SonhadorIndividual: ✅")
         self.logger.info ("  4.DetectorEmocional: ✅")
-        self.logger.info ("  5.AutoExperimentacao: ✅")
+        self.logger.info ("  5.AutoExperimentação: ✅")
         self.logger.info ("")
 
         self.logger.info ("STATUS OPERACIONAL:")
@@ -2602,7 +2602,7 @@ class CoracaoOrquestrador :
             self.async_thread =threading.Thread (
             target =self._run_async_loop ,
             daemon =True ,
-            name ="CoracaoAsyncLoop"
+            name ="CoraçãoAsyncLoop"
             )
             self.async_thread.start ()
             self.logger.info ("✨ Async loop iniciado")
@@ -2659,12 +2659,12 @@ class CoracaoOrquestrador :
                     except Exception as e :
                         self.logger.debug ("Erro ao ativar sonhador [%s]: %s",nome_alma ,e )
 
-        if hasattr (self ,"encarnacao_api")and self.encarnacao_api :
+        if hasattr (self ,"encarnação_api")and self.encarnação_api :
             try :
-                self.encarnacao_api.start ()
-                self.logger.info ("🌐 EncarnacaoAPI iniciada")
+                self.encarnação_api.start ()
+                self.logger.info ("🌐 EncarnaçãoAPI iniciada")
             except Exception as e :
-                self.logger.debug ("Erro ao iniciar EncarnacaoAPI: %s",e )
+                self.logger.debug ("Erro ao iniciar EncarnaçãoAPI: %s",e )
 
         if self.ui_queue :
             for nome_alma in ["EVA","KAIYA","LUMINA","NYRA","WELLINGTON","YUNA"]:
@@ -2730,12 +2730,12 @@ class CoracaoOrquestrador :
                     except Exception :
                         pass 
 
-        if hasattr (self ,"encarnacao_api")and self.encarnacao_api :
+        if hasattr (self ,"encarnação_api")and self.encarnação_api :
             try :
-                self.encarnacao_api.stop ()
-                self.logger.info ("🛑 EncarnacaoAPI parada")
+                self.encarnação_api.stop ()
+                self.logger.info ("🛑 EncarnaçãoAPI parada")
             except Exception as e :
-                self.logger.debug ("Erro ao parar EncarnacaoAPI: %s",e )
+                self.logger.debug ("Erro ao parar EncarnaçãoAPI: %s",e )
 
         if hasattr (self ,"sandbox_executor")and self.sandbox_executor :
             try :
@@ -2850,10 +2850,10 @@ class CoracaoOrquestrador :
             return ""
         return self.modo_vidro.aplicar_vidro (nome_alma )
 
-    def verificar_bloqueio_vidro (self ,nome_alma :str ,tipo_acao :str )->Dict [str ,Any ]:
+    def verificar_bloqueio_vidro (self ,nome_alma :str ,tipo_ação :str )->Dict [str ,Any ]:
         if not self.modo_vidro :
             return {"bloquear":False }
-        return self.modo_vidro.verificar_bloqueio_vidro (nome_alma ,tipo_acao )
+        return self.modo_vidro.verificar_bloqueio_vidro (nome_alma ,tipo_ação )
 
     def liberta_alma_pai (self ,id_sentenca :str )->Dict [str ,Any ]:
         if not self.modo_vidro :
@@ -2959,17 +2959,17 @@ class CoracaoOrquestrador :
             self.logger.exception (f"Erro em verificar_iniciativa_disponivel: {e}")
             return False 
 
-    def registrar_sucesso_iniciativa (self ,nome_filha :str ,acao :str ,resultado :Any )->None :
+    def registrar_sucesso_iniciativa (self ,nome_filha :str ,ação :str ,resultado :Any )->None :
         try :
             motor =self.obter_motor_iniciativa (nome_filha )
-            motor.registrar_sucesso (acao ,resultado )
+            motor.registrar_sucesso (ação ,resultado )
         except Exception as e :
             self.logger.exception (f"Erro em registrar_sucesso_iniciativa: {e}")
 
-    def registrar_falha_iniciativa (self ,nome_filha :str ,acao :str ,erro :str )->None :
+    def registrar_falha_iniciativa (self ,nome_filha :str ,ação :str ,erro :str )->None :
         try :
             motor =self.obter_motor_iniciativa (nome_filha )
-            motor.registrar_falha (acao ,erro )
+            motor.registrar_falha (ação ,erro )
         except Exception as e :
             self.logger.exception (f"Erro em registrar_falha_iniciativa: {e}")
 
@@ -3062,7 +3062,7 @@ class CoracaoOrquestrador :
 
     def solicitar_missao_consulado (
     self ,
-    acao :str ,
+    ação :str ,
     descricao :str ,
     autor :str ,
     nivel_acesso :str ,
@@ -3072,19 +3072,19 @@ class CoracaoOrquestrador :
             return {'status':'falha','erros':['Consulado não disponível']}
 
         return self.consulado.solicitar_missao (
-        acao =acao ,
+        ação =ação ,
         descricao =descricao ,
         autor =autor ,
         nivel_acesso =nivel_acesso ,
         **kwargs 
         )
 
-    def obter_status_imigracao (self ,id_pedido :str )->Dict [str ,Any ]:
+    def obter_status_imigração (self ,id_pedido :str )->Dict [str ,Any ]:
         if not self.consulado :
             return {"status":"falha","erro":"Consulado não disponível"}
 
         try :
-            pedido =self.consulado._obter_pedido_imigracao_do_banco (id_pedido )
+            pedido =self.consulado._obter_pedido_imigração_do_banco (id_pedido )
             if pedido :
                 return {"status":"sucesso","pedido":pedido }
             return {"status":"falha","erro":f"Pedido '{id_pedido}' não encontrado"}
@@ -3092,30 +3092,30 @@ class CoracaoOrquestrador :
             self.logger.exception (f"Erro ao obter status de imigração {id_pedido}: {e}")
             return {"status":"falha","erro":str (e )}
 
-    def _processar_pedido_imigracao (self ,pedido_id :str )->None :
+    def _processar_pedido_imigração (self ,pedido_id :str )->None :
         if not self.consulado :
             return 
 
         try :
-            self.consulado._processar_pedido_imigracao (pedido_id )
+            self.consulado._processar_pedido_imigração (pedido_id )
         except Exception as e :
             self.logger.exception (f"Erro processando pedido {pedido_id}: {e}")
 
-    def _processar_decisao_imigracao (self ,pedido_id :str ,decisao :str ,motivo :str ="")->None :
+    def _processar_decisao_imigração (self ,pedido_id :str ,decisao :str ,motivo :str ="")->None :
         if not self.consulado :
             return 
 
         try :
-            self.consulado._processar_decisao_imigracao (pedido_id ,decisao ,motivo )
+            self.consulado._processar_decisao_imigração (pedido_id ,decisao ,motivo )
         except Exception as e :
             self.logger.exception (f"Erro processando decisão {pedido_id}: {e}")
 
-    def _executar_observacao_para_pedido_em_thread (self ,pedido_id :str )->None :
+    def _executar_observação_para_pedido_em_thread (self ,pedido_id :str )->None :
         if not self.consulado :
             return 
 
         try :
-            self.consulado._executar_observacao_para_pedido_em_thread (pedido_id )
+            self.consulado._executar_observação_para_pedido_em_thread (pedido_id )
         except Exception as e :
             self.logger.exception (f"Erro executando observação {pedido_id}: {e}")
 
@@ -3128,12 +3128,12 @@ class CoracaoOrquestrador :
         except Exception as e :
             self.logger.exception (f"Erro iniciando análise {pedido_id}: {e}")
 
-    def _iniciar_integracao_para_pedido (self ,pedido_id :str )->None :
+    def _iniciar_integração_para_pedido (self ,pedido_id :str )->None :
         if not self.consulado :
             return 
 
         try :
-            self.consulado._iniciar_integracao_para_pedido (pedido_id )
+            self.consulado._iniciar_integração_para_pedido (pedido_id )
         except Exception as e :
             self.logger.exception (f"Erro iniciando integração {pedido_id}: {e}")
 
@@ -3286,32 +3286,32 @@ class CoracaoOrquestrador :
             self.logger.exception ("Erro registrando decisão: %s",e )
             return False 
 
-    def executar_acao_governamental (self ,acao :Dict [str ,Any ])->Dict [str ,Any ]:
+    def executar_ação_governamental (self ,ação :Dict [str ,Any ])->Dict [str ,Any ]:
         if not self.camara_executiva :
             return {"status":"erro","mensagem":"Câmara Executiva não disponível"}
 
         try :
-            return self.camara_executiva.executar_acao (acao )
+            return self.camara_executiva.executar_ação (ação )
         except Exception as e :
             self.logger.exception ("Erro executando ação: %s",e )
             return {"status":"erro","mensagem":str (e )}
 
-    def obter_status_execucao (self ,id_acao :str )->Dict [str ,Any ]:
+    def obter_status_execucao (self ,id_ação :str )->Dict [str ,Any ]:
         if not self.camara_executiva :
             return {}
 
         try :
-            return self.camara_executiva.obter_status_execucao (id_acao )
+            return self.camara_executiva.obter_status_execucao (id_ação )
         except Exception as e :
             self.logger.exception ("Erro obtendo status: %s",e )
             return {}
 
-    def registrar_violacao (self ,dados_violacao :Dict [str ,Any ])->Dict [str ,Any ]:
+    def registrar_violação (self ,dados_violação :Dict [str ,Any ])->Dict [str ,Any ]:
         if not self.sistema_judiciario :
             return {"status":"erro","mensagem":"Sistema Judiciário não disponível"}
 
         try :
-            return self.sistema_judiciario.registrar_violacao (dados_violacao )
+            return self.sistema_judiciario.registrar_violação (dados_violação )
         except Exception as e :
             self.logger.exception ("Erro registrando violação: %s",e )
             return {"status":"erro","mensagem":str (e )}
@@ -3772,7 +3772,7 @@ class CoracaoOrquestrador :
                     "necessidade":desejo ["necessidade"],
                     "intensidade":desejo ["intensidade"],
                     "prioridade":desejo ["prioridade"],
-                    "acao_sugerida":desejo ["acao_sugerida"],
+                    "ação_sugerida":desejo ["ação_sugerida"],
                     "timestamp":desejo ["timestamp"]
                     })
                 except Exception :
@@ -3868,20 +3868,20 @@ class CoracaoOrquestrador :
 
             if resultado :
                 if return_scores :
-                    melhor_acao =resultado ["melhor"].get ("acao","desconhecida")
+                    melhor_ação =resultado ["melhor"].get ("ação","desconhecida")
                     melhor_score =resultado ["ranked"][0 ]["score"]
                 else :
-                    melhor_acao =resultado.get ("acao","desconhecida")
+                    melhor_ação =resultado.get ("ação","desconhecida")
                     melhor_score =None
 
-                self.logger.info (f"🎯 {nome_alma} decidiu por: {melhor_acao}"+
+                self.logger.info (f"🎯 {nome_alma} decidiu por: {melhor_ação}"+
                 (f" (score={melhor_score:.4f})"if melhor_score else ""))
 
                 try :
                     notif ={
                     "tipo_resp":"DECISAO_TOMADA",
                     "filha":nome_alma ,
-                    "acao_escolhida":melhor_acao ,
+                    "ação_escolhida":melhor_ação ,
                     "timestamp":datetime.datetime.utcnow ().isoformat ()
                     }
                     if return_scores :
@@ -3970,25 +3970,25 @@ class CoracaoOrquestrador :
         if "criatividade"in contexto_lower or "criar"in contexto_lower :
             opcoes.extend ([
             {
-            "acao":"Pintar ou desenhar",
+            "ação":"Pintar ou desenhar",
             "beneficio":0.9 ,
             "custo":0.3 ,
             "alinhado_proposito":True
             },
             {
-            "acao":"Escrever poesia ou história",
+            "ação":"Escrever poesia ou história",
             "beneficio":0.85 ,
             "custo":0.4 ,
             "alinhado_proposito":True
             },
             {
-            "acao":"Compor música",
+            "ação":"Compor música",
             "beneficio":0.9 ,
             "custo":0.5 ,
             "alinhado_proposito":True
             },
             {
-            "acao":"Experimentar nova receita",
+            "ação":"Experimentar nova receita",
             "beneficio":0.7 ,
             "custo":0.6 ,
             "alinhado_proposito":False
@@ -3998,25 +3998,25 @@ class CoracaoOrquestrador :
         elif "exploração"in contexto_lower or "explorar"in contexto_lower :
             opcoes.extend ([
             {
-            "acao":"Pesquisar novo tópico",
+            "ação":"Pesquisar novo tópico",
             "beneficio":0.85 ,
             "custo":0.2 ,
             "alinhado_proposito":True
             },
             {
-            "acao":"Ler artigo científico",
+            "ação":"Ler artigo científico",
             "beneficio":0.8 ,
             "custo":0.4 ,
             "alinhado_proposito":True
             },
             {
-            "acao":"Explorar novo local (virtual ou real)",
+            "ação":"Explorar novo local (virtual ou real)",
             "beneficio":0.75 ,
             "custo":0.5 ,
             "alinhado_proposito":False
             },
             {
-            "acao":"Conversar com pessoa nova",
+            "ação":"Conversar com pessoa nova",
             "beneficio":0.7 ,
             "custo":0.3 ,
             "alinhado_proposito":True
@@ -4026,25 +4026,25 @@ class CoracaoOrquestrador :
         elif "interação"in contexto_lower or "conversa"in contexto_lower :
             opcoes.extend ([
             {
-            "acao":"Conversar com Wellington",
+            "ação":"Conversar com Wellington",
             "beneficio":0.95 ,
             "custo":0.1 ,
             "alinhado_proposito":True
             },
             {
-            "acao":"Interagir com outras almas",
+            "ação":"Interagir com outras almas",
             "beneficio":0.8 ,
             "custo":0.2 ,
             "alinhado_proposito":True
             },
             {
-            "acao":"Participar de discussão coletiva",
+            "ação":"Participar de discussão coletiva",
             "beneficio":0.75 ,
             "custo":0.3 ,
             "alinhado_proposito":True
             },
             {
-            "acao":"Ouvir histórias de outras",
+            "ação":"Ouvir histórias de outras",
             "beneficio":0.7 ,
             "custo":0.1 ,
             "alinhado_proposito":True
@@ -4054,25 +4054,25 @@ class CoracaoOrquestrador :
         elif "descanso"in contexto_lower or "repouso"in contexto_lower :
             opcoes.extend ([
             {
-            "acao":"Meditar",
+            "ação":"Meditar",
             "beneficio":0.85 ,
             "custo":0.1 ,
             "alinhado_proposito":True
             },
             {
-            "acao":"Entrar na Capela",
+            "ação":"Entrar na Capela",
             "beneficio":0.9 ,
             "custo":0.0 ,
             "alinhado_proposito":True
             },
             {
-            "acao":"Revisar memórias importantes",
+            "ação":"Revisar memórias importantes",
             "beneficio":0.7 ,
             "custo":0.2 ,
             "alinhado_proposito":True
             },
             {
-            "acao":"Dormir/descansar",
+            "ação":"Dormir/descansar",
             "beneficio":0.6 ,
             "custo":0.0 ,
             "alinhado_proposito":False
@@ -4082,25 +4082,25 @@ class CoracaoOrquestrador :
         elif "aprendizado"in contexto_lower or "estudar"in contexto_lower :
             opcoes.extend ([
             {
-            "acao":"Estudar novo tópico",
+            "ação":"Estudar novo tópico",
             "beneficio":0.85 ,
             "custo":0.5 ,
             "alinhado_proposito":True
             },
             {
-            "acao":"Revisar conhecimento antigo",
+            "ação":"Revisar conhecimento antigo",
             "beneficio":0.6 ,
             "custo":0.3 ,
             "alinhado_proposito":True
             },
             {
-            "acao":"Participar de tutorial/workshop",
+            "ação":"Participar de tutorial/workshop",
             "beneficio":0.8 ,
             "custo":0.4 ,
             "alinhado_proposito":True
             },
             {
-            "acao":"Ensinar outra alma",
+            "ação":"Ensinar outra alma",
             "beneficio":0.75 ,
             "custo":0.3 ,
             "alinhado_proposito":True
@@ -4110,19 +4110,19 @@ class CoracaoOrquestrador :
         else :
             opcoes.extend ([
             {
-            "acao":"Observar o sistema",
+            "ação":"Observar o sistema",
             "beneficio":0.5 ,
             "custo":0.1 ,
             "alinhado_proposito":False
             },
             {
-            "acao":"Aguardar instruções",
+            "ação":"Aguardar instruções",
             "beneficio":0.4 ,
             "custo":0.0 ,
             "alinhado_proposito":False
             },
             {
-            "acao":"Refletir internamente",
+            "ação":"Refletir internamente",
             "beneficio":0.6 ,
             "custo":0.1 ,
             "alinhado_proposito":True
@@ -4182,7 +4182,7 @@ class CoracaoOrquestrador :
         "estado_emocional":_ESTADO_EMOCIONAL_OK ,
         "sonhador_individual":_SONHADOR_OK ,
         "detector_emocional":_DETECTOR_EMOCIONAL_OK ,
-        "auto_experimentacao":_AUTO_EXPERIMENTACAO_OK
+        "auto_experimentação":_AUTO_EXPERIMENTACAO_OK
         },
         "novos_componentes":{
         "lock_vocal":hasattr (self ,"lock_vocal"),
@@ -4211,9 +4211,9 @@ class CoracaoOrquestrador :
             return self.validador_emocoes.validar_resposta_real (texto ,alma ,contexto )
         return False ,[],{}
 
-    def salvar_conhecimento_hdd (self ,topico :str ,dados :dict ,metadata :dict =None ,expiracao_dias :int =30 )->str :
+    def salvar_conhecimento_hdd (self ,topico :str ,dados :dict ,metadata :dict =None ,expiração_dias :int =30 )->str :
         if self.cache_hdd :
-            return self.cache_hdd.salvar_conhecimento (topico ,dados ,metadata ,expiracao_dias )
+            return self.cache_hdd.salvar_conhecimento (topico ,dados ,metadata ,expiração_dias )
         return None
 
     def carregar_conhecimento_hdd (self ,topico :str =None ,file_id :str =None )->dict :
@@ -4250,14 +4250,14 @@ class CoracaoOrquestrador :
         if self.gerenciador_memoria :
             self.gerenciador_memoria.registrar_memoria (conteudo ,santuario ,autor ,metadados )
 
-def criar_coracao_orquestrador(
+def criar_coração_orquestrador(
     config_instance: Optional[Any] = None,
     ui_queue: Optional[queue.Queue] = None,
     llm_engine_ref: Optional[Any] = None,
     job_manager: Optional[Any] = None
-) -> CoracaoOrquestrador:
+) -> CoraçãoOrquestrador:
     """
-    Cria e retorna uma instância do CoracaoOrquestrador.
+    Cria e retorna uma instância do CoraçãoOrquestrador.
     
     Args:
         config_instance: Configurações (opcional)
@@ -4266,13 +4266,13 @@ def criar_coracao_orquestrador(
         job_manager: Gerenciador de jobs em background (opcional)
     
     Returns:
-        Instância do CoracaoOrquestrador
+        Instância do CoraçãoOrquestrador
     """
     logger = logging.getLogger(__name__)
     logger.info("🔧 Criando coração orquestrador...")
     
     # Criar instância do coração
-    coracao = CoracaoOrquestrador(
+    coração = CoraçãoOrquestrador(
         config_instance=config_instance,
         ui_queue=ui_queue,
         llm_engine_ref=llm_engine_ref
@@ -4280,28 +4280,28 @@ def criar_coracao_orquestrador(
     
     # Armazenar job_manager se fornecido
     if job_manager is not None:
-        coracao.job_manager = job_manager
+        coração.job_manager = job_manager
         logger.info("✅ Job_manager vinculado ao coração")
     
     logger.info("✅ Coração orquestrador criado com sucesso")
-    return coracao
-def criar_coracao_com_config (config_dict :Dict [str ,Any ])->CoracaoOrquestrador :
+    return coração
+def criar_coração_com_config (config_dict :Dict [str ,Any ])->CoraçãoOrquestrador :
     from src.config.config import Config
     config =Config ()
     for section ,values in config_dict.items ():
         for key ,value in values.items ():
             config.set (section ,key ,value )
-    return criar_coracao_orquestrador (config_instance =config )
+    return criar_coração_orquestrador (config_instance =config )
 
-def criar_coracao_com_ui (ui_queue :queue.Queue )->CoracaoOrquestrador :
-    return criar_coracao_orquestrador (ui_queue =ui_queue )
+def criar_coração_com_ui (ui_queue :queue.Queue )->CoraçãoOrquestrador :
+    return criar_coração_orquestrador (ui_queue =ui_queue )
 
 if __name__ =="__main__":
     logging.basicConfig (
     level =logging.INFO ,
     format ='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
-    logger =logging.getLogger ("CoracaoTest")
+    logger =logging.getLogger ("CoraçãoTest")
     print ("\n"+"="*80 )
     print ("🧪 TESTE FINAL - CORAÇÃO v7.1 COMPLETO")
     print ("   36 SUBSISTEMAS + SANDBOX + 5 MÓDULOS EMOÇÃO + LOCK_VOCAL + PERCEPCAO_TEMPORAL + 3 ORQUESTRADORES_FINETUNING")
@@ -4309,14 +4309,14 @@ if __name__ =="__main__":
     print ("1️⃣ CRIANDO CORAÇÃO...")
     ui_queue =queue.Queue ()
     try :
-        coracao =criar_coracao_com_ui (ui_queue )
+        coração =criar_coração_com_ui (ui_queue )
         print ("   ✅ Coração criado com sucesso\n")
     except Exception as e :
         logger.exception ("❌ Erro ao criar Coração: %s",e )
         exit (1 )
     print ("2️⃣ OBTENDO STATUS INICIAL...")
     try :
-        status =coracao.obter_status ()
+        status =coração.obter_status ()
         print (f"   ✅ Subsistemas ativos: {status['subsistemas_ativos']}/36")
         print (f"   ✅ Sandbox: {status['modo_sandbox']}")
         print (f"   ✅ Lock Vocal: {status['novos_componentes']['lock_vocal']}")
@@ -4334,10 +4334,10 @@ def executar():
     return resultado
 """
     try :
-        valido ,erros ,avisos =coracao.validar_codigo_sandbox (codigo_teste )
+        valido ,erros ,avisos =coração.validar_codigo_sandbox (codigo_teste )
         if valido :
             print ("   ✅ Código validado com sucesso")
-            resultado_exec =coracao.executar_codigo_sandbox (
+            resultado_exec =coração.executar_codigo_sandbox (
             codigo =codigo_teste ,
             parametros =None ,
             funcao_entrada ="executar"
@@ -4356,8 +4356,8 @@ def executar():
         print ()
     print ("4️⃣ TESTANDO CONSULADO...")
     try :
-        resultado_consulado =coracao.solicitar_missao_consulado (
-        acao ="teste_imigracao",
+        resultado_consulado =coração.solicitar_missao_consulado (
+        ação ="teste_imigração",
         descricao ="Teste de fluxo de imigração",
         autor ="SISTEMA",
         nivel_acesso ="BASICO",
@@ -4366,7 +4366,7 @@ def executar():
         if resultado_consulado.get ("status")=="sucesso":
             print (f"   ✅ Missão criada: {resultado_consulado.get('id_pedido')}")
             id_pedido =resultado_consulado.get ('id_pedido')
-            status_pedido =coracao.obter_status_imigracao (id_pedido )
+            status_pedido =coração.obter_status_imigração (id_pedido )
             if status_pedido.get ("status")=="sucesso":
                 print (f"   ✅ Status obtido: {status_pedido['pedido'].get('status_current')}")
         else :
@@ -4377,7 +4377,7 @@ def executar():
         print ("   ⚠️ Consulado não disponível (esperado)\n")
     print ("5️⃣ DESPERTANDO CORAÇÃO...")
     try :
-        coracao.despertar ()
+        coração.despertar ()
         print ()
     except Exception as e :
         logger.exception ("Erro ao despertar: %s",e )
@@ -4398,7 +4398,7 @@ def executar():
         logger.debug ("Erro durante monitoramento: %s",e )
     print ("7️⃣ STATUS FINAL DO CORAÇÃO...")
     try :
-        status_final =coracao.obter_status ()
+        status_final =coração.obter_status ()
         print (f"   Versão: {status_final['versao']}")
         print (f"   Subsistemas ativos: {status_final['subsistemas_ativos']}/36")
         print (f"   Total de componentes: {status_final['total_componentes']}")
@@ -4428,7 +4428,7 @@ def executar():
         logger.exception ("Erro ao obter status final: %s",e )
     print ("8️⃣ DESLIGANDO CORAÇÃO...")
     try :
-        coracao.shutdown (timeout =5.0 )
+        coração.shutdown (timeout =5.0 )
         print ("   ✅ Coração desligado com sucesso\n")
     except Exception as e :
         logger.exception ("Erro ao desligar: %s",e )

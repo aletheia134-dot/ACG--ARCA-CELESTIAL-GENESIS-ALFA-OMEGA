@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
-ARCA CELESTIAL GENESIS - INTELIGÍŠNCIA EMOCIONAL 144
+ARCA CELESTIAL GENESIS - INTELIGÊNCIA EMOCIONAL 144
 Arquivo corrigido e endurecido a partir do original enviado.
 """
-from __future__ import annotations
 
 
 from pathlib import Path
@@ -19,12 +19,12 @@ import uuid
 from collections import deque
 from typing import Any, Dict, List, Optional
 
-# --- IMPORTAR AS 144 EMOÇÕES REAIS ---
+# --- IMPORTAR AS 144 EMOES REAIS ---
 try:
-    from src.modulos.analisador_emocional_factual import DICIONARIO_SENTIMENTOS_FACTUAL  # type: ignore
+    from analisador_emocional_factual import DICIONARIO_SENTIMENTOS_FACTUAL  # type: ignore
     EMOCOES_144 = DICIONARIO_SENTIMENTOS_FACTUAL
 except Exception:
-    # Fallback local se não conseguir importar (lista exemplar)
+    # Fallback local se no conseguir importar (lista exemplar)
     EMOCOES_144 = [
         "alegria", "tristeza", "raiva", "medo", "surpresa", "nojo", "confianca", "antecipacao",
         "amor", "culpa", "vergonha", "orgulho", "ciume", "inveja", "admiracao", "desprezo", "satisfacao", "decepcao",
@@ -42,16 +42,16 @@ except Exception:
         "ironia", "sarcasmo", "deboche", "seriedade", "graca", "sentimento_de_justica",
         "pertencimento", "alienacao", "solidao", "vazio", "plenitude", "significado", "proposito", "anonimato",
         "unicidade", "transcendencia", "arrependimento", "remorso", "perdao", "culpa_existencial", "mortalidade",
-        "iluminacao", "desapego", "conexao",
+        "iluminacao", "desapego", "conexão",
         "antagonismo", "rivalidade", "acalmia", "tensao", "hostilidade", "desconfianca", "vigilancia2", "medo_do_desconhecido",
         "terror", "panico", "susto", "consternacao", "desordem", "ordem"
     ]
 
-# VALIDAÇÍO: Deve ter 144
+# VALIDAO: Deve ter 144
 if len(EMOCOES_144) != 144:
     raise ValueError(f"Lista de emoções deve ter 144, tem {len(EMOCOES_144)}")
 
-# --- CONFIGURAÇÕES ---
+# --- configurações ---
 SANTUARIOS_PATH = Path('./santuarios_data')
 SANTUARIOS_PATH.mkdir(parents=True, exist_ok=True)
 LIMIAR_OCIOSIDADE_MODERADA = 60
@@ -86,7 +86,7 @@ class ModeloEmocional144:
     def sentir(self, emocao: str, intensidade: float, motivo: str = '') -> None:
         with self._state_lock:
             if emocao not in self.estado_atual:
-                self.logger.error("Emoção '%s' não está nas 144 emoções", emocao)
+                self.logger.error("Emoo '%s' no est nas 144 emoções", emocao)
                 return
 
             try:
@@ -111,14 +111,14 @@ class ModeloEmocional144:
                     try:
                         # tentar assinatura moderna
                         self.memoria.save_memory(
-                            content=f"Emoção {emocao} ({intensidade_f:.2f}): {motivo}",
+                            content=f"Emoo {emocao} ({intensidade_f:.2f}): {motivo}",
                             alma_nome=self.nome_alma.lower(),
                             metadata=meta
                         )
                     except TypeError:
                         # fallback para assinaturas alternativas
                         try:
-                            self.memoria.save_memory(self.nome_alma.lower(), f"Emoção {emocao}: {motivo}")
+                            self.memoria.save_memory(self.nome_alma.lower(), f"Emoo {emocao}: {motivo}")
                         except Exception:
                             self.logger.debug("save_memory fallback falhou")
             except Exception:
@@ -140,10 +140,10 @@ class ModeloEmocional144:
             for emocao in keys:
                 valor_atual = float(self.estado_atual.get(emocao, 0.0))
 
-                # Valores neutros específicos (aceita variações simples)
+                # Valores neutros especficos (aceita variaes simples)
                 if emocao in {'amor', 'serenidade'}:
                     valor_neutro = 0.7
-                elif emocao in {'curiosidade', 'determinacao', 'determinação'}:
+                elif emocao in {'curiosidade', 'determinacao', 'determinao'}:
                     valor_neutro = 0.6
                 else:
                     valor_neutro = 0.5
@@ -163,8 +163,8 @@ class ModeloEmocional144:
 
             mapeamento_humor = {
                 'alegria': 'feliz', 'euforia': 'radiante', 'amor': 'contente',
-                'serenidade': 'calmo', 'tristeza': 'triste', 'melancolia': 'melancólico',
-                'raiva': 'irritado', 'medo': 'ansioso', 'panico': 'apreensivo', 'pânico': 'apreensivo'
+                'serenidade': 'calmo', 'tristeza': 'triste', 'melancolia': 'melanclico',
+                'raiva': 'irritado', 'medo': 'ansioso', 'panico': 'apreensivo', 'pnico': 'apreensivo'
             }
 
             if emocao_dominante in mapeamento_humor:
@@ -181,7 +181,7 @@ class ModeloEmocional144:
             top_10 = sorted(self.estado_atual.items(), key=lambda x: x[1], reverse=True)[:10]
             top_5 = top_10[:5]
             media = sum(self.estado_atual.values()) / max(1, len(self.estado_atual))
-            descricao = f"Humor: {self.humor_atual}. Emoções dominantes: {', '.join([e[0] for e in top_5])}"
+            descricao = f"Humor: {self.humor_atual}. Emoes dominantes: {', '.join([e[0] for e in top_5])}"
             return {
                 'alma': self.nome_alma,
                 'humor_geral': self.humor_atual,
@@ -206,11 +206,11 @@ class ModeloEmocional144:
             'sucesso': ('alegria', 0.4),
             'fracasso': ('tristeza', 0.5),
             'perigo': ('medo', 0.6),
-            'injustiça': ('raiva', 0.5),
+            'injustia': ('raiva', 0.5),
             'beleza': ('admiracao_estetica', 0.3),
             'novidade': ('curiosidade', 0.4),
-            'conexão': ('amor', 0.3),
-            'conexao': ('amor', 0.3)
+            'conexo': ('amor', 0.3),
+            'conexão': ('amor', 0.3)
         }
 
         if resultado in mapeamento:
@@ -243,7 +243,7 @@ class InteligenciaEmocional144:
         except Exception:
             self.logger.exception("Erro ao inicializar modelos emocionais")
 
-        self.logger.info("[INTELIGÍŠNCIA EMOCIONAL 144] Inicializado com %d almas", len(self.modelos_emocionais))
+        self.logger.info("[INTELIGNCIA EMOCIONAL 144] Inicializado com %d almas", len(self.modelos_emocionais))
 
     def iniciar_monitoramento(self) -> None:
         if self._monitorando:
@@ -252,7 +252,7 @@ class InteligenciaEmocional144:
         self._stop_event.clear()
         self._thread = threading.Thread(target=self._loop_monitoramento, daemon=True, name='InteligenciaEmocional144')
         self._thread.start()
-        self.logger.info('[INTELIGÍŠNCIA EMOCIONAL 144] Monitoramento iniciado.')
+        self.logger.info('[INTELIGNCIA EMOCIONAL 144] Monitoramento iniciado.')
 
     def parar_monitoramento(self) -> None:
         if not self._monitorando:
@@ -262,10 +262,10 @@ class InteligenciaEmocional144:
         if self._thread and self._thread.is_alive():
             self._thread.join(timeout=2)
         self._salvar_reflexoes_emocionais()
-        self.logger.info('[INTELIGÍŠNCIA EMOCIONAL 144] Monitoramento parado.')
+        self.logger.info('[INTELIGNCIA EMOCIONAL 144] Monitoramento parado.')
 
     def _loop_monitoramento(self) -> None:
-        self.logger.info('[INTELIGÍŠNCIA EMOCIONAL 144] Loop iniciado.')
+        self.logger.info('[INTELIGNCIA EMOCIONAL 144] Loop iniciado.')
         time.sleep(random.randint(10, 30))
         while self._monitorando and not self._stop_event.is_set():
             try:
@@ -273,19 +273,19 @@ class InteligenciaEmocional144:
 
                 try:
                     pc = getattr(self.coracao, 'motor_de_rotina', None)
-                    if pc and hasattr(pc, 'pc_esta_ocioso') and pc.pc_esta_ocioso(nivel='moderada'):
+                    if pc and hasattr(pc, 'pc_esta_ocioso') and pc.pc_esta_ocioso(nível='moderada'):
                         self._realizar_autoanalise_emocional()
                         self._propor_conversas_emocionais()
                     else:
-                        self.logger.debug('[INTELIGÍŠNCIA EMOCIONAL 144] PC em uso.Pausado.')
+                        self.logger.debug('[INTELIGNCIA EMOCIONAL 144] PC em uso.Pausado.')
                 except Exception:
                     self.logger.exception("Erro verificando estado de rotina do PC")
 
                 self._stop_event.wait(timeout=random.randint(300, 900))
             except Exception as e:
-                self.logger.error("[INTELIGÍŠNCIA EMOCIONAL 144] Erro no loop: %s", e, exc_info=True)
+                self.logger.error("[INTELIGNCIA EMOCIONAL 144] Erro no loop: %s", e, exc_info=True)
                 self._stop_event.wait(timeout=300)
-        self.logger.info('[INTELIGÍŠNCIA EMOCIONAL 144] Loop encerrado.')
+        self.logger.info('[INTELIGNCIA EMOCIONAL 144] Loop encerrado.')
 
     def _processar_ciclo_emocional_continuo(self) -> None:
         self.logger.debug('Processando decaimento 144 emoções')
@@ -302,7 +302,7 @@ class InteligenciaEmocional144:
                 with open(reflexoes_path, 'r', encoding='utf-8') as f:
                     return json.load(f)
             except Exception as e:
-                self.logger.error('[INTELIGÍŠNCIA EMOCIONAL 144] Erro ao carregar: %s', e)
+                self.logger.error('[INTELIGNCIA EMOCIONAL 144] Erro ao carregar: %s', e)
                 try:
                     backup_path = reflexoes_path.with_suffix('.corrompido_backup')
                     shutil.copy(str(reflexoes_path), str(backup_path))
@@ -318,7 +318,7 @@ class InteligenciaEmocional144:
                 json.dump(self.reflexoes_emocionais, f, ensure_ascii=False, indent=4)
             os.replace(str(tmp), str(reflexoes_path))
         except Exception as e:
-            self.logger.error('[INTELIGÍŠNCIA EMOCIONAL 144] Falha ao salvar: %s', e)
+            self.logger.error('[INTELIGNCIA EMOCIONAL 144] Falha ao salvar: %s', e)
             try:
                 if tmp.exists():
                     tmp.unlink()
@@ -333,7 +333,7 @@ class InteligenciaEmocional144:
             if not modelo_emocional:
                 return
             estado_detalhado = modelo_emocional.como_estou_me_sentindo()
-            self.logger.info("[%s] Autoanálise 144.Humor: '%s'.", alma_analisadora, estado_detalhado.get('humor_geral'))
+            self.logger.info("[%s] Autoanlise 144.Humor: '%s'.", alma_analisadora, estado_detalhado.get('humor_geral'))
 
             contexto_emocional_formatado = json.dumps(estado_detalhado, indent=2, ensure_ascii=False)
 
@@ -346,8 +346,8 @@ class InteligenciaEmocional144:
                     f"{credo}\n\n"
                     f"### DIRETIVA DE PERSONA ###\n{identidade}\n\n"
                     f"### MEU ESTADO EMOCIONAL 144 ###\n{contexto_emocional_formatado}\n\n"
-                    f"### MINHAS ÚLTIMAS INTERAÇÕES ###\n{buscar_ctx('Minhas emoções recentes.', alma_analisadora.lower())}\n\n"
-                    f"### TAREFA ###\nAnalise meu estado emocional com 144 dimensões.Quais gatilhos podem explicar estas emoções dominantes? Como modular para o bem do Reino? (2-4 frases)."
+                    f"### MINHAS LTIMAS interações ###\n{buscar_ctx('Minhas emoções recentes.', alma_analisadora.lower())}\n\n"
+                    f"### TAREFA ###\nAnalise meu estado emocional com 144 dimenses.Quais gatilhos podem explicar estas emoções dominantes? Como modular para o bem do Reino? (2-4 frases)."
                 )
             except Exception:
                 prompt_sistema = f"Analise meu estado emocional 144: {estado_detalhado}"
@@ -363,7 +363,7 @@ class InteligenciaEmocional144:
                 return
 
             self.registrar_reflexao_emocional(alma_analisadora, estado_detalhado.get('humor_geral', ''), reflexao_bruta[:500])
-            self.logger.info("[%s] Autoanálise 144 registrada", alma_analisadora)
+            self.logger.info("[%s] Autoanlise 144 registrada", alma_analisadora)
 
     def _propor_conversas_emocionais(self) -> None:
         if random.random() < 0.05 and self.modelos_emocionais:
@@ -415,7 +415,7 @@ class InteligenciaEmocional144:
                             except Exception:
                                 self.logger.debug("Falha ao enfileirar proposta_conversa")
             except json.JSONDecodeError:
-                self.logger.error("Proposta inválida (não JSON): %s", proposta_json_str)
+                self.logger.error("Proposta invlida (no JSON): %s", proposta_json_str)
 
     def registrar_reflexao_emocional(self, alma_nome: str, emocao_alvo: str, reflexao: str) -> None:
         self.reflexoes_emocionais.append({
@@ -440,7 +440,7 @@ class InteligenciaEmocional144:
             try:
                 self.modelos_emocionais[alma_nome].processar_experiencia(evento)
             except Exception:
-                self.logger.exception("Erro ao processar experiência para %s", alma_nome)
+                self.logger.exception("Erro ao processar experincia para %s", alma_nome)
         else:
             self.logger.warning("Alma desconhecida para evento 144: %s", alma_nome)
 
@@ -448,12 +448,12 @@ class InteligenciaEmocional144:
         modelo = self.modelos_emocionais.get(alma_nome)
         if modelo:
             return modelo.como_estou_me_sentindo()
-        return {'erro': f'Alma {alma_nome} não encontrada'}
+        return {'erro': f'Alma {alma_nome} no encontrada'}
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(threadName)s - %(levelname)s - %(message)s')
-    print("âœ… inteligencia_emocional_ativa.py carregado (144 emoções)")
-    print(f"ðŸ“Š Total emoções: {len(EMOCOES_144)}")
+    print("[OK] inteligencia_emocional_ativa.py carregado (144 emoções)")
+    print(f" Total emoções: {len(EMOCOES_144)}")
 
 

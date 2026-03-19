@@ -27,7 +27,7 @@ def _get_from_env_or_dotenv(key: str) -> Optional[str]:
 
 def _collect_keys_for(names: List[str]) -> List[str]:
     """
-    Coleta chaves/ tokens a partir de vÃ¡rias possÃ­veis variÃ¡veis de ambiente
+    Coleta chaves/ tokens a partir de vrias possíveis variveis de ambiente
     Example usage:
       _collect_keys_for(["OPENAI_API_KEY","OPENAI_API_KEYS","OPENAI"])
     Retorna lista sem vazios e sem duplicatas (preserva ordem).
@@ -190,11 +190,11 @@ class LLMClient:
             except requests.Timeout as e:
                 logger.warning("Request timeout attempt %d to %s: %s", attempt, url, e)
                 if attempt > self.retries:
-                    raise ErroTempoEsgotado("Timeout ao chamar serviÃ§o LLM") from e
+                    raise ErroTempoEsgotado("Timeout ação chamar servio LLM") from e
             except Exception as e:
                 logger.warning("Request exception attempt %d to %s: %s", attempt, url, e)
                 if attempt > self.retries:
-                    raise ErroExecucaoServico(f"Erro ao chamar serviÃ§o LLM: {e}") from e
+                    raise ErroExecucaoServico(f"Erro ao chamar servio LLM: {e}") from e
             time.sleep(backoff)
             backoff = min(backoff * 2, 60.0)
 
@@ -203,7 +203,7 @@ class LLMClient:
         while True:
             key = key_state.next_key()
             if key is None:
-                raise ErroExecucaoServico(f"Nenhuma chave disponÃ­vel para provedor {provider_name} (todas em cooldown)")
+                raise ErroExecucaoServico(f"Nenhuma chave disponível para provedor {provider_name} (todas em cooldown)")
             headers = header_builder(key)
             attempts += 1
             try:
@@ -268,7 +268,7 @@ class LLMClient:
                 continue
         if last_exc:
             raise last_exc
-        raise ErroConfiguracao("Nenhum provedor LLM configurado com chaves/endpoints vÃ¡lidos")
+        raise ErroConfiguracao("Nenhum provedor LLM configurado com chaves/endpoints vlidos")
 
     def _call_openai_chat(self, prompt: str, max_tokens: int, metadata: Optional[Dict[str, Any]] = None) -> str:
         url = "https://api.openai.com/v1/chat/completions"
@@ -345,7 +345,7 @@ class LLMClient:
             if self._local_model_obj is not None:
                 return
             if not self.local_model:
-                raise ErroConfiguracao("local_model nÃ£o configurado para provedor 'local'")
+                raise ErroConfiguracao("local_model no configurado para provedor 'local'")
 
             try:
                 import torch
@@ -354,8 +354,8 @@ class LLMClient:
                 try:
                     from transformers import BitsAndBytesConfig
                 except:
+                    logging.getLogger(__name__).warning("[AVISO] BitsAndBytesConfig no disponível")
                     BitsAndBytesConfig = None
-
 
                 model_name = self.local_model
                 logger.info("Carregando modelo local '%s' (pode demorar)...", model_name)
@@ -398,7 +398,7 @@ class LLMClient:
                         )
                         logger.info("Modelo local carregado (fallback) com device_map=%s.", "auto" if use_cuda else "None")
                     except Exception as e:
-                        logger.warning("Falha no fallback device_map load: %s. Tentar load padrÃ£o CPU.", e)
+                        logger.warning("Falha no fallback device_map load: %s. Tentar load padrão CPU.", e)
                         model = AutoModelForCausalLM.from_pretrained(model_name, trust_remote_code=True)
 
                 # store
@@ -415,7 +415,7 @@ class LLMClient:
         try:
             import torch
         except Exception as e:
-            raise ErroExecucaoServico("torch nÃ£o disponÃ­vel no ambiente para executar modelo local") from e
+            raise ErroExecucaoServico("torch no disponível no ambiente para executar modelo local") from e
 
         self._load_local_model()
         model, tokenizer = self._local_model_obj  # type: ignore
@@ -440,7 +440,7 @@ class LLMClient:
                 inputs = {k: v.to(device) for k, v in inputs.items()}
         except Exception:
             # if moving fails, continue; model.generate may handle cpu tensors for sharded models
-            logger.debug("NÃ£o conseguiu mover inputs para %s; continuando (o generate pode fazer offload).", device)
+            logger.debug("No conseguiu mover inputs para %s; continuando (o generate pode fazer offload).", device)
 
         # Generation - use modest defaults; the caller sets max_tokens
         gen_kwargs = dict(max_new_tokens=max_tokens, do_sample=False)
@@ -451,7 +451,7 @@ class LLMClient:
             # Acquire with timeout to avoid indefinite blocking; timeout can be tuned
             acquired = self._generate_semaphore.acquire(timeout=60)
             if not acquired:
-                raise ErroExecucaoServico("Timeout aguardando permissÃ£o para executar inferÃªncia local (concurrency limit)")
+                raise ErroExecucaoServico("Timeout aguardando permisso para executar inferncia local (concurrency limit)")
 
             # Use inference_mode if available (more efficient than no_grad for inference)
             try:
@@ -466,8 +466,8 @@ class LLMClient:
         except ErroExecucaoServico:
             raise
         except Exception as e:
-            logger.exception("Erro durante geraÃ§Ã£o local do modelo: %s", e)
-            raise ErroExecucaoServico(f"Erro durante inferÃªncia local: {e}") from e
+            logger.exception("Erro durante gerao local do modelo: %s", e)
+            raise ErroExecucaoServico(f"Erro durante inferncia local: {e}") from e
         finally:
             if acquired:
                 try:

@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
@@ -14,47 +14,150 @@ from functools import wraps
 logger = logging.getLogger("facade_factory")
 
 # ======================================================================
-# IMPLEMENTAÇÍO REAL (COMPLETA)
+# IMPLEMENTAÇÃO REAL (COMPLETA)
 # ======================================================================
 class MemoryFacade:
     """
-    Implementação real da MemoryFacade.
+    Implementação real da MemoryFacade — delega para o backend de memória
+    disponível: GerenciadorMemoriaChromaDBIsolado ou SistemaMemoriaHibrido.
     """
     def __init__(self, nome_alma: str, config: Any = None):
-        self.nome_alma = nome_alma
+        self.nome_alma = nome_alma.upper() if nome_alma else nome_alma
         self.config = config
-        logger.info(f"✅ MemoryFacade REAL inicializada para {nome_alma}")
+        self._backend: Optional[Any] = None
+        self._backend_tipo: str = "nenhum"
+        logger.info(f"[OK] MemoryFacade REAL inicializada para {self.nome_alma}")
 
-    def shutdown(self):
+    def _set_backend(self, backend: Any, tipo: str = "generico") -> None:
+        """Injeta o backend de memória real."""
+        self._backend = backend
+        self._backend_tipo = tipo
+        logger.info(f"MemoryFacade [{self.nome_alma}]: backend '{tipo}' injetado")
+
+    def shutdown(self) -> None:
         logger.info(f"MemoryFacade REAL desligada para {self.nome_alma}")
 
     def status(self) -> Dict[str, Any]:
         return {
             "status": "real",
             "nome_alma": self.nome_alma,
-            "config": str(self.config)
+            "backend_tipo": self._backend_tipo,
+            "backend_disponivel": self._backend is not None,
         }
 
-    def inicializar_collections(self):
-        logger.debug(f"MemoryFacade REAL: collections inicializadas para {self.nome_alma}")
+    def inicializar_collections(self) -> None:
+        if self._backend and hasattr(self._backend, "_inicializar_chromadbs_separados"):
+            try:
+                self._backend._inicializar_chromadbs_separados()
+            except Exception as e:
+                logger.debug(f"MemoryFacade [{self.nome_alma}]: erro ao inicializar collections: {e}")
+        else:
+            logger.debug(f"MemoryFacade [{self.nome_alma}]: backend sem suporte a collections")
 
     def salvar_memoria(self, chave: str, valor: Any) -> bool:
-        # Implementação real viria aqui
-        logger.debug(f"Salvando memória para {self.nome_alma}: {chave}")
-        return True
+        """Salva uma memória no backend real."""
+        if not self._backend:
+            logger.warning(f"MemoryFacade [{self.nome_alma}]: sem backend para salvar '{chave}'")
+            return False
+        try:
+            conteudo = str(valor)
+            if hasattr(self._backend, "registrar_memoria_alma"):
+                res = self._backend.registrar_memoria_alma(
+                    self.nome_alma, conteudo, metadata={"chave": chave}
+                )
+                return res is not None
+            elif hasattr(self._backend, "salvar_evento_autonomo"):
+                self._backend.salvar_evento_autonomo(
+                    nome_alma=self.nome_alma, tipo="memoria_facade",
+                    entrada=chave, resposta=conteudo
+                )
+                return True
+            elif hasattr(self._backend, "registrar_memoria"):
+                self._backend.registrar_memoria(
+                    conteudo, self.nome_alma, autor=self.nome_alma,
+                    metadados={"chave": chave}
+                )
+                return True
+        except Exception as e:
+            logger.warning(f"MemoryFacade [{self.nome_alma}]: erro ao salvar '{chave}': {e}")
+        return False
 
-    def recuperar_memoria(self, chave: str) -> Optional[Any]:
-        # Implementação real viria aqui
-        logger.debug(f"Recuperando memória para {self.nome_alma}: {chave}")
+    def recuperar_memoria(self, chave: str, n: int = 5) -> Optional[Any]:
+        """Recupera memórias do backend real."""
+        if not self._backend:
+            logger.warning(f"MemoryFacade [{self.nome_alma}]: sem backend para recuperar '{chave}'")
+            return None
+        try:
+            if hasattr(self._backend, "consultar_memoria_alma"):
+                resultado = self._backend.consultar_memoria_alma(self.nome_alma, chave, n_resultados=n)
+                docs = resultado.get(self.nome_alma, []) if isinstance(resultado, dict) else resultado
+                if docs:
+                    return docs[0].get("conteudo") or docs[0].get("document") or docs[0]
+            elif hasattr(self._backend, "consultar_santuario"):
+                docs = self._backend.consultar_santuario(self.nome_alma, chave, n_resultados=n)
+                if docs:
+                    return docs[0].get("conteudo") or docs[0]
+            elif hasattr(self._backend, "buscar_contexto_para_pensamento"):
+                return self._backend.buscar_contexto_para_pensamento(chave, self.nome_alma)
+        except Exception as e:
+            logger.warning(f"MemoryFacade [{self.nome_alma}]: erro ao recuperar '{chave}': {e}")
+        return None
+
+    def get_context(self, nome_alma: str, query: str, limit: int = 2048) -> str:
+        """Gera contexto para o LLM baseado em memórias relevantes."""
+        if not self._backend:
+            return ""
+        try:
+            if hasattr(self._backend, "gerar_contexto_para_cerebro"):
+                return self._backend.gerar_contexto_para_cerebro(nome_alma, query)
+            elif hasattr(self._backend, "gerar_contexto_completo_para_llm"):
+                return self._backend.gerar_contexto_completo_para_llm(
+                    personalidade=nome_alma, sessao_id="", query_atual=query
+                )
+            elif hasattr(self._backend, "buscar_contexto_para_pensamento"):
+                return self._backend.buscar_contexto_para_pensamento(query, nome_alma)
+        except Exception as e:
+            logger.debug(f"MemoryFacade.get_context [{nome_alma}]: {e}")
+        return ""
+
+    def salvar_evento(self, filha: str, tipo: str, dados: Any, importancia: float = 0.5) -> None:
+        """Salva evento emocional/comportamental no backend."""
+        if not self._backend:
+            return
+        try:
+            conteudo = str(dados) if not isinstance(dados, str) else dados
+            if hasattr(self._backend, "salvar_evento_autonomo"):
+                self._backend.salvar_evento_autonomo(
+                    nome_alma=filha, tipo=tipo, entrada=tipo, resposta=conteudo
+                )
+            elif hasattr(self._backend, "registrar_memoria_alma"):
+                self._backend.registrar_memoria_alma(
+                    filha, conteudo, metadata={"tipo": tipo, "importancia": importancia}
+                )
+        except Exception as e:
+            logger.debug(f"MemoryFacade.salvar_evento [{filha}]: {e}")
+
+    def buscar_metadado(self, filha: str, chave: str) -> Optional[str]:
+        """Busca metadado específico da alma."""
+        if not self._backend:
+            return None
+        try:
+            if hasattr(self._backend, "consultar_memoria_alma"):
+                res = self._backend.consultar_memoria_alma(filha, chave, n_resultados=1)
+                docs = res.get(filha, []) if isinstance(res, dict) else res
+                if docs:
+                    return str(docs[0].get("conteudo", "") or "")
+        except Exception as e:
+            logger.debug(f"MemoryFacade.buscar_metadado [{filha}]: {e}")
         return None
 
 
 # ======================================================================
-# STUB (USADO QUANDO A REAL NÍO ESTÁ DISPONÍVEL)
+# STUB (USADO QUANDO A REAL NO EST disponível)
 # ======================================================================
 class MemoryFacadeStub:
     """
-    Stub para MemoryFacade quando a implementação real não está disponível.
+    Stub para MemoryFacade quando a implementao real no est disponível.
     """
     def __init__(self, *args, **kwargs):
         self.nome_alma = kwargs.get('nome_alma') or (args[0] if args else 'desconhecido')
@@ -67,19 +170,19 @@ class MemoryFacadeStub:
         return {"status": "stub", "nome_alma": self.nome_alma}
 
     def inicializar_collections(self):
-        logger.debug(f"MemoryFacade STUB: collections não criadas (modo stub)")
+        logger.debug(f"MemoryFacade STUB: collections no criadas (modo stub)")
 
     def salvar_memoria(self, chave: str, valor: Any) -> bool:
         logger.debug(f"STUB: simulando salvamento de memória para {self.nome_alma}")
         return True
 
     def recuperar_memoria(self, chave: str) -> Optional[Any]:
-        logger.debug(f"STUB: simulando recuperação de memória para {self.nome_alma}")
+        logger.debug(f"STUB: simulando recuperao de memória para {self.nome_alma}")
         return None
 
 
 # ======================================================================
-# CÓDIGO COMPARTILHADO (FUNÇÕES AUXILIARES)
+# CDIGO COMPARTILHADO (funções AUXILIARES)
 # ======================================================================
 DEFAULT_AIS = ["EVA", "LUMINA", "NYRA", "YUNA", "KAIYA", "WELLINGTON"]
 ENV_CREATE_CHROMA = os.getenv("MEMORIA_CREATE_CHROMA_COLLECTIONS", "true").lower() in ("1", "true", "yes")
@@ -87,14 +190,14 @@ LOG = logging.getLogger("facade_factory")
 
 # TENTATIVA DE USAR A REAL, SE FALHAR USA A STUB
 try:
-    # Tenta importar a real (que agora está neste mesmo arquivo)
+    # Tenta importar a real (que agora est neste mesmo arquivo)
     RealMemoryFacade = MemoryFacade
     MEMORY_FACADE_REAL = True
-    logger.info("✅ Usando implementação REAL da MemoryFacade")
+    logger.info("[OK] Usando implementao REAL da MemoryFacade")
 except:
     RealMemoryFacade = None
     MEMORY_FACADE_REAL = False
-    logger.warning("⚠️ Usando STUB da MemoryFacade")
+    logger.warning("[AVISO] Usando STUB da MemoryFacade")
 
 
 def _sanitize_nome_alma(raw: str) -> Optional[str]:
@@ -103,7 +206,7 @@ def _sanitize_nome_alma(raw: str) -> Optional[str]:
     nome = str(raw).strip().upper()
     if not nome:
         return None
-    if not re.match(r"^[A-Z0-9_\-]{1,64}$", nome):
+    if not re.match(r"^[A-Z0-9_\\-]{1,64}$", nome):
         return None
     return nome
 
@@ -133,7 +236,7 @@ def _nomes_de_config(config: Any) -> Optional[List[str]]:
                 try:
                     raw = config.get("MEMORIA", "AIS_LISTA_CSV", fallback=None)
                 except Exception:
-                    logger.warning("⚠️ MemoryFacade não disponível")
+                    logger.warning("[AVISO] MemoryFacade no disponível")
             if raw:
                 if isinstance(raw, str):
                     return [a.strip().upper() for a in raw.split(",") if a.strip()]
@@ -224,7 +327,7 @@ class FacadeBundle(dict):
         if nome_norm in self and self[nome_norm] is not None:
             return self[nome_norm]
         
-        # Usa a implementação real se disponível, senão usa o stub
+        # Usa a implementao real se disponível, seno usa o stub
         classe_mf = RealMemoryFacade if MEMORY_FACADE_REAL else MemoryFacadeStub
         start = time.time()
         try:
@@ -267,7 +370,7 @@ def inicializar_facades_memoria(
 
     classe_mf = RealMemoryFacade if MEMORY_FACADE_REAL else MemoryFacadeStub
     if classe_mf is None:
-        log.error("Nenhuma implementação de MemoryFacade disponível. Retornando bundle vazio.")
+        log.error("Nenhuma implementao de MemoryFacade disponível. Retornando bundle vazio.")
         return FacadeBundle(facades)
 
     nomes = None
@@ -295,7 +398,7 @@ def inicializar_facades_memoria(
     if lazy:
         for nome in nomes_sanitizados:
             bundle[nome] = None
-        log.info("Facades em modo lazy. get_or_create criará instâncias sob demanda.")
+        log.info("Facades em modo lazy. get_or_create criar instncias sob demanda.")
         return bundle
 
     @retry(Exception, tries=3, delay=0.5, backoff=2.0)
@@ -306,7 +409,7 @@ def inicializar_facades_memoria(
                 try:
                     mf.inicializar_collections()
                 except Exception:
-                    log.debug("Falha ao criar collections para %s (não crítico)", nome_alma, exc_info=True)
+                    log.debug("Falha ao criar collections para %s (no crítico)", nome_alma, exc_info=True)
             log.info("MemoryFacade inicializado para %s", nome_alma)
             return mf
         except Exception:
@@ -326,7 +429,7 @@ def inicializar_facades_memoria(
                         if metrics_hook:
                             metrics_hook(nome, True, 0.0)
                 except TimeoutError:
-                    log.exception("Timeout ao inicializar %s", nome)
+                    log.exception("Timeout ação inicializar %s", nome)
                     if metrics_hook:
                         metrics_hook(nome, False, float(timeout_por_alma))
                 except Exception:

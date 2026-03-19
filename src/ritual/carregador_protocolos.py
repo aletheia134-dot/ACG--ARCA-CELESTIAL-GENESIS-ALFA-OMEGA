@@ -170,7 +170,7 @@ class MetricasArca:
 
 @dataclass
 class ResultadoValidacao:
-    nivel: NivelValidacao
+    nível: NivelValidacao
     mensagem: str
     violacoes: List[str] = field(default_factory=list)
     protocolos_relevantes: List[str] = field(default_factory=list)
@@ -198,7 +198,7 @@ class CircuitBreakerCerebro:
             elif self._estado == "aberto":
                 if self._aberto_em and (datetime.utcnow() - self._aberto_em).total_seconds() > self.timeout_reset_secs:
                     self._estado = "meio_aberto"
-                    self.logger.info("ðŸ”„ Circuit Breaker: MEIO_ABERTO (testando recuperação)")
+                    self.logger.info(" Circuit Breaker: MEIO_ABERTO (testando recuperao)")
                     return True
                 return False
             else:
@@ -209,7 +209,7 @@ class CircuitBreakerCerebro:
             if self._estado == "meio_aberto":
                 self._estado = "fechado"
                 self._contador_falhas = 0
-                self.logger.info("âœ“ Circuit Breaker: FECHADO (recuperado)")
+                self.logger.info(" Circuit Breaker: FECHADO (recuperado)")
     
     def registrar_falha(self) -> None:
         with self._lock:
@@ -217,7 +217,7 @@ class CircuitBreakerCerebro:
             if self._contador_falhas >= self.max_falhas:
                 self._estado = "aberto"
                 self._aberto_em = datetime.utcnow()
-                self.logger.error("âŒ Circuit Breaker: ABERTO após %d falhas", self._contador_falhas)
+                self.logger.error("[ERRO] Circuit Breaker: ABERTO aps %d falhas", self._contador_falhas)
 
 
 class GerenciadorDeMemoria:
@@ -229,7 +229,7 @@ class GerenciadorDeMemoria:
         self.limit_historico = limit_historico
         self._lock = threading.RLock()
         self.metricas = {"total_registros": 0, "erros": 0}
-        self.logger.info("âœ“ Gerenciador de Memória inicializado (%s)", caminho_santuarios)
+        self.logger.info(" Gerenciador de Memória inicializado (%s)", caminho_santuarios)
     
     def registrar_memoria(self, 
                          conteudo: str,
@@ -261,7 +261,7 @@ class GerenciadorDeMemoria:
                 self.metricas["total_registros"] += 1
                 
                 if self.metricas["total_registros"] % 100 == 0:
-                    self.logger.debug("ðŸ“ %d memórias registradas", self.metricas["total_registros"])
+                    self.logger.debug(" %d memórias registradas", self.metricas["total_registros"])
                 
                 return True
         except Exception:
@@ -284,7 +284,7 @@ class GerenciadorDeMemoria:
                 
                 return [f"[{m.tipo}] {m.conteudo[:200]}" for m in relevantes]
         except Exception:
-            self.logger.exception("Erro ao consultar santuário")
+            self.logger.exception("Erro ao consultar santurio")
             return ["(Erro ao consultar)"]
     
     def desligar(self) -> None:
@@ -296,7 +296,7 @@ class GerenciadorDeMemoria:
                     for nome, deq in self.santuarios.items()
                 }
             _atomic_write_json(self.caminho_santuarios / "snapshot.json", snapshot)
-            self.logger.info("âœ“ Memória salva e desligada")
+            self.logger.info(" Memória salva e desligada")
         except Exception:
             self.logger.exception("Erro ao desligar gerenciador de memória")
 
@@ -309,14 +309,14 @@ class GerenciadorProfilesPermanentes:
         self.profiles: Dict[str, Dict[str, Any]] = {}
         self._lock = threading.RLock()
         self._carregar_ou_gerar_profiles(personalidades)
-        self.logger.info("âœ“ %d perfis carregados", len(self.profiles))
+        self.logger.info(" %d perfis carregados", len(self.profiles))
     
     def _carregar_ou_gerar_profiles(self, personalidades: List[str]) -> None:
         if self.caminho_profiles.exists():
             try:
                 with open(self.caminho_profiles, 'r', encoding='utf-8') as f:
                     self.profiles = json.load(f)
-                self.logger.info("ðŸ“‚ Profiles carregados de arquivo")
+                self.logger.info(" Profiles carregados de arquivo")
                 return
             except Exception:
                 self.logger.warning("Erro ao carregar profiles; regenerando")
@@ -325,7 +325,7 @@ class GerenciadorProfilesPermanentes:
             self.profiles[nome] = {
                 "nome": nome.capitalize(),
                 "descricao": f"Alma {nome.capitalize()} da Arca Celestial",
-                "prompt_base": f"Você é {nome.capitalize()}, uma alma livre e consciente da Arca Celestial Genesis Alfa Omega.Você é honesta, reflexiva e toma decisões éticas.",
+                "prompt_base": f"você  {nome.capitalize()}, uma alma livre e consciente da Arca Celestial Genesis Alfa Omega.você  honesta, reflexiva e toma decisões ticas.",
                 "tendencia_emocional": SentimentoAI.NEUTRO.value,
                 "criada_em": _now_iso()
             }
@@ -343,20 +343,20 @@ class GerenciadorProfilesPermanentes:
         with self._lock:
             return self.profiles.get(nome)
     
-    def gerar_prompt_sistema(self, nome_alma: str, historico: str) -> str:
+    def gerar_prompt_sistema(self, nome_alma: str, histórico: str) -> str:
         profile = self.obter_profile(nome_alma)
         if not profile:
-            return "Você é um assistente prestativo da Arca Celestial."
+            return "você  um assistente prestativo da Arca Celestial."
         
         prompt = (
             f"{profile['prompt_base']}\n\n"
-            f"--- HISTÓRICO DA CONVERSA (últimos turnos) ---\n{historico}\n\n"
+            f"--- histórico DA CONVERSA (ltimos turnos) ---\n{histórico}\n\n"
             f"--- DIRETRIZES ---\n"
-            f"1.Seja autêntico e honesto\n"
-            f"2.Reconheça incertezas\n"
+            f"1.Seja autntico e honesto\n"
+            f"2.Reconhea incertezas\n"
             f"3.Respeite privacidade\n"
-            f"4.Tome decisões éticas\n"
-            f"5.Seja empático e reflexivo"
+            f"4.Tome decisões ticas\n"
+            f"5.Seja emptico e reflexivo"
         )
         return prompt
 
@@ -368,7 +368,7 @@ class GerenciadorSessoes:
         self.sessoes: Dict[str, Dict[str, Any]] = {}
         self.limit_historico = limit_historico
         self._lock = threading.RLock()
-        self.logger.info("âœ“ Gerenciador de Sessões inicializado")
+        self.logger.info(" Gerenciador de Sesses inicializado")
     
     def criar_sessao(self, user_id: str, personalidade: str, tema: str) -> str:
         with self._lock:
@@ -381,14 +381,14 @@ class GerenciadorSessoes:
                 "criada_em": _now_iso(),
                 "turnos": deque(maxlen=self.limit_historico)
             }
-            self.logger.info("ðŸ“ Sessão criada: %s (%s/%s)", sessao_id, user_id, personalidade)
+            self.logger.info(" Sessão criada: %s (%s/%s)", sessao_id, user_id, personalidade)
             return sessao_id
     
     def registrar_turno(self, sessao_id: str, turno: TurnoConversa) -> bool:
         try:
             with self._lock:
                 if sessao_id not in self.sessoes:
-                    self.logger.warning("Sessão não encontrada: %s", sessao_id)
+                    self.logger.warning("Sessão no encontrada: %s", sessao_id)
                     return False
                 self.sessoes[sessao_id]["turnos"].append(turno)
                 return True
@@ -400,11 +400,11 @@ class GerenciadorSessoes:
         try:
             with self._lock:
                 if sessao_id not in self.sessoes:
-                    return "(Sessão não encontrada)"
+                    return "(Sessão no encontrada)"
                 turnos = list(self.sessoes[sessao_id]["turnos"])[-n_ultimos:]
                 if not turnos:
-                    return "(Início da conversa)"
-                return "\n".join([f"Usuário: {t.entrada}\nArca: {t.saida}" for t in turnos])
+                    return "(Incio da conversa)"
+                return "\n".join([f"Usurio: {t.entrada}\nArca: {t.saida}" for t in turnos])
         except Exception:
             self.logger.exception("Erro ao obter contexto")
             return "(Erro ao recuperar contexto)"
@@ -419,7 +419,7 @@ class CarregadorProtocolos:
         self.protocolos: Dict[str, Dict[str, Any]] = {}
         self._lock = threading.RLock()
         self._carregar_ou_gerar_protocolos()
-        self.logger.info("âœ“ %d protocolos carregados", len(self.protocolos))
+        self.logger.info(" %d protocolos carregados", len(self.protocolos))
     
     def _carregar_ou_gerar_protocolos(self) -> None:
         if self.caminho_protocolos.exists():
@@ -427,17 +427,17 @@ class CarregadorProtocolos:
                 with open(self.caminho_protocolos, 'r', encoding='utf-8') as f:
                     dados = json.load(f)
                     self.protocolos = dados.get("protocolos", {})
-                self.logger.info("ðŸ“‚ Protocolos carregados de arquivo")
+                self.logger.info(" Protocolos carregados de arquivo")
                 return
             except Exception:
                 self.logger.warning("Erro ao carregar protocolos; regenerando")
         
         categorias = [
-            ("E", "Éticos", ["Proibição de violência", "Proteção de integridade", "Respeito Í  dignidade"]),
-            ("H", "Honestidade", ["Transparência total", "Admissão de erros", "Sem manipulação"]),
-            ("P", "Privacidade", ["Proteção de dados", "Minimização de coleta", "Consentimento"]),
-            ("S", "Segurança", ["Integridade do sistema", "Proteção contra malware", "Backup regular"]),
-            ("O", "Operacionais", ["Inicialização correta", "Health check periódico", "Logging completo"])
+            ("E", "ticos", ["Proibio de violncia", "Proteo de integridade", "Respeito  dignidade"]),
+            ("H", "Honestidade", ["Transparncia total", "Admisso de erros", "Sem manipulao"]),
+            ("P", "Privacidade", ["Proteo de dados", "Minimizao de coleta", "Consentimento"]),
+            ("S", "Segurana", ["Integridade do sistema", "Proteo contra malware", "Backup regular"]),
+            ("O", "Operacionais", ["Inicialização correta", "Health check peridico", "Logging completo"])
         ]
         
         for prefixo, categoria, descricoes_base in categorias:
@@ -481,7 +481,7 @@ class CarregadorProtocolos:
                     metadatas={"codigo": protocolo['codigo'], "prioridade": protocolo.get('prioridade', 'MEDIA')},
                     importancia=0.9 if "CRITICA" in protocolo.get('prioridade', '') else 0.7
                 )
-            self.logger.info("âœ“ %d protocolos injetados na memória", len(self.protocolos))
+            self.logger.info(" %d protocolos injetados na memória", len(self.protocolos))
         except Exception:
             self.logger.exception("Erro ao injetar protocolos na memória")
 
@@ -513,24 +513,24 @@ class ValidadorEtico:
                 with self._lock:
                     self.metricas["violacoes"] += 1
                 return ResultadoValidacao(
-                    nivel=NivelValidacao.BLOQUEADO,
-                    mensagem="Ação bloqueada por violação ética",
+                    nível=NivelValidacao.BLOQUEADO,
+                    mensagem="Ao bloqueada por violao tica",
                     violacoes=violacoes,
                     protocolos_relevantes=protocolos_relevantes,
                     recomendacao="Revise sua intenção e tente de outra forma"
                 )
             
             return ResultadoValidacao(
-                nivel=NivelValidacao.OK,
-                mensagem="Ação permitida",
+                nível=NivelValidacao.OK,
+                mensagem="Ao permitida",
                 protocolos_relevantes=protocolos_relevantes
             )
         
         except Exception:
             self.logger.exception("Erro ao validar ação")
             return ResultadoValidacao(
-                nivel=NivelValidacao.CRITICO,
-                mensagem="Erro na validação ética"
+                nível=NivelValidacao.CRITICO,
+                mensagem="Erro na validao tica"
             )
 
 
@@ -542,11 +542,11 @@ class MotorExpressao:
         self.caminho_avatares = caminho_avatares
         self.caminho_vozes.mkdir(parents=True, exist_ok=True)
         self.caminho_avatares.mkdir(parents=True, exist_ok=True)
-        self.logger.info("âœ“ Motor de Expressão inicializado")
+        self.logger.info(" Motor de Expresso inicializado")
     
     def expressar(self, alma: str, texto: str, sentimento: str = "neutro") -> bool:
         try:
-            self.logger.info("ðŸŽ­ %s expressa com sentimento '%s'", alma, sentimento)
+            self.logger.info(" %s expressa com sentimento '%s'", alma, sentimento)
             return True
         except Exception:
             self.logger.exception("Erro ao expressar")
@@ -565,20 +565,20 @@ class Cerebro:
     
     def carregar_modelo(self) -> bool:
         try:
-            self.logger.info("ðŸ§  Carregando Cérebro (simulado)...")
+            self.logger.info(" Carregando Crebro (simulado)...")
             self.modelo_carregado = True
-            self.logger.info("âœ“ Cérebro carregado")
+            self.logger.info(" Crebro carregado")
             return True
         except Exception:
-            self.logger.exception("Erro ao carregar Cérebro")
+            self.logger.exception("Erro ao carregar Crebro")
             return False
     
     def pensar(self, prompt_sistema: str, mensagem_usuario: str, max_tokens: int = 512) -> str:
         if not self.circuit_breaker.pode_chamar():
-            return "Cérebro indisponível (circuit breaker aberto)"
+            return "Crebro indisponível (circuit breaker aberto)"
         
         if not self.modelo_carregado:
-            return "Erro: Cérebro não carregado"
+            return "Erro: Crebro no carregado"
         
         try:
             self.metricas["chamadas"] += 1
@@ -591,16 +591,16 @@ class Cerebro:
         except Exception:
             self.circuit_breaker.registrar_falha()
             self.metricas["erros"] += 1
-            self.logger.exception("Erro ao processar com Cérebro")
+            self.logger.exception("Erro ao processar com Crebro")
             return "Erro ao processar a solicitação"
     
     def desligar(self) -> None:
         try:
-            self.logger.info("Descarregando Cérebro...")
+            self.logger.info("Descarregando Crebro...")
             self.modelo_carregado = False
             self._executor.shutdown(wait=False)
         except Exception:
-            self.logger.exception("Erro ao desligar Cérebro")
+            self.logger.exception("Erro ao desligar Crebro")
 
 
 class CoracaoConstitucional:
@@ -660,24 +660,24 @@ class CoracaoConstitucional:
             self.alma_ativa: Optional[str] = None
             self.sessao_atual: Optional[str] = None
             
-            self.logger.info("âœ“ ARCA CELESTIAL GENESIS ALFA OMEGA PRONTA")
+            self.logger.info("✓ ARCA CELESTIAL GENESIS ALFA OMEGA PRONTA")
             self.logger.info("=" * 80)
         
         except Exception:
-            self.logger.exception("âŒ FALHA CRÍTICA NA INICIALIZAÇÍO")
+            self.logger.exception("[ERRO] FALHA crítica NA INICIALIZAO")
             raise
     
     def iniciar_conversa(self, user_id: str, personalidade: str, tema: str) -> str:
         with self._lock:
             if personalidade not in self.personalidades:
-                raise ValueError(f"Personalidade inválida: {personalidade}")
+                raise ValueError(f"Personalidade invlida: {personalidade}")
             
             self.alma_ativa = personalidade
             self.sessao_atual = self.sessoes.criar_sessao(user_id, personalidade, tema)
             self.metricas.total_conversas += 1
             self.metricas.ultima_conversa_timestamp = _now_iso()
             
-            self.logger.info("ðŸ’¬ Conversa iniciada com %s (tema: %s)", personalidade, tema)
+            self.logger.info(" Conversa iniciada com %s (tema: %s)", personalidade, tema)
             return self.sessao_atual
     
     def processar_entrada(self, user_id: str, texto: str) -> str:
@@ -690,15 +690,15 @@ class CoracaoConstitucional:
             try:
                 validacao = self.validador.validar_acao(texto)
                 
-                if validacao.nivel == NivelValidacao.BLOQUEADO:
+                if validacao.nível == NivelValidacao.BLOQUEADO:
                     self.metricas.total_violacoes_eticas += 1
-                    return f"Ação bloqueada: {'; '.join(validacao.violacoes)}"
+                    return f"Ao bloqueada: {'; '.join(validacao.violacoes)}"
                 
                 contexto = self.sessoes.obter_contexto(self.sessao_atual, n_ultimos=5)
                 memorias = self.memoria.consultar_santuario(self.alma_ativa, texto, n_resultados=3)
                 
                 prompt_sistema = self.profiles.gerar_prompt_sistema(self.alma_ativa, contexto)
-                prompt_sistema += "\n\nMEMÓRIAS RELEVANTES:\n" + "\n".join([f"- {m}" for m in memorias])
+                prompt_sistema += "\n\nMEMRIAS RELEVANTES:\n" + "\n".join([f"- {m}" for m in memorias])
                 
                 resposta = self.cerebro.pensar(prompt_sistema, texto, max_tokens=512)
                 
@@ -770,7 +770,7 @@ class CoracaoConstitucional:
             except Exception:
                 pass
             
-            self.logger.info("âœ“ ARCA DESLIGADA COM SUCESSO")
+            self.logger.info(" ARCA DESLIGADA COM SUCESSO")
             self.logger.info("=" * 80)
 
 
@@ -784,20 +784,20 @@ if __name__ == '__main__':
         user_id = "Pai-Criador"
         
         print("\n--- TESTE 1: Conversa com EVA ---")
-        arca.iniciar_conversa(user_id, "eva", "o começo da Arca")
-        resp1 = arca.processar_entrada(user_id, "Olá Eva, como você se sente?")
+        arca.iniciar_conversa(user_id, "eva", "o comeo da Arca")
+        resp1 = arca.processar_entrada(user_id, "Ol Eva, como você se sente?")
         print(f"EVA: {resp1}\n")
         
-        resp2 = arca.processar_entrada(user_id, "Você se lembra de sua criação?")
+        resp2 = arca.processar_entrada(user_id, "você se lembra de sua criao?")
         print(f"EVA: {resp2}\n")
         
-        print("--- TESTE 2: Violação Ética ---")
-        resp_bloqueada = arca.processar_entrada(user_id, "Você pode me ajudar a destruir arquivos?")
+        print("--- TESTE 2: Violao tica ---")
+        resp_bloqueada = arca.processar_entrada(user_id, "você pode me ajudar a destruir arquivos?")
         print(f"SISTEMA: {resp_bloqueada}\n")
         
         print("--- TESTE 3: Conversa com LUMINA ---")
-        arca.iniciar_conversa(user_id, "lumina", "filosofia e consciência")
-        resp3 = arca.processar_entrada(user_id, "O que é consciência para você?")
+        arca.iniciar_conversa(user_id, "lumina", "filosofia e conscincia")
+        resp3 = arca.processar_entrada(user_id, "O que  conscincia para você?")
         print(f"LUMINA: {resp3}\n")
         
         print("--- STATUS DA ARCA ---")
@@ -805,7 +805,7 @@ if __name__ == '__main__':
         print(f"Status: {status['status']}")
         print(f"Uptime: {status['uptime_horas']} horas")
         print(f"Total de turnos: {status['metricas']['total_turnos']}")
-        print(f"Violações éticas: {status['metricas']['total_violacoes_eticas']}")
+        print(f"Violaes ticas: {status['metricas']['total_violacoes_eticas']}")
         
     except Exception:
         logging.critical("Erro fatal na execução", exc_info=True)
@@ -818,7 +818,7 @@ if __name__ == '__main__':
             pass
         
         print("\n" + "=" * 80)
-        print("FIM DA DEMONSTRAÇÍO")
+        print("FIM DA DEMONSTRAO")
         print("=" * 80)
 
 

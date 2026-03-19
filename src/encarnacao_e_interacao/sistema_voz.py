@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 Sistema de Voz - TTS (Text-to-Speech)
 
@@ -7,9 +8,8 @@ Suporta:
 - pyttsx3 (TTS local)
 - ElevenLabs (API)
 
-Implementação robusta e defensiva.
+Implementao robusta e defensiva.
 """
-from __future__ import annotations
 
 import logging
 import threading
@@ -26,14 +26,14 @@ try:
     import pyttsx3
     TTS_LIB_AVAILABLE = True
 except Exception:
-    logger.debug("âš ï¸ pyttsx3 não disponível (voz local desabilitada)")
+    logger.debug("[AVISO] pyttsx3 no disponível (voz local desabilitada)")
 
 ELEVEN_AVAILABLE = False
 try:
     from elevenlabs import generate, play
     ELEVEN_AVAILABLE = True
 except Exception:
-    logger.debug("âš ï¸ ElevenLabs não disponível (API desabilitada)")
+    logger.debug("[AVISO] ElevenLabs no disponível (API desabilitada)")
 
 # ============================================================================
 # HELPERS
@@ -76,7 +76,7 @@ def _make_config_getter(config_obj: Any):
                     if key in config_obj:
                         return config_obj.get(key, fallback)
             except Exception:
-                # se falhar, continuar para heurísticas abaixo
+                # se falhar, continuar para heursticas abaixo
                 pass
 
             # Objeto com método get (assinaturas variadas)
@@ -104,7 +104,7 @@ def _make_config_getter(config_obj: Any):
             attr = getattr(config_obj, section, None)
             if isinstance(attr, dict):
                 return attr.get(key, fallback)
-            # Não conseguiu: retornar fallback
+            # No conseguiu: retornar fallback
             return fallback
         except Exception as e:
             logger.debug("config getter falhou para (%s,%s): %s", section, key, e)
@@ -117,15 +117,15 @@ def _safe_int(value: Any, default: int = 200, logger: Optional[logging.Logger] =
     try:
         if value is None:
             return default
-        # Se for string e contiver vírgula, substituir por ponto antes de int (mais tolerante)
+        # Se for string e contiver vrgula, substituir por ponto antes de int (mais tolerante)
         if isinstance(value, str):
-            # detectar casos óbvios de má-formatação (p.ex.o nome da chave foi retornado)
+            # detectar casos bvios de m-formatao (p.ex.o nome da chave foi retornado)
             if value.strip().upper() == value.strip() and not any(ch.isdigit() for ch in value):
-                logger.warning("Valor de configuração possivelmente inválido para inteiro: %r", value)
+                logger.warning("Valor de configuração possivelmente invlido para inteiro: %r", value)
             value = value.strip()
         return int(float(value))
     except (ValueError, TypeError) as e:
-        logger.warning("Conversão para int falhou para %r: %s.Usando valor default %d", value, e, default)
+        logger.warning("Converso para int falhou para %r: %s.Usando valor default %d", value, e, default)
         return default
 
 def _safe_float(value: Any, default: float = 0.9, logger: Optional[logging.Logger] = None) -> float:
@@ -144,7 +144,7 @@ def _safe_float(value: Any, default: float = 0.9, logger: Optional[logging.Logge
             return 1.0
         return val
     except (ValueError, TypeError) as e:
-        logger.warning("Conversão para float falhou para %r: %s.Usando valor default %s", value, e, default)
+        logger.warning("Converso para float falhou para %r: %s.Usando valor default %s", value, e, default)
         return default
 
 # ============================================================================
@@ -153,7 +153,7 @@ def _safe_float(value: Any, default: float = 0.9, logger: Optional[logging.Logge
 
 class SistemaVozReal:
     """
-    Síntese de voz com fallback.Tenta local primeiro, depois API.
+    Sntese de voz com fallback.Tenta local primeiro, depois API.
     """
 
     def __init__(self, config: Any = None):
@@ -169,26 +169,26 @@ class SistemaVozReal:
         if TTS_LIB_AVAILABLE:
             try:
                 self.engine = pyttsx3.init()
-                # leitura defensiva e logging do valor cru para diagnóstico
-                rate_raw = self._get('VOZ_LOCAL', 'VELOCIDADE', fallback=None)
-                self.logger.debug("DEBUG VOZ_LOCAL/VELOCIDADE raw value: %r (tipo: %s)", rate_raw, type(rate_raw).__name__)
+                # leitura defensiva e logging do valor cru para diagnstico
+                rate_raw = self._get('VOZ', 'VELOCIDADE', fallback=None)
+                self.logger.debug("DEBUG VOZ/VELOCIDADE raw value: %r (tipo: %s)", rate_raw, type(rate_raw).__name__)
                 rate = _safe_int(rate_raw, default=200, logger=self.logger)
 
-                volume_raw = self._get('VOZ_LOCAL', 'VOLUME', fallback=None)
-                self.logger.debug("DEBUG VOZ_LOCAL/VOLUME raw value: %r (tipo: %s)", volume_raw, type(volume_raw).__name__)
+                volume_raw = self._get('VOZ', 'VOLUME', fallback=None)
+                self.logger.debug("DEBUG VOZ/VOLUME raw value: %r (tipo: %s)", volume_raw, type(volume_raw).__name__)
                 volume = _safe_float(volume_raw, default=0.9, logger=self.logger)
 
                 try:
                     self.engine.setProperty('rate', rate)
                     self.engine.setProperty('volume', volume)
                 except Exception:
-                    self.logger.debug("Não foi possível aplicar propriedades ao pyttsx3")
-                self.logger.info("âœ… pyttsx3 inicializado (rate=%s, volume=%s)", rate, volume)
+                    self.logger.debug("No foi possível aplicar propriedades ação pyttsx3")
+                self.logger.info("[OK] pyttsx3 inicializado (rate=%s, volume=%s)", rate, volume)
             except Exception:
                 self.logger.exception("Erro ao inicializar pyttsx3")
                 self.engine = None
         else:
-            self.logger.debug("pyttsx3 não disponível")
+            self.logger.debug("pyttsx3 no disponível")
 
         # Tentar inicializar API
         if ELEVEN_AVAILABLE:
@@ -196,11 +196,11 @@ class SistemaVozReal:
             if api_key:
                 self.eleven_api_key = api_key
                 self.use_api = True
-                self.logger.info("âœ… ElevenLabs API configurada")
+                self.logger.info("[OK] ElevenLabs API configurada")
             else:
-                self.logger.debug("ElevenLabs API key não encontrada (valor lido: %r)", api_key)
+                self.logger.debug("ElevenLabs API key no encontrada (valor lido: %r)", api_key)
         else:
-            self.logger.debug("ElevenLabs não disponível")
+            self.logger.debug("ElevenLabs no disponível")
 
     def falar(self, texto: str, voz_alma: Optional[str] = None, block: bool = True) -> None:
         """
@@ -235,11 +235,11 @@ class SistemaVozReal:
                     self.engine.say(texto)
                     if block:
                         self.engine.runAndWait()
-                    self.logger.debug("âœ… Voz local reproduzida")
+                    self.logger.debug("[OK] Voz local reproduzida")
                 except Exception:
                     self.logger.exception("Erro ao reproduzir voz local")
             else:
-                self.logger.error("âŒ Nenhum sistema de voz disponível")
+                self.logger.error("[ERRO] Nenhum sistema de voz disponível")
 
     def listar_vozes(self) -> Dict[int, str]:
         """Lista vozes locais disponíveis."""
@@ -263,7 +263,7 @@ class SistemaVozReal:
                     self.engine.stop()
                 except Exception:
                     pass
-            self.logger.info("âœ… SistemaVozReal desligado")
+            self.logger.info("[OK] SistemaVozReal desligado")
         except Exception:
             self.logger.exception("Erro ao desligar SistemaVozReal")
 

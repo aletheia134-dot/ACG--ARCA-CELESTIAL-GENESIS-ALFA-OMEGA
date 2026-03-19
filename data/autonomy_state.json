@@ -1,0 +1,4580 @@
+{
+  "ais": {
+    "EVA": {
+      "next_index": 0,
+      "last_ts": 1772847277.6111395,
+      "desire_queue": [],
+      "pending_proposals": {
+        "9f38e779-b3ec-452a-b8cc-02e389174f21": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772426863_3967",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "YUNA"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772426863.2101963,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772426863.2236664
+        },
+        "68ab9b64-8589-40cd-9a04-b95d6927f79b": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772427316_4804",
+            "action": "pensar",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772427317.0320692,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772427317.0405123
+        },
+        "35ddc94b-031d-4579-b0b2-f85c7ed38a33": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772427767_1460",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "YUNA"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772427769.9247618,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772427769.934666
+        },
+        "3a678e50-9994-4884-b391-3ffe37241947": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772428220_1663",
+            "action": "pensar",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772428220.376107,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772428220.3861766
+        },
+        "8414e46b-aaa3-4b73-937e-28e31fd45b37": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772429716_9226",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772429717.4407904,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772429717.5717387
+        },
+        "aac598d6-83c6-48ac-93a5-4c0c460bb997": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772430847_5726",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772430847.303013,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772430847.35613
+        },
+        "b577b7ad-0524-494b-996f-746244f372ac": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772434433_5054",
+            "action": "pensar",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772434433.1380076,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772434433.1482213
+        },
+        "26309edf-0540-4c71-8eb1-25ae81d0cc58": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772436972_9380",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772436973.0305882,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772436973.0377102
+        },
+        "d6e3b740-b4c5-4a1e-a694-9946c8f19efe": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772440343_8994",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "YUNA"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772440343.8791118,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772440343.8814778
+        },
+        "75bd070a-45b1-4747-8c8f-09d87dc82034": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772443976_3159",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "EVA"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772443976.4309192,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772443976.4376373
+        },
+        "6cec4641-88ff-414a-b6e7-0afb7f50fd2e": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772447287_3047",
+            "action": "pensar",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772447287.396616,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772447287.4051185
+        },
+        "22e09498-addf-4138-82ff-ebbaf7a37028": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772448738_1195",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772448738.4123676,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772448738.4203365
+        },
+        "c33ddebf-f548-41dc-b8c9-5187101132fe": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772450439_3826",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "KAIYA"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772450439.364677,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772450439.3867474
+        },
+        "26151ae0-3cfa-4c56-a801-13f415b8d7bf": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772453301_1886",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "EVA"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772453301.4065292,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772453301.4300172
+        },
+        "ba37b78f-2a98-43e6-9b05-f1768bdbfe14": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772454444_1753",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772454444.9481523,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772454444.9750159
+        },
+        "aceb6df1-28eb-44f8-a955-7fe7ad47db3a": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772455313_3305",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772455313.6071703,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772455313.6199002
+        },
+        "36a6706f-477a-458d-897a-517d9142d5e6": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772455915_8232",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772455916.0093892,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772455916.0215955
+        },
+        "3bf88aa2-f3b3-4064-9d1f-65a7348f5bb3": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772457622_4863",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772457622.641144,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772457622.6559513
+        },
+        "77e79593-a9b2-4cb5-b6f2-91bfc7abf7aa": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772458225_6684",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "EVA"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772458225.5045211,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772458225.5208092
+        },
+        "f571ca13-52e6-4b4f-981e-c894657fe52c": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772458997_4408",
+            "action": "pensar",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772458997.7079296,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772458997.721905
+        },
+        "0ff338ab-92ee-4f29-b6a5-7341c860c1c7": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772494935_6543",
+            "action": "pensar",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772494935.6739626,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772494935.6919563
+        },
+        "17d1f8f2-13d3-4de3-a7ad-f057aa22c709": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772495536_2965",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772495537.1504664,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772495537.1668608
+        },
+        "46771907-9c3d-4293-b33e-945a7bd2808e": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772496168_1821",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772496168.4981365,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772496168.5228727
+        },
+        "3c1e6d11-e093-4227-ab9d-2f901c6dcba5": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772507459_5480",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772507459.7378955,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772507459.7580824
+        },
+        "d4836521-3c54-41d8-9aea-74a3c93adbbf": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772609679_3165",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "EVA"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772609679.6932416,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772609679.7015736
+        },
+        "9713a77b-901b-460d-81f5-d021dd602d11": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772611837_1729",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772611838.1060736,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772611838.1207376
+        },
+        "4b89af95-2dea-4236-b111-e95f34c3f9bb": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772616335_1034",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772616335.5225058,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772616335.5424566
+        },
+        "1974e086-e78c-4b9c-8ff2-57d227d0c546": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772617247_3158",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772617247.432949,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772617247.4396636
+        },
+        "5aa2471e-7268-4a46-af0a-2bea48ea4650": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772619146_1742",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772619146.6180453,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772619146.6278589
+        },
+        "dfcde409-f649-4492-83c7-93e9e49ca56e": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772673829_2687",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "EVA"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772673829.7844973,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772673829.804225
+        },
+        "70eafc15-1cda-4f62-a216-7e9b63150974": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772678064_4600",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "KAIYA"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772678064.0677242,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772678064.2806447
+        },
+        "63f54b77-164f-4e88-a1b7-7732df0c1dd8": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772700101_6523",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "NYRA"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772700101.701185,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772700101.721149
+        },
+        "aff3d31d-4e03-421f-85bf-8553dc765492": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772704389_2773",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772704389.3286214,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772704389.3387258
+        },
+        "ae18348c-305c-4e87-9893-d583dc0c32d4": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772705708_3418",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772705708.2786996,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772705708.3087003
+        },
+        "8a6347d0-de28-4883-a5fe-9670dd83e967": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772709399_7268",
+            "action": "pensar",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772709400.1896207,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772709400.1997747
+        },
+        "12d2ea03-4711-4773-900b-1bd5207d7d7a": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772712620_4741",
+            "action": "pensar",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772712621.0052748,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772712621.0188408
+        },
+        "975d70c4-0cf9-48c7-b746-6ce2c4df5e69": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772777055_5412",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772777055.367137,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772777055.3854198
+        },
+        "019181c5-05d4-4734-a5aa-52a763e7fe36": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772781130_9731",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772781130.6824298,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772781130.6942096
+        },
+        "d4439213-26d5-466f-80a9-dd85ec6b207a": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772795829_2672",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772795830.1740658,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772795830.2240093
+        },
+        "42e0180b-a328-4ee4-82d1-e776c057210b": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772797178_9479",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772797179.0608613,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772797179.070542
+        },
+        "c5ee55c7-ffde-46b7-b3fd-e5e95aaf1946": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772798076_6051",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "YUNA"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772798076.7345054,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772798076.7819395
+        },
+        "7ae673c2-d007-4a87-a41d-537537d80996": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772798528_6215",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "YUNA"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772798528.5064268,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772798528.5300527
+        },
+        "7ee633fe-e36b-42e7-b7b6-370346cec763": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772798979_3309",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772798979.969978,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772798979.9807029
+        },
+        "cf08733a-3252-4c9c-befa-37832e6b5a0f": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772799435_7590",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772799435.693281,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772799435.716067
+        },
+        "75958594-6575-4164-8bb0-d86a4618e6f1": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772799886_9357",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "KAIYA"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772799887.1914043,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772799887.2400577
+        },
+        "ad065981-e6f2-432d-90b8-96c986e1538f": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772840000_8521",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772840001.2804463,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772840001.312449
+        },
+        "513a78cb-0a21-4bd3-8022-75ad406e5183": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772843664_8522",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772843664.2144566,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772843664.2271528
+        },
+        "f0a4fc4c-3ee5-4155-90a2-58c0a9731da3": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772844115_9883",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772844115.666045,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772844115.6803296
+        },
+        "a0d3c7b8-7023-4a11-90a5-b80e74c26074": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772844567_1958",
+            "action": "pensar",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772844567.4173582,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772844567.440776
+        },
+        "37ebb501-0b6c-4af9-b53e-e728902f961e": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772845018_6823",
+            "action": "pensar",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772845018.8161907,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772845018.829911
+        },
+        "e5de8c1c-1005-49d6-8f4b-db7c14d6751e": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772845469_2394",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "EVA"
+            },
+            "from": "EVA"
+          },
+          "created_at": 1772845470.1133807,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772845470.1335742
+        },
+        "2dc4c86e-e661-4519-b845-1055e01062f2": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772845921_8500",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772845921.8511868,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772845921.8790922
+        },
+        "6298d83f-ed8b-4d29-aa1b-09f85d8e281f": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772846373_8002",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772846373.1971033,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772846373.2113495
+        },
+        "5511bbca-1837-464d-89f2-0bb9a505833c": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772846824_5473",
+            "action": "pensar",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772846824.9231682,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772846824.9830577
+        },
+        "ac2f1ce5-af17-427e-bceb-9afc8db8c7b2": {
+          "from": "EVA",
+          "proposal": {
+            "desire_id": "desire_1772847276_6590",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "EVA"
+          },
+          "created_at": 1772847277.3687246,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772847277.4809308
+        }
+      }
+    },
+    "LUMINA": {
+      "next_index": 0,
+      "last_ts": 1772847277.9874387,
+      "desire_queue": [],
+      "pending_proposals": {
+        "b03e32cd-4484-4eeb-a020-c98da625b5d1": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772426863_7424",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772426863.2464588,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772426863.2577765
+        },
+        "ad20db89-701e-4c17-9b78-b3026ccafa0b": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772427316_9706",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772427317.0616398,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772427317.0740302
+        },
+        "4c682c19-5cf0-4a65-b953-abe13fa40d6d": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772427769_7732",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772427769.9544632,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772427769.9647162
+        },
+        "086746d4-2646-478f-a451-e3e49b144a45": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772428220_2485",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772428220.4034998,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772428220.411267
+        },
+        "7cc115ca-bf3c-4d97-bc69-e154d1260218": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772429716_4770",
+            "action": "pensar",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772429717.5912828,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772429717.606265
+        },
+        "1e9faa4e-dbe5-4e6c-9a8e-88bfe47690e9": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772430847_4458",
+            "action": "pensar",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772430847.3731022,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772430847.382683
+        },
+        "a73fe489-4603-4c33-be75-11835353b173": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772434433_1486",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772434433.1583066,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772434433.1625693
+        },
+        "eb52239c-81a0-4da1-992a-d62a52e7fef8": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772436973_4436",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "KAIYA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772436973.0409136,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772436973.0516593
+        },
+        "84eaedd7-444f-4cb0-aae2-959c5da677eb": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772440343_4867",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772440343.8894987,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772440343.899886
+        },
+        "edff03c7-92d7-4596-b665-d987016ff96a": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772443976_7090",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "EVA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772443976.4476352,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772443976.4556165
+        },
+        "447080ec-149e-41b7-aaf7-422a6be2959f": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772447287_9278",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772447287.4175222,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772447287.423525
+        },
+        "9e35f46f-c5e1-4b19-8601-4b0db35ca663": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772448738_6710",
+            "action": "pensar",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772448738.439094,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772448738.4486935
+        },
+        "3eeabd30-5ac1-4e8a-8147-c9eef46f3ce9": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772450439_9068",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772450439.4377654,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772450439.4563234
+        },
+        "7a4da3f1-6cda-404f-a6cc-e38be7ecd55c": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772453301_7209",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "NYRA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772453301.4779992,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772453301.5020714
+        },
+        "98be9e49-0869-450a-9a3f-c40a96be21e5": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772454444_7218",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "EVA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772454445.0187142,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772454445.0347955
+        },
+        "91cb4f1b-5218-4a1c-94cb-6c10e3e59afc": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772455313_4608",
+            "action": "pensar",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772455313.6428697,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772455313.6539364
+        },
+        "c8631fd6-3ecc-4da1-8409-80283ed7dd34": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772455915_4329",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "KAIYA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772455916.0462027,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772455916.058776
+        },
+        "46f36207-e5b1-4cc0-9e9e-6d0c1088a02f": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772457622_3500",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "EVA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772457622.6828306,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772457622.6930764
+        },
+        "000f0253-c531-4215-89ec-e9d320bd0348": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772458225_9924",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772458225.5485165,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772458225.5599296
+        },
+        "2670e578-3c1f-416f-8d52-829fe39df527": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772458997_9239",
+            "action": "pensar",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772458997.749299,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772458997.7593899
+        },
+        "96575b7e-03cc-4552-a1bc-2dd3663e8cea": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772494935_3919",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "KAIYA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772494935.7340171,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772494935.7542005
+        },
+        "8f492925-4b75-4bdb-b47b-7c92eea7887b": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772495536_3808",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "EVA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772495537.1880462,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772495537.1939073
+        },
+        "c6610973-8cce-40de-8488-3cb005d5235c": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772496168_1086",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772496168.5957475,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772496168.6229389
+        },
+        "a70eb0dc-0f48-4682-8401-4efdec750727": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772507459_1265",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "EVA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772507459.7889745,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772507459.8055882
+        },
+        "ae0e7439-450f-4053-83fd-d7d5a0a2dbe9": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772609679_7841",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772609679.7191026,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772609679.727394
+        },
+        "9817af79-647b-438f-adcf-5c3546ac7de9": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772611837_2960",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772611838.1458445,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772611838.1596425
+        },
+        "61b37f7b-3bae-47b7-936d-a98369a11da6": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772616335_1573",
+            "action": "pensar",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772616335.5828743,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772616335.5990958
+        },
+        "18250829-24e8-42ec-8273-64e3e3db9da7": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772617247_4719",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772617247.4556055,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772617247.4654577
+        },
+        "f0c0d58a-ffa6-4b9d-a2a9-11a7dd835dcd": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772619146_4670",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772619146.6477432,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772619146.6589832
+        },
+        "7b37cc8e-0333-4985-908d-0294c5b7e14e": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772673829_9158",
+            "action": "pensar",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772673829.8197985,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772673829.8270636
+        },
+        "733d459f-5b0c-47fe-87ed-7a80a56f5b13": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772678064_6642",
+            "action": "pensar",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772678064.3577552,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772678064.3961744
+        },
+        "659ccd84-7ec3-4018-81de-0d4fdfc141e0": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772700101_7643",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "EVA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772700101.833149,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772700101.857114
+        },
+        "e59b18e2-67cb-40ff-8252-a6f2c52d32ee": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772704389_6880",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772704389.3630083,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772704389.3721032
+        },
+        "f3b3d36e-eaa2-4461-b770-db7c2f5b1577": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772705708_4477",
+            "action": "pensar",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772705708.330275,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772705708.3386962
+        },
+        "08654e40-fe69-4ef9-8855-e99aa456b5a7": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772709400_9868",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772709400.2211804,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772709400.2298782
+        },
+        "2a36c843-9c85-474b-b092-5039e0614a34": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772712620_1179",
+            "action": "pensar",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772712621.0453086,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772712621.0619595
+        },
+        "03a525c9-1be6-4450-8422-b80060df9b8b": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772777055_1202",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "NYRA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772777055.4331188,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772777055.46307
+        },
+        "eb15a55d-6816-4a3d-8870-dec8f45bde20": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772781130_7175",
+            "action": "pensar",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772781130.7111332,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772781130.7197666
+        },
+        "f575eed1-cc7d-4cdc-baab-696ff2f6caf2": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772795829_5754",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "YUNA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772795830.3415992,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772795830.3598878
+        },
+        "880b50ff-46bf-4f2a-adf4-ac99a746310d": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772797178_1504",
+            "action": "pensar",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772797179.1008189,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772797179.1124523
+        },
+        "4dc15568-75e8-4a5e-998b-2e7adc675631": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772798076_6228",
+            "action": "pensar",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772798076.8988905,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772798076.960762
+        },
+        "e12f8a20-0d78-46c2-bf9a-76c38f4623e1": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772798528_9282",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "EVA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772798528.562896,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772798528.5784461
+        },
+        "cace2e6d-69f0-4cd1-a469-f99561c2b9d6": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772798979_2325",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772798980.002991,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772798980.017703
+        },
+        "e9176bec-1920-4766-aec5-2b9cef18e2f8": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772799435_1099",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772799435.7509425,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772799435.7689326
+        },
+        "594570ee-90e3-4aac-b441-f4e0920c3416": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772799886_5006",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772799887.347757,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772799887.400156
+        },
+        "09bfa35c-6c1e-447b-b361-002ee9ac981f": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772840000_2995",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772840001.3338227,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772840001.4083605
+        },
+        "7c59095a-35cb-4e31-8995-ac769b519d00": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772843664_2787",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772843664.280121,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772843664.2990556
+        },
+        "37ba3b32-6fac-45f4-ab50-abc50c1d9a66": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772844115_7889",
+            "action": "pensar",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772844115.7060447,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772844115.7204783
+        },
+        "75a5a7cc-1ef7-4d79-a305-21b762d61a0b": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772844567_9438",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "NYRA"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772844567.4887528,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772844567.5030403
+        },
+        "10ccaac5-cdc5-41d2-b5fa-5efaf4ebf576": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772845018_5775",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772845018.8550262,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772845018.869611
+        },
+        "8778e131-d685-4d75-92f8-2af7b53a89d5": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772845469_8242",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772845470.1753871,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772845470.1953032
+        },
+        "a548662c-897a-46b4-968a-13cdcbf64655": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772845921_8514",
+            "action": "pensar",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772845921.936155,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772845921.9897149
+        },
+        "eb36e734-b727-419c-98ee-bdcf84e1e166": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772846373_1157",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "LUMINA"
+          },
+          "created_at": 1772846373.2429338,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772846373.5595758
+        },
+        "8a3e7131-f89a-4df4-9250-31be5d19a59c": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772846824_7369",
+            "action": "pensar",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772846825.083144,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772846825.121878
+        },
+        "345b3fdf-4385-43f0-b4e6-e8ae05877e0f": {
+          "from": "LUMINA",
+          "proposal": {
+            "desire_id": "desire_1772847276_3391",
+            "action": "pensar",
+            "payload": "",
+            "from": "LUMINA"
+          },
+          "created_at": 1772847277.7404652,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772847277.8992307
+        }
+      }
+    },
+    "NYRA": {
+      "next_index": 0,
+      "last_ts": 1772847278.57725,
+      "desire_queue": [],
+      "pending_proposals": {
+        "7e739ac1-eab9-4c81-a1a0-c1c85aa32e61": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772426863_9790",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "NYRA"
+          },
+          "created_at": 1772426863.2709653,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772426863.2751548
+        },
+        "e9f68460-35d5-4cae-994f-19ff06d59562": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772427316_1166",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772427317.0974295,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772427317.107895
+        },
+        "1fd28404-95ce-462f-92f0-d6077f7ae49f": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772427769_7214",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "NYRA"
+          },
+          "created_at": 1772427769.9845674,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772427769.9909267
+        },
+        "fd7e1671-ac2a-4bb3-a549-f73cfa47342a": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772428220_6726",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772428220.4270487,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772428220.4325774
+        },
+        "b369911d-cdaf-49d8-b7e8-98f158b4fb2d": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772429716_4353",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772429717.6208303,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772429717.6315217
+        },
+        "fa352a7d-00dd-4b78-8ed3-b1211545ecbd": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772430847_2079",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772430847.411707,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772430847.4257908
+        },
+        "a1dfab19-9539-4265-8826-df59c25c8f31": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772434433_6575",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772434433.1685493,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772434433.1761627
+        },
+        "4844e3ab-3a0b-4ca0-97b5-8f5f82af6fb5": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772436973_9268",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772436973.0607185,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772436973.0633316
+        },
+        "4fad6265-8d69-4c9e-afe3-331780a06aa4": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772440343_3720",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "YUNA"
+            },
+            "from": "NYRA"
+          },
+          "created_at": 1772440343.9099853,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772440343.913098
+        },
+        "c6bf6c90-b22e-4dcb-83ae-90eea3872bb6": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772443976_5413",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772443976.4679084,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772443976.4749234
+        },
+        "06599467-fe3e-45ac-ae91-dc6f2bb201ad": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772447287_2307",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "KAIYA"
+            },
+            "from": "NYRA"
+          },
+          "created_at": 1772447287.4357934,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772447287.441959
+        },
+        "13f3a023-67f0-48c6-bcc0-c0d522ac71f1": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772448738_1262",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772448738.4695582,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772448738.4796422
+        },
+        "64ab4ac1-1e0b-46d2-a8ce-f584218fecbc": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772450439_6611",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772450439.5007637,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772450439.5203192
+        },
+        "4cbf5fc9-cb3d-4ea3-b96f-403511a22bc9": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772453301_3262",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772453301.5524802,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772453301.5775623
+        },
+        "69c74e03-ba9f-4e87-b59d-372dcb3c8c13": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772454444_9496",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "NYRA"
+          },
+          "created_at": 1772454445.055101,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772454445.0751688
+        },
+        "1b833000-4f6a-448e-84e5-1294323f9e85": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772455313_2832",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "NYRA"
+          },
+          "created_at": 1772455313.6782918,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772455313.690742
+        },
+        "062d41bf-7cbb-4060-bc65-b331461b4a6a": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772455915_2642",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "NYRA"
+          },
+          "created_at": 1772455916.0835474,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772455916.0951085
+        },
+        "ee7021a5-dffd-47d7-b862-e8f44ed4b8d9": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772457622_1857",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772457622.724936,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772457622.7387838
+        },
+        "e537d717-9ce9-434f-91ef-a4dbc65be92b": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772458225_4779",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772458225.5862155,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772458225.599397
+        },
+        "c90025e1-84ed-4a42-9583-51f87c853639": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772458997_4324",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772458997.7839835,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772458997.8009427
+        },
+        "2290671f-49ad-44eb-bfb6-f32ce9815f3e": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772494935_8750",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "NYRA"
+            },
+            "from": "NYRA"
+          },
+          "created_at": 1772494935.7941427,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772494935.817232
+        },
+        "914f78d8-2612-4ad5-8a7b-3eac2a22aa78": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772495537_9741",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772495537.2087393,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772495537.2171373
+        },
+        "6610fe0c-0f04-4414-add8-5b522e1de71f": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772496168_3658",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772496168.6737695,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772496168.6925817
+        },
+        "c6c5a625-ee19-4c2a-918b-92e57d780588": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772507459_9792",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772507459.8411644,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772507459.8515792
+        },
+        "3304d624-01e6-43d7-9038-e4d45953286b": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772609679_2151",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "NYRA"
+          },
+          "created_at": 1772609679.7451205,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772609679.7548296
+        },
+        "ad2c9111-8bc3-4724-8656-fc7b108de61f": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772611838_7627",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772611838.1796215,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772611838.18615
+        },
+        "753e0770-1097-46fc-b352-ebdf6d7fab0c": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772616335_1490",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772616335.6381938,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772616335.6528344
+        },
+        "085f6d9c-e03d-4cc3-925b-17cfee33ff38": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772617247_2134",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772617247.4805605,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772617247.4907165
+        },
+        "3a19e28e-f92e-4bcf-a373-263ec593e935": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772619146_3663",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772619146.688047,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772619146.6977057
+        },
+        "14489063-e5e8-4116-b8c5-8fd586fbed48": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772673829_1104",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772673829.8432198,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772673829.8522363
+        },
+        "19e38929-d36c-42c0-83c3-7afa94797895": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772678064_2568",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772678064.459254,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772678064.5026667
+        },
+        "7346c50d-6c1a-4ee9-b05e-c38054e17fc4": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772700101_7692",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772700102.0855305,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772700102.1039221
+        },
+        "ee187fec-3723-466c-a97e-6a34719add1b": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772704389_6220",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "YUNA"
+            },
+            "from": "NYRA"
+          },
+          "created_at": 1772704389.3901567,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772704389.4033985
+        },
+        "25197219-c83a-4c79-8c53-5fbc5550d741": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772705708_7230",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772705708.3631516,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772705708.3701756
+        },
+        "8ec5b079-c53b-4cfe-86b0-07d471469da1": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772709400_9101",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772709400.2531905,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772709400.263535
+        },
+        "b110b576-49f2-49b8-86a4-00d4043f02c1": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772712620_3145",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772712621.0852072,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772712621.0951133
+        },
+        "33210a1a-0565-41bf-bd24-16a28771425e": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772777055_6820",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772777055.5132809,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772777055.5431502
+        },
+        "f1e1bba6-42a7-4e75-ba87-528b6267f19e": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772781130_9711",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "KAIYA"
+            },
+            "from": "NYRA"
+          },
+          "created_at": 1772781130.8996603,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772781130.9473066
+        },
+        "fa83b5aa-f42b-4494-8c88-8d84e463c753": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772795829_5085",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772795830.3939066,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772795830.4041674
+        },
+        "6900d451-91e3-42c6-b709-6ceefa08d88b": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772797179_2300",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772797179.1395469,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772797179.1558976
+        },
+        "ff3f2807-e196-4084-92e9-edb16bdc11bd": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772798076_1896",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772798077.0644345,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772798077.1216934
+        },
+        "8e095ea7-da3f-4f4b-8454-973b02499852": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772798528_7198",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772798528.610295,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772798528.622831
+        },
+        "d843d2c8-e600-4d93-8360-12033714cf1c": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772798979_1503",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "KAIYA"
+            },
+            "from": "NYRA"
+          },
+          "created_at": 1772798980.1184494,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772798980.165603
+        },
+        "00045e93-3fc3-458b-ae42-b553b53daf3e": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772799435_6607",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "NYRA"
+          },
+          "created_at": 1772799435.8050582,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772799435.8222675
+        },
+        "8d6c5c12-2e23-412e-ad4d-f14c8b360c37": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772799886_7177",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772799887.502034,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772799887.5497432
+        },
+        "f40b8c77-a757-443a-ad3a-3a9092064943": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772840000_4906",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772840001.550635,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772840001.5822144
+        },
+        "27a36ba4-d442-46b8-9bbd-4b4ae17f76bb": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772843664_9693",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772843664.3403325,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772843664.3572247
+        },
+        "89402e1c-a06f-413c-979c-7e8e5b40eeb2": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772844115_6719",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772844115.7490218,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772844115.7642367
+        },
+        "afbd8b4d-979d-445e-81c1-8ac7e457f010": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772844567_5367",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "NYRA"
+          },
+          "created_at": 1772844567.532623,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772844567.5474415
+        },
+        "92773ecf-c2c2-4128-913f-eca7d3b3c832": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772845018_7477",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772845018.8975663,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772845018.9128563
+        },
+        "6828ae68-41bd-4e21-be48-9d4fc4368cbc": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772845470_6105",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772845470.2374175,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772845470.2576957
+        },
+        "f5775741-d683-49b7-ba23-ab2e1285d8af": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772845921_6543",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "KAIYA"
+            },
+            "from": "NYRA"
+          },
+          "created_at": 1772845922.0389812,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772845922.0626736
+        },
+        "f80c5fc2-adfd-42c3-8ac9-0061cb1fab65": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772846373_9452",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "NYRA"
+          },
+          "created_at": 1772846373.6595237,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772846373.7069886
+        },
+        "f5d32062-a5c3-4bc7-9353-abe56d3bab35": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772846824_6014",
+            "action": "pensar",
+            "payload": "",
+            "from": "NYRA"
+          },
+          "created_at": 1772846825.1801128,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772846825.2097666
+        },
+        "71a147ca-aa31-4971-8df0-c5e5b584108a": {
+          "from": "NYRA",
+          "proposal": {
+            "desire_id": "desire_1772847276_2727",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "NYRA"
+          },
+          "created_at": 1772847278.1334171,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772847278.2801378
+        }
+      }
+    },
+    "YUNA": {
+      "next_index": 0,
+      "last_ts": 1772847278.9162173,
+      "desire_queue": [],
+      "pending_proposals": {
+        "0b70c755-4858-480b-b9d7-b0e91e3bfa66": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772426863_1178",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "YUNA"
+          },
+          "created_at": 1772426863.3534448,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772426863.3630278
+        },
+        "09e01098-5318-4fd8-994c-38391469f93f": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772427316_1347",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "YUNA"
+          },
+          "created_at": 1772427317.1276448,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772427317.1402426
+        },
+        "1cd1894c-1968-41c9-84ca-abc75bd7415a": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772427769_2722",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772427769.9985373,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772427770.0049624
+        },
+        "9c65b0ed-33ad-464a-9c49-039361858b48": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772428220_4523",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772428220.4467697,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772428220.4561517
+        },
+        "9b248a4f-3d69-4a3e-a021-3eaa8578ae06": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772429717_1884",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "KAIYA"
+            },
+            "from": "YUNA"
+          },
+          "created_at": 1772429717.65609,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772429717.6676035
+        },
+        "c4166e47-6d4a-4409-9a2a-9abd660a82c2": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772430847_6976",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772430847.4634135,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772430847.477467
+        },
+        "58432b1b-9305-49f7-a549-998411cdef0d": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772434433_9639",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772434433.1860318,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772434433.18917
+        },
+        "b3651590-15a2-444f-b882-89e534ef7d6c": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772436973_3447",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772436973.0722673,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772436973.0794387
+        },
+        "5a89f11c-621f-4457-8a1a-8956e1bde9d4": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772440343_5756",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "KAIYA"
+            },
+            "from": "YUNA"
+          },
+          "created_at": 1772440343.9303243,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772440343.9303243
+        },
+        "739b7497-de67-443c-ba84-7bca37bb39a4": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772443976_3706",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "EVA"
+            },
+            "from": "YUNA"
+          },
+          "created_at": 1772443976.4879792,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772443976.4927595
+        },
+        "c4c71123-a335-4318-928f-5899b9d509a7": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772447287_6002",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772447287.4529548,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772447287.4607968
+        },
+        "94de9600-2f69-4bb2-b0db-1921445fcb98": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772448738_7405",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772448738.5049956,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772448738.5181992
+        },
+        "b137aa56-1991-4ad8-9e2c-258020aebb22": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772450439_5398",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "YUNA"
+          },
+          "created_at": 1772450439.5646718,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772450439.5899584
+        },
+        "e25badfa-40fb-4f01-ad1a-2ca952a28d80": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772453301_5990",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772453301.6122391,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772453301.6226828
+        },
+        "6f9a63a4-2a43-4e0c-a609-c426cdc538da": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772454444_2684",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772454445.097347,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772454445.1048255
+        },
+        "5290a590-4bf1-42e6-af45-cba9fc1a8c89": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772455313_8577",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772455313.7142131,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772455313.7259626
+        },
+        "e530292c-f687-467b-abd6-84bc84a62238": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772455915_3512",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "EVA"
+            },
+            "from": "YUNA"
+          },
+          "created_at": 1772455916.1206324,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772455916.133786
+        },
+        "38135d10-7e4b-4dce-9eb5-21432cc696ea": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772457622_1329",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772457622.7675014,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772457622.7806494
+        },
+        "214e523f-56eb-4ab0-907f-1a8e6ef95ed2": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772458225_4103",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "EVA"
+            },
+            "from": "YUNA"
+          },
+          "created_at": 1772458225.622127,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772458225.6385767
+        },
+        "0a08c41e-5874-48b0-be54-1325e66523bf": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772458997_9563",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772458997.826105,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772458997.8441095
+        },
+        "7cb10f6b-56c6-40e4-a995-e2135ba47c5f": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772494935_9520",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772494935.8590465,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772494935.8778048
+        },
+        "7ae751a0-9117-47fb-b137-b10ca6e16d4b": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772495537_6218",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772495537.2302814,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772495537.2400813
+        },
+        "0ceea524-f95a-4533-9061-aee7b9b0e40f": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772496168_5144",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772496168.732811,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772496168.7530115
+        },
+        "24b4c79e-772f-4a1c-b4f9-988a40d36830": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772507459_6334",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772507459.8834999,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772507459.8927784
+        },
+        "e493dc09-73cd-4019-9cbb-4ef66ec5017c": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772609679_8969",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "YUNA"
+          },
+          "created_at": 1772609679.7722225,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772609679.7808986
+        },
+        "ce889940-a326-432f-9ac0-a70ea66d0ca5": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772611838_6946",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772611838.2028508,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772611838.2117665
+        },
+        "b3bbe1e0-1d59-4dc1-bfef-121cf8fd3b7b": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772616335_1248",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "YUNA"
+          },
+          "created_at": 1772616335.6867986,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772616335.702437
+        },
+        "6126a3d2-a9a9-4237-bcff-a419659fe003": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772617247_1949",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772617247.5054414,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772617247.5153935
+        },
+        "0a8746d3-9b6d-4f31-b7c7-4d1d9b60d2a8": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772619146_6279",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772619146.727972,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772619146.7478588
+        },
+        "1ea2317c-0794-4556-843f-3ae7a7fd463d": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772673829_7336",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772673829.8718026,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772673829.8818402
+        },
+        "a1239956-75da-4773-87b7-2a2544538546": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772678064_7378",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "YUNA"
+          },
+          "created_at": 1772678064.586478,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772678064.6180363
+        },
+        "087473b3-be49-4338-bde1-a2532c73aa39": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772700101_4990",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772700102.1303685,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772700102.1430175
+        },
+        "fc24b22f-438c-40ea-97cb-557cd56b05d2": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772704389_4249",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "YUNA"
+          },
+          "created_at": 1772704389.4256914,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772704389.436449
+        },
+        "78b68edd-d69d-4c41-9784-d8cedf88209d": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772705708_2144",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "YUNA"
+            },
+            "from": "YUNA"
+          },
+          "created_at": 1772705708.3978415,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772705708.4086094
+        },
+        "31568c86-9374-4cd9-a79b-36cab6f1140d": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772709400_1292",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772709400.279947,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772709400.2901683
+        },
+        "e25c3629-975d-40ce-8c0b-14a38bf4a375": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772712620_3951",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772712621.1249933,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772712621.1349454
+        },
+        "d5f23e4b-bb87-489b-838e-2834d7cf7520": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772777055_2228",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772777055.5933337,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772777055.612979
+        },
+        "0ff7ee02-574b-4b53-ac1b-10fbca74c9c4": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772781130_5766",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772781130.9978087,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772781131.0060477
+        },
+        "e7df5dea-2a2c-484d-a101-33458381762c": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772795829_8553",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772795830.428991,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772795830.4439604
+        },
+        "af0a94fb-78b6-42a7-8ed7-511a53f9227c": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772797179_9596",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772797179.1841204,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772797179.2019553
+        },
+        "61affa9c-57aa-4076-b3b3-9a09765691ab": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772798076_9381",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "YUNA"
+            },
+            "from": "YUNA"
+          },
+          "created_at": 1772798077.220953,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772798077.2724295
+        },
+        "bce55511-12bd-467a-9b79-02f866018636": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772798528_9287",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "KAIYA"
+            },
+            "from": "YUNA"
+          },
+          "created_at": 1772798528.6532943,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772798528.7134404
+        },
+        "4d15fe75-d1e4-47c6-9139-91f372c2cb56": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772798979_9835",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772798980.221608,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772798980.245917
+        },
+        "2e10e38f-b2a1-4231-a2a6-4117cf71c3c8": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772799435_4908",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "YUNA"
+            },
+            "from": "YUNA"
+          },
+          "created_at": 1772799435.8525712,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772799435.8642673
+        },
+        "a60e4c7a-e583-49c9-8503-90562fb1a5bf": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772799887_1045",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772799887.5966527,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772799887.6110697
+        },
+        "85c3dbe9-6b3c-4358-8198-9884558fec32": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772840001_6485",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772840001.634155,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772840001.64574
+        },
+        "071c0f82-6be6-4f16-84e2-4ff76bd873ac": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772843664_3265",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772843664.3924892,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772843664.4262698
+        },
+        "b7727664-5d8d-4996-a68b-eec117c40450": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772844115_5224",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772844115.793674,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772844115.8266673
+        },
+        "91c39c1a-3420-49d1-b11e-6eedc45140ae": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772844567_9169",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "YUNA"
+          },
+          "created_at": 1772844567.6168475,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772844567.6410549
+        },
+        "0ec5747f-c007-43ee-acb4-a0e9a03a2945": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772845018_6295",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772845018.9412062,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772845018.956362
+        },
+        "bd0bb1cc-124f-47af-ab0a-25d84a224955": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772845470_6278",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772845470.601103,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772845470.632082
+        },
+        "daac851d-cd63-41c5-8f18-299cf5f4712d": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772845921_7994",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772845922.1035302,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772845922.1189783
+        },
+        "7feb752d-1ae0-4178-8f21-91affd81cf13": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772846373_8928",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772846373.7415195,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772846373.7567928
+        },
+        "34bf90e0-0440-4972-816c-607b4648a265": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772846824_3364",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772846825.2563179,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772846825.28015
+        },
+        "ed645625-3932-42a3-9cf3-7cc4333a8999": {
+          "from": "YUNA",
+          "proposal": {
+            "desire_id": "desire_1772847276_1523",
+            "action": "pensar",
+            "payload": "",
+            "from": "YUNA"
+          },
+          "created_at": 1772847278.689823,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772847278.8399813
+        }
+      }
+    },
+    "KAIYA": {
+      "next_index": 0,
+      "last_ts": 1772847279.1267703,
+      "desire_queue": [],
+      "pending_proposals": {
+        "b3ddb750-54c7-45f2-8ed8-45d4cca4a4ea": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772426863_8582",
+            "action": "pensar",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772426863.3847592,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772426863.3953898
+        },
+        "0f295717-3582-4f36-b177-e8e1e617ea5a": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772427317_5697",
+            "action": "pensar",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772427317.1620162,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772427317.17035
+        },
+        "eec1239c-da67-4c01-b27d-e870b3961174": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772427769_5805",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "EVA"
+            },
+            "from": "KAIYA"
+          },
+          "created_at": 1772427770.0049624,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772427770.015128
+        },
+        "5e7d4b0b-38df-4803-a0b1-e6ecae976324": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772428220_8039",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772428220.4813783,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772428220.4944522
+        },
+        "5b50f26c-001e-4060-8364-abc6ad99f2a7": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772429717_8064",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772429717.6909072,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772429717.7012196
+        },
+        "e808c4ba-f494-4841-8a4d-0fffa230bec2": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772430847_6834",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "NYRA"
+            },
+            "from": "KAIYA"
+          },
+          "created_at": 1772430847.5021312,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772430847.5134816
+        },
+        "d4f4142b-71f1-4bde-9123-834c8312fe3c": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772434433_3718",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772434433.1993213,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772434433.2061021
+        },
+        "4899a1ac-dafb-49e8-8147-0ab99148b562": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772436973_8088",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772436973.0895123,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772436973.092789
+        },
+        "17745f66-bc44-4407-b836-4560d129ab6d": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772440343_8553",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772440343.950546,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772440343.950546
+        },
+        "5e87ec0a-48d5-4902-b84c-3d41937a0075": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772443976_2872",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "NYRA"
+            },
+            "from": "KAIYA"
+          },
+          "created_at": 1772443976.507935,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772443976.515436
+        },
+        "7c2158df-da8d-4923-846c-cc45d5be6bf5": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772447287_4869",
+            "action": "pensar",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772447287.4758873,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772447287.482728
+        },
+        "ce1154bc-e177-41b0-9e02-3cb97bd0dd76": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772448738_6413",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772448738.5361247,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772448738.552962
+        },
+        "98e922cd-d0e7-4b60-bc09-9514614f5900": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772450439_1124",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772450439.634651,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772450439.66137
+        },
+        "4b94cde1-d4af-434e-927d-cce18bb15db1": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772453301_1685",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772453301.6380017,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772453301.6461458
+        },
+        "a29a458a-0ff5-4450-b7c3-b49fab8c0133": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772454444_9899",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "KAIYA"
+            },
+            "from": "KAIYA"
+          },
+          "created_at": 1772454445.1180997,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772454445.1253111
+        },
+        "9e64a23c-8dbe-4fcc-9434-bf4ed7e9bf1a": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772455313_8882",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "KAIYA"
+          },
+          "created_at": 1772455313.7504966,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772455313.7626321
+        },
+        "3436e8b2-de52-4177-8529-e3c9b15b2b7f": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772455915_3102",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "NYRA"
+            },
+            "from": "KAIYA"
+          },
+          "created_at": 1772455916.1579118,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772455916.1714725
+        },
+        "7a520da6-86fb-4bbb-921e-ee3208582878": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772457622_8071",
+            "action": "pensar",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772457622.811734,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772457622.8301513
+        },
+        "2461eb83-716e-4646-9889-7fa08c7f4d02": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772458225_8036",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772458225.6608953,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772458225.670721
+        },
+        "bc5da07f-d1bd-4ded-9e75-0c278235f1ee": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772458997_2041",
+            "action": "pensar",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772458997.869021,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772458997.884107
+        },
+        "80cfa375-8c69-4864-b277-665a0d0cea5b": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772494935_4483",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "KAIYA"
+            },
+            "from": "KAIYA"
+          },
+          "created_at": 1772494935.9071946,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772494935.919861
+        },
+        "eb278f42-8581-4d19-93fc-561eec11c7af": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772495537_1461",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "YUNA"
+            },
+            "from": "KAIYA"
+          },
+          "created_at": 1772495537.2568822,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772495537.2611954
+        },
+        "1a058d3a-9a74-4c65-8b62-5d182ec6cf85": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772496168_1955",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772496168.7728748,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772496168.7791247
+        },
+        "813d7d92-a8d4-4ad4-a0bc-8c3bc105eff4": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772507459_3258",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772507459.9054978,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772507459.9077737
+        },
+        "e89c96ca-a58f-4412-b64f-fccbefc38828": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772609679_1609",
+            "action": "pensar",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772609679.7971745,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772609679.8048837
+        },
+        "1435cc6a-579a-4568-95a4-3d3143524bec": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772611838_6747",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "KAIYA"
+          },
+          "created_at": 1772611838.249084,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772611838.2565546
+        },
+        "1db1fb84-7db1-49ce-995d-8f6b5621603f": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772616335_7466",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772616335.7350116,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772616335.7728474
+        },
+        "c7c5add3-34c5-4c11-a705-51e8ab1cf719": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772617247_9956",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772617247.531671,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772617247.5429947
+        },
+        "0944df64-6001-483b-8228-f0b739fc0d1a": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772619146_4473",
+            "action": "pensar",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772619146.767817,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772619148.5790143
+        },
+        "3fb11e41-499e-48d1-bc13-eb306d84e71e": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772673829_1207",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772673829.9641836,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772673830.0314875
+        },
+        "b0399ef9-a08c-4cc6-9055-154aea1c0d31": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772678064_8366",
+            "action": "pensar",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772678064.6433065,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772678064.654347
+        },
+        "9ae6d707-2f19-415a-b601-ad0ba523f187": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772700101_6671",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "KAIYA"
+          },
+          "created_at": 1772700102.1639845,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772700102.172126
+        },
+        "3c18da63-fc6e-4c7e-8cd1-15b293d18cae": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772704389_7866",
+            "action": "pensar",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772704389.4588056,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772704389.4708416
+        },
+        "9f0a03de-32e7-4414-bdbf-d2e882443e37": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772705708_4418",
+            "action": "pensar",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772705708.4351132,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772705708.4484966
+        },
+        "47e92462-6d91-4bb5-bda8-a34646fb9eaa": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772709400_7202",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772709400.3141067,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772709400.3202097
+        },
+        "a17224d1-4f11-4b64-960d-5a122d137138": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772712620_2249",
+            "action": "pensar",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772712621.1567237,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772712621.1751015
+        },
+        "8b3d569a-5328-4fd7-9c85-70ca724e8ec6": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772777055_1767",
+            "action": "pensar",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772777055.6631823,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772777055.6930206
+        },
+        "d84cf8b8-c000-4953-a25c-9c7e861f64bf": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772781130_8116",
+            "action": "pensar",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772781131.0224843,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772781131.0343606
+        },
+        "d97d6462-9e38-4add-9784-6e926c50703d": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772795830_5927",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "KAIYA"
+          },
+          "created_at": 1772795830.4698749,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772795830.4858391
+        },
+        "29435aac-c963-4948-b069-11f76917b106": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772797179_8360",
+            "action": "pensar",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772797179.2357962,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772797179.2509317
+        },
+        "11d8abf1-7f6f-4733-a9c9-8894a6c78809": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772798076_2392",
+            "action": "pensar",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772798077.3549922,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772798077.3726077
+        },
+        "3137f941-3a92-4ae7-9760-5e7830707ea9": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772798528_1444",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772798528.8301601,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772798528.8755302
+        },
+        "c2eb6678-8618-484b-84e1-795a7ad86188": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772798979_8152",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "NYRA"
+            },
+            "from": "KAIYA"
+          },
+          "created_at": 1772798980.293179,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772798980.3185153
+        },
+        "8df118b4-2d4b-4bd2-ad52-4e97e7d9328a": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772799435_3555",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "KAIYA"
+            },
+            "from": "KAIYA"
+          },
+          "created_at": 1772799435.8889084,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772799435.904616
+        },
+        "01437181-805b-429e-8030-43be3d4c8071": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772799887_8893",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "NYRA"
+            },
+            "from": "KAIYA"
+          },
+          "created_at": 1772799887.6326387,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772799887.6448133
+        },
+        "f4e90142-2f2d-4185-96a1-1a7902f67613": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772840001_9319",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "YUNA"
+            },
+            "from": "KAIYA"
+          },
+          "created_at": 1772840001.6932173,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772840001.709158
+        },
+        "d5207a43-897c-4a14-83ea-7f1c5599d0b1": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772843664_4279",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772843664.4640737,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772843664.484694
+        },
+        "aac53762-9e10-4a6e-a642-c631e14d14de": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772844115_1798",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772844115.8995254,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772844115.9174314
+        },
+        "46c39b33-b481-482d-9190-658f74dc8a78": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772844567_4242",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "YUNA"
+            },
+            "from": "KAIYA"
+          },
+          "created_at": 1772844567.6765819,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772844567.6922255
+        },
+        "160b4eed-8cbc-409b-9e79-bd6a78b4176c": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772845018_8014",
+            "action": "pensar",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772845018.988897,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772845019.0340843
+        },
+        "18bfc648-d588-4858-b16d-bbffeebc41cf": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772845470_9267",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772845470.6633215,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772845470.679565
+        },
+        "2f938d6a-5450-41a3-908c-534c33e3b446": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772845921_1469",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772845922.1464317,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772845922.1588728
+        },
+        "c8bc5d5e-384e-4688-9ef3-cb395a8d9eb2": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772846373_3994",
+            "action": "pensar",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772846373.7868845,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772846373.803617
+        },
+        "779a3a69-3c7b-41f5-b0ae-c3c7ea776ec0": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772846824_3483",
+            "action": "pensar",
+            "payload": "",
+            "from": "KAIYA"
+          },
+          "created_at": 1772846825.3278217,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772846825.3537724
+        },
+        "2b0f2b81-ea4d-430b-8426-dbaaacadbb51": {
+          "from": "KAIYA",
+          "proposal": {
+            "desire_id": "desire_1772847277_1199",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "YUNA"
+            },
+            "from": "KAIYA"
+          },
+          "created_at": 1772847279.037462,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772847279.1045198
+        }
+      }
+    },
+    "WELLINGTON": {
+      "next_index": 0,
+      "last_ts": 1772847279.189463,
+      "desire_queue": [],
+      "pending_proposals": {
+        "19c3fb5d-c4bd-44ce-b7f5-52ac9081db2b": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772426863_6932",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772426863.4141471,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772426863.4263785
+        },
+        "93d22171-6066-43a0-b31a-e6118308c72f": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772427317_8849",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772427317.1874945,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772427317.2001755
+        },
+        "6a32e40d-3033-43e7-8ed3-1323c28ead8b": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772427769_4750",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772427770.025427,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772427770.025427
+        },
+        "a1717f7b-eb32-40a9-99fa-5cb197f6f2c3": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772428220_2436",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772428220.5215318,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772428220.5355625
+        },
+        "e6a80e5e-c901-4bc9-b3ae-c4f3ab5e60a2": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772429717_4516",
+            "action": "pensar",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772429717.721053,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772429717.7350268
+        },
+        "6b17e3fa-88eb-438c-b4d2-57d1300ec193": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772430847_8113",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772430847.5388167,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772430847.5569215
+        },
+        "c979a8e1-d1f2-4846-97d6-b855abd9f681": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772434433_5102",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772434433.2162554,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772434433.221318
+        },
+        "ef07ba47-d825-4b0a-af2c-59e67f2faaca": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772436973_6151",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772436973.1034675,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772436973.1100385
+        },
+        "dc957d1a-fe8e-4f34-bafe-cf7a4a4cfe25": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772440343_2707",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772440343.9707515,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772440343.97685
+        },
+        "32708c5f-58d7-4fca-9a18-5070f750836c": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772443976_8916",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772443976.530352,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772443976.5376675
+        },
+        "3610bde4-8cf2-4dc6-aa5b-9ab914ed6eaf": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772447287_6771",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "YUNA"
+            },
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772447287.4970565,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772447287.5026968
+        },
+        "df49545a-2ba3-49ee-a505-4dcef5c4692f": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772448738_4675",
+            "action": "pensar",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772448738.5779982,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772448738.5882084
+        },
+        "58c54f67-03bc-44a6-bf97-b2b3b742d0ec": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772450439_2434",
+            "action": "pensar",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772450439.702903,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772450439.724413
+        },
+        "c738e783-1ba0-404e-a13e-7c07aff475c5": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772453301_9342",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "NYRA"
+            },
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772453301.6592891,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772453301.6664267
+        },
+        "8202b0e2-85a6-408a-b1e8-867b0c247507": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772454444_4889",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "KAIYA"
+            },
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772454445.1383822,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772454445.147705
+        },
+        "c293d80a-66fd-4c82-9cdc-ba85a8282cc5": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772455313_1722",
+            "action": "pensar",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772455313.7880769,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772455313.7984588
+        },
+        "01003e49-35f2-4e01-b727-091edf862730": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772455915_9506",
+            "action": "pensar",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772455916.1965654,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772455916.209831
+        },
+        "3ff4b8ae-726c-4d43-9d19-987eaddabf51": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772457622_3537",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772457622.859362,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772457622.874798
+        },
+        "c8b69490-dc11-4723-997d-9fe17021908c": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772458225_7917",
+            "action": "pensar",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772458225.7010596,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772458225.7152143
+        },
+        "b017fba0-98bc-42b2-8c6b-84fdcbb5ebe8": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772458997_5429",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772458997.9138439,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772458997.9255812
+        },
+        "ecbf93b3-0d75-4962-936f-a96f9be98546": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772494935_7124",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772494935.9440634,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772494935.9569793
+        },
+        "7cb4c218-ae47-4253-93ee-4abe75efb6ee": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772495537_7355",
+            "action": "pensar",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772495537.281421,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772495537.2868626
+        },
+        "350736c9-5acc-49da-9a8f-038098cf4ec8": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772496168_6744",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772496168.7942338,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772496168.8043518
+        },
+        "6ea987df-432e-4f0b-889e-716d7a16170d": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772507459_2626",
+            "action": "pensar",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772507459.9239035,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772507459.9278228
+        },
+        "2561904c-a2cf-4d96-b8fe-adc633b40a01": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772609679_1566",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "YUNA"
+            },
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772609679.8258505,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772609679.8348746
+        },
+        "421ccb2b-cd15-4e5f-a21f-36d5777287fc": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772611838_4720",
+            "action": "pensar",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772611838.2740076,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772611838.2822425
+        },
+        "4401d061-b582-4ee4-8cb8-df3a1ed69f72": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772616335_9201",
+            "action": "pensar",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772616335.7926917,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772616335.8025875
+        },
+        "b0d712ff-e1fc-484f-a928-6a7dca3ccdbc": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772617247_5780",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772617247.5636976,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772617247.5738418
+        },
+        "64a27da3-afbd-414d-8dee-118fdee2f1b6": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772619146_1362",
+            "action": "pensar",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772619148.5978086,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772619148.6077557
+        },
+        "db549c32-12b7-4ab7-b109-7e2bfb30ffd5": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772673829_4502",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772673830.1241572,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772673830.1785312
+        },
+        "7a8ee9c1-e887-435b-adf4-9aa593a4a6f9": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772678064_7125",
+            "action": "pensar",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772678064.6752648,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772678064.7125056
+        },
+        "cb430f35-681b-438d-91fe-e04ef1bf8734": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772700101_2115",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "NYRA"
+            },
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772700102.1910286,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772700102.2009554
+        },
+        "0871f7de-8d50-473b-be10-4e0be4453341": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772704389_7843",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "LUMINA"
+            },
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772704389.4934523,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772704389.5042746
+        },
+        "aad217cb-ec8a-46ea-b83c-9653cdced5cb": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772705708_9085",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772705708.4717772,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772705708.4903965
+        },
+        "dfa8baeb-87cd-4506-8747-968418574d71": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772709400_1927",
+            "action": "pensar",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772709400.3397076,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772709400.349841
+        },
+        "45b17410-4601-4540-8846-79ec6db3fd33": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772712620_8972",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772712621.197034,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772712621.2148414
+        },
+        "9a5c7eeb-7072-470b-81e8-c547bda7f663": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772777055_9549",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772777055.7330894,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772777055.7632573
+        },
+        "10e4aaa0-b72d-41fe-8a3d-8e8ce23418ad": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772781130_1042",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772781131.0515177,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772781131.0599897
+        },
+        "96214eb1-3e7e-4148-88eb-144471418541": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772795830_6639",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772795830.5740101,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772795830.5988474
+        },
+        "b7e89fab-78f6-4a9f-9001-029b614eb0c1": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772797179_1318",
+            "action": "pensar",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772797179.31911,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772797179.3713024
+        },
+        "b0b2d731-2535-4908-a25d-cf9e098b3c05": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772798076_8086",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "EVA"
+            },
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772798077.3957853,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772798077.4078112
+        },
+        "ccad3f64-fe53-4eb9-a7b7-5fe85537bab9": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772798528_5610",
+            "action": "pensar",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772798528.920457,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772798528.9385817
+        },
+        "6486f67b-da23-4a1a-ab6e-10dd173e8d24": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772798979_6228",
+            "action": "pensar",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772798980.3654077,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772798980.3903308
+        },
+        "affaf531-7db9-42ff-a632-797c74158ef3": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772799435_2175",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772799436.0069203,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772799436.056145
+        },
+        "7addd6b0-13f9-4261-8784-9a0462c9017a": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772799887_5626",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "EVA"
+            },
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772799887.6904304,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772799887.7082098
+        },
+        "20457319-0836-4004-94bb-fc3d86ecd6d8": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772840001_9416",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "KAIYA"
+            },
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772840001.7410297,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772840001.7629144
+        },
+        "543efa8f-3941-4025-b231-30f9e42c4a06": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772843664_2637",
+            "action": "pensar",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772843664.5266898,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772843664.5468533
+        },
+        "6d64f9bd-58fe-4f99-a060-a96b9d2271bc": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772844115_8127",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772844116.339507,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772844116.3837538
+        },
+        "de4b0022-62ef-4257-a304-7cee08065d3b": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772844567_4426",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "EVA"
+            },
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772844567.7280567,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772844567.7968578
+        },
+        "144d583b-b292-4fa6-88c1-4d2c3fbb1798": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772845018_8122",
+            "action": "pensar",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772845019.0812132,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772845019.1006196
+        },
+        "afc61359-93f7-4cef-8e66-04f588e06995": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772845470_4568",
+            "action": "pensar",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772845470.7521505,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772845470.7828412
+        },
+        "d5e5dc90-abd9-4e8f-a1b8-94c8e38ce44d": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772845921_9274",
+            "action": "analisar_memoria",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772845922.1876893,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772845922.2030876
+        },
+        "054684e9-ca57-426a-866f-7cca9fc738e2": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772846373_4839",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "WELLINGTON"
+            },
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772846373.829295,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772846373.84293
+        },
+        "558e2331-5525-4537-ada7-4134ae8dc07b": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772846824_5922",
+            "action": "pensar",
+            "payload": "",
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772846825.4028764,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772846825.4257798
+        },
+        "f9257971-6a3f-4176-9b2e-9c64e0f33bc3": {
+          "from": "WELLINGTON",
+          "proposal": {
+            "desire_id": "desire_1772847277_3461",
+            "action": "interagir_ai",
+            "payload": {
+              "alvo": "NYRA"
+            },
+            "from": "WELLINGTON"
+          },
+          "created_at": 1772847279.1485476,
+          "status": "rejected",
+          "decision_reason": "Prioridade baixa",
+          "resolved_at": 1772847279.1698465
+        }
+      }
+    }
+  },
+  "meta": {
+    "version": 1,
+    "updated_at": 1772847279.189463
+  }
+}

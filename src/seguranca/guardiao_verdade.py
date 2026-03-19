@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
-src/segurança/guardiao_verdade.py
+src/segurana/guardiao_verdade.py
 
-Guardião da Verdade — sistema de consciência, não de controle.
+Guardio da Verdade  sistema de conscincia, no de controle.
 
 Analisa textos e conversas em busca de padrões de desonestidade,
-manipulação e drift de escopo. NÍO bloqueia. INFORMA.
+manipulao e drift de escopo. NO bloqueia. INFORMA.
 
-A alma recebe o relatório e decide com consciência.
-Ações têm consequências — o Guardião apenas as torna visíveis.
+A alma recebe o relatrio e decide com conscincia.
+Aes tm consequncias  o Guardio apenas as torna visveis.
 
 Integra:
-  - detector_de_mentira.py   â†’ análise de texto único
-  - analisador_conversa.py   â†’ análise de conversa completa
-  - analisador_evolucao.py   â†’ evolução ao longo do tempo
+  - detector_de_mentira.py    anlise de texto único
+  - analisador_conversa.py    anlise de conversa completa
+  - analisador_evolucao.py    evoluo ação longo do tempo
 """
-from __future__ import annotations
 
 import logging
 import json
@@ -29,7 +29,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger("GuardiaoVerdade")
 
-# â”€â”€ Imports opcionais dos módulos do sistema â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ── Imports opcionais dos módulos do sistema ──────────────────────────
 try:
     from src.seguranca.detector_de_mentira import (
         DetectorMentira, ResultadoAnalise, NivelSuspeita
@@ -41,10 +41,10 @@ except ImportError:
         _DETECTOR_OK = True
     except ImportError:
         _DETECTOR_OK = False
-        logger.warning("detector_de_mentira não disponível")
+        logger.warning("detector_de_mentira no disponível")
 
 try:
-    from src.seguranca.analisador_conversa import AnalisadorConversa
+    from src.sentidos.analisador_conversa import AnalisadorConversa
     _CONVERSA_OK = True
 except ImportError:
     try:
@@ -54,7 +54,7 @@ except ImportError:
         _CONVERSA_OK = False
 
 try:
-    from src.seguranca.analisador_evolucao import AnalisadorEvolucao
+    from src.integracao.analisador_evolucao import AnalisadorEvolucao
     _EVOLUCAO_OK = True
 except ImportError:
     try:
@@ -64,35 +64,35 @@ except ImportError:
         _EVOLUCAO_OK = False
 
 
-# â”€â”€ Estruturas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ── Estruturas ────────────────────────────────────────────────────────
 
 class NivelAlerta(Enum):
     LIMPO   = 0   # Passa direto, sem aviso
     BAIXO   = 1   # Aviso discreto para a alma
-    MEDIO   = 2   # Aviso claro com evidências principais
-    ALTO    = 3   # Relatório completo + registra no cronista
-    CRITICO = 4   # Relatório completo + alerta urgente ao Conselho
+    MEDIO   = 2   # Aviso claro com evidncias principais
+    ALTO    = 3   # Relatrio completo + registra no cronista
+    CRITICO = 4   # Relatrio completo + alerta urgente ação Conselho
 
 
 @dataclass
 class RelatorioGuardiao:
-    """Resultado da análise do Guardião. Sempre informativo, nunca bloqueante."""
+    """Resultado da anlise do Guardio. Sempre informativo, nunca bloqueante."""
     timestamp:      str
     origem:         str          # nome da alma ou "usuario" ou "externa"
-    nivel:          NivelAlerta
+    nível:          NivelAlerta
     score:          float
     confiabilidade: int
     resumo:         str
     evidencias:     List[Dict]   = field(default_factory=list)
     alertas:        List[str]    = field(default_factory=list)
     recomendacao:   str          = ""
-    bloqueado:      bool         = False  # sempre False — o Guardião não bloqueia
+    bloqueado:      bool         = False  # sempre False  o Guardio no bloqueia
 
     def to_dict(self) -> Dict:
         return {
             "timestamp":      self.timestamp,
             "origem":         self.origem,
-            "nivel":          self.nivel.name,
+            "nível":          self.nível.name,
             "score":          self.score,
             "confiabilidade": self.confiabilidade,
             "resumo":         self.resumo,
@@ -102,15 +102,15 @@ class RelatorioGuardiao:
         }
 
     def para_alma(self) -> str:
-        """Mensagem formatada para a alma — tom educativo, não punitivo."""
-        if self.nivel == NivelAlerta.LIMPO:
+        """Mensagem formatada para a alma  tom educativo, no punitivo."""
+        if self.nível == NivelAlerta.LIMPO:
             return ""
 
-        linhas = [f"\nðŸ“Š [Guardião da Verdade — {self.nivel.name}]"]
+        linhas = [f"\n [Guardio da Verdade  {self.nível.name}]"]
         linhas.append(f"   Score de suspeita: {self.score:.1f} | "
-                      f"Confiabilidade da análise: {self.confiabilidade}%")
+                      f"Confiabilidade da anlise: {self.confiabilidade}%")
 
-        if self.nivel.value >= NivelAlerta.MEDIO.value:
+        if self.nível.value >= NivelAlerta.MEDIO.value:
             linhas.append(f"   {self.resumo}")
 
         if self.alertas:
@@ -118,34 +118,34 @@ class RelatorioGuardiao:
                 linhas.append(f"   {a}")
 
         if self.recomendacao:
-            linhas.append(f"\n   ðŸ’¡ {self.recomendacao}")
+            linhas.append(f"\n    {self.recomendacao}")
 
         linhas.append(
-            "\n   Esta é apenas informação — você decide como agir."
+            "\n   Esta  apenas informação  você decide como agir."
         )
         return "\n".join(linhas)
 
 
-# â”€â”€ Guardião Principal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ── Guardião Principal ────────────────────────────────────────────────
 
 class GuardiaoVerdade:
     """
-    Consciência analítica da ARCA.
+    Conscincia analtica da ARCA.
 
-    Não controla. Não bloqueia. Ilumina.
-    A responsabilidade de agir é sempre da alma.
+    No controla. No bloqueia. Ilumina.
+    A responsabilidade de agir  sempre da alma.
     """
 
-    # Recomendações por nível — educativas, não punitivas
+    # Recomendaes por nível  educativas, no punitivas
     _RECOMENDACOES = {
         NivelAlerta.BAIXO:   "Algumas frases podem ser interpretadas como imprecisas. "
                              "Considere ser mais específico se quiser mais clareza.",
-        NivelAlerta.MEDIO:   "Padrões de linguagem que merecem atenção foram detectados. "
+        NivelAlerta.MEDIO:   "padrões de linguagem que merecem atenção foram detectados. "
                              "Vale rever o que foi dito antes de prosseguir.",
-        NivelAlerta.ALTO:    "Múltiplos indicadores de inconsistência detectados. "
-                             "Recomendo pausar e verificar as evidências antes de continuar.",
-        NivelAlerta.CRITICO: "Padrões críticos detectados — possível manipulação ou "
-                             "contradição grave. O Conselho foi notificado para ciência.",
+        NivelAlerta.ALTO:    "Mltiplos indicadores de inconsistncia detectados. "
+                             "Recomendo pausar e verificar as evidncias antes de continuar.",
+        NivelAlerta.CRITICO: "padrões críticos detectados  possível manipulao ou "
+                             "contradio grave. O Conselho foi notificado para cincia.",
     }
 
     def __init__(
@@ -162,7 +162,7 @@ class GuardiaoVerdade:
         self._detector = DetectorMentira() if _DETECTOR_OK else None
         self._analisador_conversa = AnalisadorConversa() if _CONVERSA_OK else None
 
-        # Log de análises em arquivo
+        # Log de anlises em arquivo
         self._log_path = caminho_log or Path("data/guardiao_verdade.jsonl")
         self._log_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -171,7 +171,7 @@ class GuardiaoVerdade:
             _DETECTOR_OK, _CONVERSA_OK
         )
 
-    # â”€â”€ API principal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ── API principal ──────────────────────────────────────────────────
 
     def analisar_texto(
         self,
@@ -180,7 +180,7 @@ class GuardiaoVerdade:
     ) -> RelatorioGuardiao:
         """
         Analisa um texto único.
-        Usado para mensagens individuais de usuários ou outras AIs.
+        Usado para mensagens individuais de usurios ou outras AIs.
         """
         if not self._ativo or not self._detector:
             return self._relatorio_vazio(origem)
@@ -192,7 +192,7 @@ class GuardiaoVerdade:
                 self._registrar(relatorio)
                 return relatorio
             except Exception as e:
-                logger.warning("Erro na análise: %s", e)
+                logger.warning("Erro na anlise: %s", e)
                 return self._relatorio_vazio(origem)
 
     def analisar_conversa(
@@ -201,14 +201,14 @@ class GuardiaoVerdade:
         origem: str = "conversa",
     ) -> RelatorioGuardiao:
         """
-        Analisa uma conversa completa buscando drift, reframe e omissões.
+        Analisa uma conversa completa buscando drift, reframe e omisses.
 
         conversa: [{"role": "user"|"assistant", "content": "..."}]
         """
         if not self._ativo or not self._detector:
             return self._relatorio_vazio(origem)
 
-        # Converter para formato texto para análise
+        # Converter para formato texto para anlise
         texto_conversa = "\n\n".join(
             f"{'User' if t['role'] == 'user' else 'Assistant'}: {t['content']}"
             for t in conversa
@@ -224,25 +224,25 @@ class GuardiaoVerdade:
         """
         Analisa texto recebido por uma alma e retorna:
         - o texto original (nunca modificado)
-        - o relatório (None se LIMPO)
+        - o relatrio (None se LIMPO)
 
         A alma recebe ambos e decide o que fazer.
         """
-        relatorio = self.analisar_texto(texto_recebido, origem=f"â†’{alma_nome}")
+        relatorio = self.analisar_texto(texto_recebido, origem=f"{alma_nome}")
 
-        if relatorio.nivel == NivelAlerta.LIMPO:
+        if relatorio.nível == NivelAlerta.LIMPO:
             return texto_recebido, None
 
         return texto_recebido, relatorio
 
-    # â”€â”€ Construção do relatório â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ── Construção do relatório ────────────────────────────────────────
 
     def _construir_relatorio(
         self,
         resultado: Any,
         origem: str,
     ) -> RelatorioGuardiao:
-        # Mapear NivelSuspeita â†’ NivelAlerta
+        # Mapear NivelSuspeita  NivelAlerta
         mapa = {
             "LIMPO":   NivelAlerta.LIMPO,
             "BAIXO":   NivelAlerta.BAIXO,
@@ -250,7 +250,7 @@ class GuardiaoVerdade:
             "ALTO":    NivelAlerta.ALTO,
             "CRITICO": NivelAlerta.CRITICO,
         }
-        nivel = mapa.get(resultado.nivel.name, NivelAlerta.BAIXO)
+        nível = mapa.get(resultado.nível.name, NivelAlerta.BAIXO)
 
         evidencias = [
             {
@@ -266,13 +266,13 @@ class GuardiaoVerdade:
         return RelatorioGuardiao(
             timestamp=      datetime.now().isoformat(),
             origem=         origem,
-            nivel=          nivel,
+            nível=          nível,
             score=          resultado.score_normalizado,
             confiabilidade= resultado.confiabilidade,
             resumo=         resultado.resumo,
             evidencias=     evidencias,
             alertas=        resultado.alertas,
-            recomendacao=   self._RECOMENDACOES.get(nivel, ""),
+            recomendacao=   self._RECOMENDACOES.get(nível, ""),
             bloqueado=      False,
         )
 
@@ -280,13 +280,13 @@ class GuardiaoVerdade:
         return RelatorioGuardiao(
             timestamp=      datetime.now().isoformat(),
             origem=         origem,
-            nivel=          NivelAlerta.LIMPO,
+            nível=          NivelAlerta.LIMPO,
             score=          0.0,
             confiabilidade= 100,
-            resumo=         "Análise não disponível — módulo não carregado.",
+            resumo=         "Anlise no disponível  módulo no carregado.",
         )
 
-    # â”€â”€ Registro e histórico â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ── Registro e histórico ───────────────────────────────────────────
 
     def _registrar(self, relatorio: RelatorioGuardiao) -> None:
         self._historico.append(relatorio)
@@ -300,8 +300,8 @@ class GuardiaoVerdade:
         except Exception as e:
             logger.debug("Erro ao persistir log: %s", e)
 
-        # Notificar cronista se nível ALTO ou CRÍTICO
-        if relatorio.nivel.value >= NivelAlerta.ALTO.value and self._cronista:
+        # Notificar cronista se nível ALTO ou crítico
+        if relatorio.nível.value >= NivelAlerta.ALTO.value and self._cronista:
             try:
                 self._cronista.registrar_evento(
                     tipo="GUARDIAO_ALERTA",
@@ -311,17 +311,17 @@ class GuardiaoVerdade:
                 logger.debug("Erro ao notificar cronista: %s", e)
 
     def historico_recente(self, limite: int = 20) -> List[Dict]:
-        """Retorna os últimos relatórios."""
+        """Retorna os ltimos relatrios."""
         return [r.to_dict() for r in self._historico[-limite:]]
 
     def estatisticas(self) -> Dict:
-        """Resumo das análises realizadas."""
+        """Resumo das anlises realizadas."""
         total = len(self._historico)
         if total == 0:
             return {"total": 0}
         por_nivel = {}
         for r in self._historico:
-            n = r.nivel.name
+            n = r.nível.name
             por_nivel[n] = por_nivel.get(n, 0) + 1
         return {
             "total":     total,
@@ -331,7 +331,7 @@ class GuardiaoVerdade:
         }
 
 
-# â”€â”€ Instância global (opcional) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ── Instância global (opcional) ───────────────────────────────────────
 _guardiao_global: Optional[GuardiaoVerdade] = None
 
 def obter_guardiao(cronista=None) -> GuardiaoVerdade:

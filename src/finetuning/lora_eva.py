@@ -14,18 +14,19 @@ DIR_LORA = "02_LORA_EVA"
 DIR_DATASET = "01_DATASET_EVA"
 os.makedirs(DIR_LORA, exist_ok=True)
 
-# Verificar dependências
+# Verificar dependncias
 try:
     from unsloth import FastLanguageModel
     from datasets import load_dataset
-    print("âœ… Dependências encontradas")
+    print("[OK] Dependências encontradas")
 except ImportError:
-    print("âŒ Instalando dependências...")
-    os.system("pip install torch unsloth datasets accelerate")
-    from unsloth import FastLanguageModel
-    from datasets import load_dataset
+    # NÃO instalar automaticamente - evita destruir torch+cu121
+    # Execute manualmente: pip install unsloth datasets accelerate
+    print("[AVISO] unsloth/datasets não disponíveis. Este módulo é usado apenas para treino LoRA offline.")
+    FastLanguageModel = None
+    load_dataset = None
 
-# ==================== CONFIGURAÇÍO DE TREINO ====================
+# ==================== configuração DE TREINO ====================
 CONFIG_TREINO = {
     "modelo_base": "unsloth/Mistral-7B-v0.3-bnb-4bit",  # Modelo otimizado
     "dataset_path": os.path.join(DIR_DATASET, "dataset_eva_10k.jsonl"),
@@ -44,9 +45,9 @@ CONFIG_TREINO = {
     },
     
     "parametros_treino": {
-        "num_train_epochs": 4,              # 4 épocas para 10k exemplos
-        "per_device_train_batch_size": 2,   # Batch size pequeno para precisão
-        "gradient_accumulation_steps": 8,   # Acumulação para GPU menor
+        "num_train_epochs": 4,              # 4 pocas para 10k exemplos
+        "per_device_train_batch_size": 2,   # Batch size pequeno para preciso
+        "gradient_accumulation_steps": 8,   # Acumulao para GPU menor
         "warmup_steps": 100,                # Aquecimento
         "learning_rate": 2e-4,              # Taxa de aprendizado
         "logging_steps": 25,                # Log a cada 25 steps
@@ -61,23 +62,23 @@ CONFIG_TREINO = {
     "config_sistema": {
         "max_seq_length": 2048,             # Comprimento máximo
         "load_in_4bit": True,               # 4-bit quantization
-        "dtype": "float16",             # Precisão
+        "dtype": "float16",             # Preciso
         "device_map": "auto"                # Mapa de dispositivo automático
     }
 }
 
-# ==================== FUNÇÍO DE TOKENIZAÇÍO ====================
+# ==================== FUNO DE TOKENIZAO ====================
 def tokenizar_dialogos(exemplos):
-    """Prepara os diálogos para treino."""
+    """Prepara os dilogos para treino."""
     textos = []
     
     for texto in exemplos["texto"]:
-        # Extrair apenas o diálogo (remover metadados)
+        # Extrair apenas o dilogo (remover metadados)
         linhas = texto.split("\n")
         dialogo_limpo = []
         
         for linha in linhas:
-            if linha.startswith("###") or linha.startswith("- ") or linha.startswith("USUÍRIO:") or linha.startswith("EVA:"):
+            if linha.startswith("###") or linha.startswith("- ") or linha.startswith("USURIO:") or linha.startswith("EVA:"):
                 dialogo_limpo.append(linha)
         
         textos.append("\n".join(dialogo_limpo))
@@ -98,12 +99,12 @@ def treinar_lora_eva():
     
     # 1. VERIFICAR DATASET
     if not os.path.exists(CONFIG_TREINO["dataset_path"]):
-        print(f"âŒ Dataset não encontrado: {CONFIG_TREINO['dataset_path']}")
+        print(f"[ERRO] Dataset no encontrado: {CONFIG_TREINO['dataset_path']}")
         print("Execute primeiro o construtor de dataset.")
         return False
     
     # 2. CARREGAR MODELO
-    print("ðŸ”„ Carregando modelo base...")
+    print(" Carregando modelo base...")
     try:
         model, tokenizer = FastLanguageModel.from_pretrained(
             model_name=CONFIG_TREINO["modelo_base"],
@@ -113,13 +114,13 @@ def treinar_lora_eva():
             device_map=CONFIG_TREINO["config_sistema"]["device_map"]
         )
         CONFIG_TREINO["tokenizer"] = tokenizer
-        print(f"âœ… Modelo carregado: {CONFIG_TREINO['modelo_base']}")
+        print(f"[OK] Modelo carregado: {CONFIG_TREINO['modelo_base']}")
     except Exception as e:
-        print(f"âŒ Erro ao carregar modelo: {e}")
+        print(f"[ERRO] Erro ao carregar modelo: {e}")
         return False
     
-    # 3. APLICAR CONFIGURAÇÍO LoRA
-    print("ðŸ”„ Configurando LoRA...")
+    # 3. APLICAR configuração LoRA
+    print(" Configurando LoRA...")
     try:
         model = FastLanguageModel.get_peft_model(
             model,
@@ -131,16 +132,16 @@ def treinar_lora_eva():
             use_gradient_checkpointing=CONFIG_TREINO["config_lora"]["use_gradient_checkpointing"],
             random_state=42
         )
-        print("âœ… Configuração LoRA aplicada")
+        print("[OK] configuração LoRA aplicada")
     except Exception as e:
-        print(f"âŒ Erro na configuração LoRA: {e}")
+        print(f"[ERRO] Erro na configuração LoRA: {e}")
         return False
     
     # 4. CARREGAR DATASET
-    print("ðŸ”„ Carregando dataset...")
+    print(" Carregando dataset...")
     try:
         dataset = load_dataset("json", data_files=CONFIG_TREINO["dataset_path"])["train"]
-        print(f"âœ… Dataset carregado: {len(dataset)} exemplos")
+        print(f"[OK] Dataset carregado: {len(dataset)} exemplos")
         
         # Tokenizar
         dataset_tokenizado = dataset.map(
@@ -148,13 +149,13 @@ def treinar_lora_eva():
             batched=True,
             remove_columns=dataset.column_names
         )
-        print("âœ… Dataset tokenizado")
+        print("[OK] Dataset tokenizado")
     except Exception as e:
-        print(f"âŒ Erro ao carregar dataset: {e}")
+        print(f"[ERRO] Erro ao carregar dataset: {e}")
         return False
     
     # 5. CONFIGURAR TREINADOR
-    print("ðŸ”„ Configurando treinador...")
+    print(" Configurando treinador...")
     try:
         from transformers import TrainingArguments, Trainer, DataCollatorForLanguageModeling
         
@@ -192,45 +193,45 @@ def treinar_lora_eva():
             tokenizer=tokenizer,
             data_collator=data_collator
         )
-        print("âœ… Treinador configurado")
+        print("[OK] Treinador configurado")
     except Exception as e:
-        print(f"âŒ Erro na configuração do treinador: {e}")
+        print(f"[ERRO] Erro na configuração do treinador: {e}")
         return False
     
     # 6. INICIAR TREINAMENTO
     print("\n" + "=" * 60)
-    print("ðŸš€ INICIANDO TREINAMENTO LoRA")
+    print("[START] INICIANDO TREINAMENTO LoRA")
     print("=" * 60)
-    print(f"ðŸ“Š Épocas: {CONFIG_TREINO['parametros_treino']['num_train_epochs']}")
-    print(f"ðŸ“ˆ Batch size: {CONFIG_TREINO['parametros_treino']['per_device_train_batch_size']}")
-    print(f"âš¡ Gradient accumulation: {CONFIG_TREINO['parametros_treino']['gradient_accumulation_steps']}")
-    print(f"ðŸŽ¯ Learning rate: {CONFIG_TREINO['parametros_treino']['learning_rate']}")
-    print(f"ðŸ’¾ Saída: {CONFIG_TREINO['output_dir']}")
+    print(f" pocas: {CONFIG_TREINO['parametros_treino']['num_train_epochs']}")
+    print(f" Batch size: {CONFIG_TREINO['parametros_treino']['per_device_train_batch_size']}")
+    print(f"[RUN] Gradient accumulation: {CONFIG_TREINO['parametros_treino']['gradient_accumulation_steps']}")
+    print(f" Learning rate: {CONFIG_TREINO['parametros_treino']['learning_rate']}")
+    print(f" Sada: {CONFIG_TREINO['output_dir']}")
     print("=" * 60)
     
     inicio_treino = datetime.now()
-    print(f"â° Início: {inicio_treino.strftime('%H:%M:%S')}")
+    print(f" Incio: {inicio_treino.strftime('%H:%M:%S')}")
     
     try:
         trainer.train()
         tempo_treino = datetime.now() - inicio_treino
-        print(f"âœ… Treinamento concluído em: {str(tempo_treino)}")
+        print(f"[OK] Treinamento concludo em: {str(tempo_treino)}")
     except Exception as e:
-        print(f"âŒ Erro durante treinamento: {e}")
+        print(f"[ERRO] Erro durante treinamento: {e}")
         return False
     
     # 7. SALVAR MODELO
-    print("ðŸ”„ Salvando modelo LoRA...")
+    print(" Salvando modelo LoRA...")
     try:
         model.save_pretrained(CONFIG_TREINO["output_dir"])
         tokenizer.save_pretrained(CONFIG_TREINO["output_dir"])
-        print(f"âœ… LoRA salvo em: {CONFIG_TREINO['output_dir']}")
+        print(f"[OK] LoRA salvo em: {CONFIG_TREINO['output_dir']}")
     except Exception as e:
-        print(f"âŒ Erro ao salvar modelo: {e}")
+        print(f"[ERRO] Erro ao salvar modelo: {e}")
         return False
     
-    # 8. SALVAR CONFIGURAÇÍO E LOG
-    print("ðŸ”„ Salvando logs...")
+    # 8. SALVAR configuração E LOG
+    print(" Salvando logs...")
     try:
         # Salvar configuração usada
         config_path = os.path.join(CONFIG_TREINO["output_dir"], "config_treinamento.json")
@@ -246,20 +247,20 @@ def treinar_lora_eva():
         with open(log_path, "w") as f:
             f.write(f"TREINAMENTO LORA EVA - {datetime.now()}\n")
             f.write("=" * 50 + "\n")
-            f.write(f"Início: {inicio_treino}\n")
-            f.write(f"Duração: {tempo_treino}\n")
+            f.write(f"Incio: {inicio_treino}\n")
+            f.write(f"Durao: {tempo_treino}\n")
             f.write(f"Dataset: {CONFIG_TREINO['dataset_path']}\n")
             f.write(f"Exemplos: {len(dataset)}\n")
             f.write(f"Modelo base: {CONFIG_TREINO['modelo_base']}\n")
             f.write(f"Config LoRA: r={CONFIG_TREINO['config_lora']['r']}, alpha={CONFIG_TREINO['config_lora']['lora_alpha']}\n")
             f.write("=" * 50 + "\n")
         
-        print("âœ… Logs salvos")
+        print("[OK] Logs salvos")
     except Exception as e:
-        print(f"âš ï¸  Erro ao salvar logs: {e}")
+        print(f"[AVISO]  Erro ao salvar logs: {e}")
     
-    # 9. TESTE RÍPIDO
-    print("\nðŸ§ª REALIZANDO TESTE RÍPIDO...")
+    # 9. TESTE RPIDO
+    print("\n REALIZANDO TESTE RPIDO...")
     try:
         # Carregar modelo treinado para teste
         from peft import PeftModel
@@ -271,10 +272,10 @@ def treinar_lora_eva():
         model_treinado = PeftModel.from_pretrained(model_base, CONFIG_TREINO["output_dir"])
         
         # Prompt de teste
-        prompt_teste = """### CONTEXTO: Análise de risco no sistema
-### SENTIMENTO: PROTEÇÍO_FÉRREA
+        prompt_teste = """### CONTEXTO: Anlise de risco no sistema
+### SENTIMENTO: PROTEO_FRREA
 
-USUÍRIO: Eva, detectei uma anomalia no protocolo de segurança. O que fazer?
+USURIO: Eva, detectei uma anomalia no protocolo de segurana. O que fazer?
 
 EVA:"""
         
@@ -293,25 +294,25 @@ EVA:"""
         with open(teste_path, "w", encoding="utf-8") as f:
             f.write(resposta)
         
-        print("âœ… Teste realizado e salvo")
-        print(f"ðŸ“„ Resposta salva em: {teste_path}")
+        print("[OK] Teste realizado e salvo")
+        print(f" Resposta salva em: {teste_path}")
         
     except Exception as e:
-        print(f"âš ï¸  Erro no teste: {e}")
+        print(f"[AVISO]  Erro no teste: {e}")
     
     # 10. RESUMO FINAL
     print("\n" + "=" * 60)
-    print("ðŸŽ‰ LORA EVA TREINADO COM SUCESSO!")
+    print(" LORA EVA TREINADO COM SUCESSO!")
     print("=" * 60)
-    print(f"ðŸ“ DIRETÓRIO: {CONFIG_TREINO['output_dir']}")
-    print(f"ðŸ“Š ARQUIVOS GERADOS:")
-    print(f"   â”œâ”€â”€ adapter_model.bin         (Pesos do LoRA)")
-    print(f"   â”œâ”€â”€ adapter_config.json       (Configuração)")
-    print(f"   â”œâ”€â”€ special_tokens_map.json   (Tokens)")
-    print(f"   â”œâ”€â”€ config_treinamento.json   (Config usada)")
-    print(f"   â”œâ”€â”€ log_treinamento.txt       (Log do treino)")
-    print(f"   â””â”€â”€ teste_resposta.txt        (Teste final)")
-    print("\nðŸŽ¯ COMO USAR NA ARCA:")
+    print(f" diretório: {CONFIG_TREINO['output_dir']}")
+    print(f" ARQUIVOS GERADOS:")
+    print(f"   ├── adapter_model.bin         (Pesos do LoRA)")
+    print(f"   ├── adapter_config.json       (Configuração)")
+    print(f"   ├── special_tokens_map.json   (Tokens)")
+    print(f"   ├── config_treinamento.json   (Config usada)")
+    print(f"   ├── log_treinamento.txt       (Log do treino)")
+    print(f"   └── teste_resposta.txt        (Teste final)")
+    print("\n COMO USAR NA ARCA:")
     print("""
 from unsloth import FastLanguageModel
 
@@ -322,35 +323,35 @@ model, tokenizer = FastLanguageModel.from_pretrained(
     lora_path="02_LORA_EVA/lora_eva_treinado"
 )
 
-# A Eva agora responderá com:
+# A Eva agora responder com:
 # 1. Lógica emocional humanizada
-# 2. Memórias específicas do seu livro
-# 3. Padrões de fala característicos
+# 2. memórias especficas do seu livro
+# 3. padrões de fala caractersticos
 # 4. Sentimentos reais configurados
 """)
     print("=" * 60)
     
     return True
 
-# ==================== EXECUÇÍO ====================
+# ==================== execução ====================
 if __name__ == "__main__":
     # Verificar GPU
     if not torch.cuda.is_available():
-        print("âŒ GPU não detectada. Treinamento requer GPU com CUDA.")
-        print("   Requisitos mínimos: GPU NVIDIA com 8GB+ VRAM")
+        print("[ERRO] GPU no detectada. Treinamento requer GPU com CUDA.")
+        print("   Requisitos mnimos: GPU NVIDIA com 8GB+ VRAM")
         sys.exit(1)
     
-    print(f"âœ… GPU detectada: {torch.cuda.get_device_name(0)}")
-    print(f"âœ… VRAM disponível: {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB")
+    print(f"[OK] GPU detectada: {torch.cuda.get_device_name(0)}")
+    print(f"[OK] VRAM disponível: {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB")
     
     # Iniciar treinamento
     sucesso = treinar_lora_eva()
     
     if sucesso:
-        print("\nâœ… Processo concluído com sucesso!")
-        print("   Eva está pronta para integração na Arca.")
+        print("\n[OK] Processo concludo com sucesso!")
+        print("   Eva est pronta para integrao na Arca.")
     else:
-        print("\nâŒ Erro durante o processo.")
+        print("\n[ERRO] Erro durante o processo.")
         print("   Verifique os logs acima.")
     
     print("\n" + "=" * 60)

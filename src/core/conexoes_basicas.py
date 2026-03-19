@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 Local: src/conexoes/conexoes_basicas.py
-Função: Carregar credenciais e fornecer clientes para APIs usadas pelo sistema.Observações:
+Funo: Carregar credenciais e fornecer clientes para APIs usadas pelo sistema.Observaes:
  - Carrega.env de forma tolerante.
  - Leitura de chaves suporta listas (CSV) quando apropriado.
- - Imports de bibliotecas externas são feitos de forma lazy dentro das funções.
+ - Imports de bibliotecas externas so feitos de forma lazy dentro das funções.
  - Cache de conexões inicializadas para evitar reinit.
- - Integração com secrets_manager do coração (fallback).
- - Logs com exc_info para facilitar diagnóstico.
-Sugestão aplicada: Usar cfg_get para ler chaves API.
-Integrações aplicadas: Coração (carregamento init), analisador (fallback LLM), encarnacao (inferência 3D).
+ - Integrao com secrets_manager do corao (fallback).
+ - Logs com exc_info para facilitar diagnstico.
+Sugesto aplicada: Usar cfg_get para ler chaves API.
+Integraes aplicadas: Corao (carregamento init), analisador (fallback LLM), encarnacao (inferncia 3D).
 """
-from __future__ import annotations
 import os
 import logging
 from typing import Optional, Any, List, Dict
@@ -20,43 +20,43 @@ from pathlib import Path
 try:
     from dotenv import load_dotenv
 except:
-    logging.getLogger(__name__).warning("âš ï¸ load_dotenv não disponível")
-    load_dotenv = None  # Se dotenv não estiver instalado, não falhar no import do módulo
+    logging.getLogger(__name__).warning("[AVISO] load_dotenv no disponível")
+    load_dotenv = None  # Se dotenv no estiver instalado, no falhar no import do módulo
 
 logger = logging.getLogger(__name__)
 
-# Sugestão aplicada: Import cfg_utils
+# Sugesto aplicada: Import cfg_utils
 try:
     from cfg_utils import cfg_get
     CFG_UTILS_DISPONIVEL = True
 except ImportError:
     CFG_UTILS_DISPONIVEL = False
 
-# Integrações aplicadas
+# Integraes aplicadas
 try:
-    from src.consulado.analisador_intencao import AnalisadorIntencao  # Para fallback LLM
+    from src.sentidos.analisador_intencoes import AnalisadorIntencao  # Para fallback LLM
     ANALISADOR_DISPONIVEL = True
 except ImportError:
     ANALISADOR_DISPONIVEL = False
 
 try:
-    from src.encarnacao import EncarnacaoAPI  # Para inferência 3D
+    from src.encarnacao_e_interacao.encarnacao_api import EncarnacaoAPI  # Para inferncia 3D
     ENCARNACAO_DISPONIVEL = True
 except ImportError:
     ENCARNACAO_DISPONIVEL = False
 
 try:
-    from src.coracao import Coracao  # Para carregamento no init
+    from src.core.coracao_orquestrador import Coracao  # Para carregamento no init
     CORACAO_DISPONIVEL = True
 except ImportError:
     CORACAO_DISPONIVEL = False
 
-# Tentar carregar.env (procura arquivo no diretório do projeto ou caminho explícito)
+# Tentar carregar.env (procura arquivo no diretório do projeto ou caminho explcito)
 def _load_dotenv_optional():
     if load_dotenv is None:
-        logger.debug("python-dotenv não instalado; pulando carregamento de.env")
+        logger.debug("python-dotenv no instalado; pulando carregamento de.env")
         return
-    # Caminhos prováveis: repositório raiz (duas pastas acima deste arquivo)
+    # Caminhos provveis: repositrio raiz (duas pastas acima deste arquivo)
     candidate = Path(__file__).resolve().parents[2] / ".env"
     if candidate.exists():
         try:
@@ -65,17 +65,17 @@ def _load_dotenv_optional():
         except Exception:
             logger.exception("Falha ao carregar.env de %s", candidate)
     else:
-        logger.debug(".env não encontrado em %s; usando variáveis de ambiente do sistema", candidate)
+        logger.debug(".env no encontrado em %s; usando variveis de ambiente do sistema", candidate)
 
 
 _load_dotenv_optional()
 
-# Cache global para conexões inicializadas (evita reinit desnecessária)
+# Cache global para conexões inicializadas (evita reinit desnecessria)
 _CACHE_CONEXOES: Dict[str, Any] = {}
 
-# -------------- Helpers de leitura de variáveis de ambiente --------------
+# -------------- Helpers de leitura de variveis de ambiente --------------
 def _get_env_str(name: str, default: Optional[str] = None, secrets_manager: Optional[Any] = None) -> Optional[str]:
-    # Sugestão aplicada: Usar cfg_get para ler chaves API (fallback para env)
+    # Sugesto aplicada: Usar cfg_get para ler chaves API (fallback para env)
     if CFG_UTILS_DISPONIVEL and secrets_manager:
         try:
             val = cfg_get(secrets_manager, "API_KEYS", name, fallback=None)
@@ -95,7 +95,7 @@ def _get_env_list(name: str, default: Optional[List[str]] = None, sep: str = ","
     raw = _get_env_str(name, "", secrets_manager)
     if not raw:
         return default or []
-    # separar por vírgula e limpar espaços
+    # separar por vrgula e limpar espaos
     parts = [p.strip() for p in raw.split(sep) if p.strip()]
     return parts
 
@@ -107,24 +107,24 @@ def _path_exists_env(name: str, secrets_manager: Optional[Any] = None) -> Option
     p = Path(raw).expanduser()
     if p.exists():
         return p
-    logger.warning("Caminho de ambiente %s definido mas não existe: %s", name, p)
+    logger.warning("Caminho de ambiente %s definido mas no existe: %s", name, p)
     return None
 
 
 def _log_missing_key(name: str) -> None:
-    logger.warning("Chave de ambiente '%s' não encontrada ou vazia.", name)
+    logger.warning("Chave de ambiente '%s' no encontrada ou vazia.", name)
 
 
-def _cache_conexao(key: str, conexao: Any):
-    _CACHE_CONEXOES[key] = conexao
-    logger.debug("Conexão %s cacheada", key)
+def _cache_conexao(key: str, conexão: Any):
+    _CACHE_CONEXOES[key] = conexão
+    logger.debug("Conexo %s cacheada", key)
 
 
 def _get_cached_conexao(key: str) -> Optional[Any]:
     return _CACHE_CONEXOES.get(key)
 
 
-# -------------- Conexões LLM --------------
+# -------------- conexões LLM --------------
 def conectar_geminipro(secrets_manager: Optional[Any] = None) -> Optional[Any]:
     """Conecta ao Gemini Pro (google.generativeai)."""
     cached = _get_cached_conexao("geminipro")
@@ -139,10 +139,10 @@ def conectar_geminipro(secrets_manager: Optional[Any] = None) -> Optional[Any]:
         import google.generativeai as genai  # type: ignore
         genai.configure(api_key=key)
         _cache_conexao("geminipro", genai)
-        logger.info("Conexão ao Gemini Pro configurada")
+        logger.info("Conexo ação Gemini Pro configurada")
         return genai
     except ImportError:
-        logger.error("Biblioteca 'google-generativeai' não instalada.pip install google-generativeai", exc_info=True)
+        logger.error("Biblioteca 'google-generativeai' no instalada.pip install google-generativeai", exc_info=True)
         return None
     except Exception:
         logger.exception("Erro ao inicializar Gemini Pro")
@@ -166,7 +166,7 @@ def conectar_openai(secrets_manager: Optional[Any] = None) -> Optional[Any]:
         logger.info("Conectado ao OpenAI")
         return client
     except ImportError:
-        logger.error("Biblioteca 'openai' não instalada.pip install openai", exc_info=True)
+        logger.error("Biblioteca 'openai' no instalada.pip install openai", exc_info=True)
         return None
     except Exception:
         logger.exception("Erro ao conectar ao OpenAI")
@@ -190,7 +190,7 @@ def conectar_anthropic(secrets_manager: Optional[Any] = None) -> Optional[Any]:
         logger.info("Conectado ao Anthropic")
         return client
     except ImportError:
-        logger.error("Biblioteca 'anthropic' não instalada.", exc_info=True)
+        logger.error("Biblioteca 'anthropic' no instalada.", exc_info=True)
         return None
     except Exception:
         logger.exception("Erro ao conectar ao Anthropic")
@@ -215,7 +215,7 @@ def conectar_mistral(secrets_manager: Optional[Any] = None) -> Optional[Any]:
         logger.info("Conectado ao Mistral")
         return client
     except ImportError:
-        logger.error("Biblioteca 'openai' não instalada.", exc_info=True)
+        logger.error("Biblioteca 'openai' no instalada.", exc_info=True)
         return None
     except Exception:
         logger.exception("Erro ao conectar ao Mistral")
@@ -236,7 +236,7 @@ def conectar_ollama(secrets_manager: Optional[Any] = None) -> Optional[Any]:
         logger.info("Conectado ao Ollama em %s", host)
         return client
     except ImportError:
-        logger.error("Biblioteca 'ollama' não instalada.", exc_info=True)
+        logger.error("Biblioteca 'ollama' no instalada.", exc_info=True)
         return None
     except Exception:
         logger.exception("Erro ao conectar ao Ollama")
@@ -260,17 +260,17 @@ def conectar_huggingface(secrets_manager: Optional[Any] = None) -> Optional[Any]
         logger.info("Conectado ao Hugging Face")
         return api
     except ImportError:
-        logger.error("Biblioteca 'huggingface_hub' não instalada.", exc_info=True)
+        logger.error("Biblioteca 'huggingface_hub' no instalada.", exc_info=True)
         return None
     except Exception:
         logger.exception("Erro ao conectar ao Hugging Face")
         return None
 
 
-# -------------- Agregador com Integrações --------------
+# -------------- Agregador com Integraes --------------
 def carregar_todas_conexoes(secrets_manager: Optional[Any] = None) -> Dict[str, Any]:
     """Carrega todas as conexões e integra com módulos."""
-    logger.info("Carregando conexões básicas com integrações...")
+    logger.info("Carregando conexões bsicas com integraes...")
     conexoes = {
         "geminipro": conectar_geminipro(secrets_manager),
         "openai": conectar_openai(secrets_manager),
@@ -281,34 +281,34 @@ def carregar_todas_conexoes(secrets_manager: Optional[Any] = None) -> Dict[str, 
     }
     total = len(conexoes)
     succ = sum(1 for v in conexoes.values() if v)
-    logger.info("Conexões carregadas: %d/%d", succ, total)
+    logger.info("conexões carregadas: %d/%d", succ, total)
 
-    # Integração coração (carregamento no init)
+    # Integrao corao (carregamento no init)
     if CORACAO_DISPONIVEL:
         try:
-            coracao = Coracao()  # Assumindo instância
-            coracao.conexoes = conexoes  # Armazenar no coração
-            logger.info("Conexões integradas ao coração.")
+            coracao = Coracao()  # Assumindo instncia
+            coracao.conexoes = conexoes  # Armazenar no corao
+            logger.info("conexões integradas ação corao.")
         except Exception:
-            logger.exception("Erro ao integrar conexões ao coração.")
+            logger.exception("Erro ao integrar conexões ação corao.")
 
-    # Integração analisador (fallback LLM)
+    # Integrao analisador (fallback LLM)
     if ANALISADOR_DISPONIVEL:
         try:
             analisador = AnalisadorIntencao(config=None)  # Assumindo config
             analisador.conexoes_openai = conexoes.get("openai")  # Para fallback
-            logger.info("Conexões integradas ao analisador (fallback LLM).")
+            logger.info("conexões integradas ação analisador (fallback LLM).")
         except Exception:
-            logger.exception("Erro ao integrar conexões ao analisador.")
+            logger.exception("Erro ao integrar conexões ação analisador.")
 
-    # Integração encarnacao (inferência 3D)
+    # Integrao encarnacao (inferncia 3D)
     if ENCARNACAO_DISPONIVEL:
         try:
-            encarnacao = EncarnacaoAPI(coracao=None)  # Assumindo coração
-            encarnacao.conexoes_llm = conexoes  # Para inferência
-            logger.info("Conexões integradas Í  encarnacao (inferência 3D).")
+            encarnacao = EncarnacaoAPI(coracao=None)  # Assumindo corao
+            encarnacao.conexoes_llm = conexoes  # Para inferncia
+            logger.info("conexões integradas  encarnacao (inferncia 3D).")
         except Exception:
-            logger.exception("Erro ao integrar conexões Í  encarnacao.")
+            logger.exception("Erro ao integrar conexões  encarnacao.")
 
     return conexoes
 
@@ -317,7 +317,7 @@ def carregar_todas_conexoes(secrets_manager: Optional[Any] = None) -> Dict[str, 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     conexoes = carregar_todas_conexoes()
-    logger.info("Resumo de conexões (mostrando chaves e existência):")
+    logger.info("Resumo de conexões (mostrando chaves e existncia):")
     for k, v in conexoes.items():
         logger.info("  %s: %s", k, "OK" if v else "N/A")
 

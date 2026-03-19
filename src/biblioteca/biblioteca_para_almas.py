@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""
-BIBLIOTECA PARA ALMAS (Atualizada com cache compartilhado e tolerância).
-"""
 from __future__ import annotations
+"""
+BIBLIOTECA PARA ALMAS (Atualizada com cache compartilhado e tolerncia).
+"""
 import asyncio
 import logging
 import hashlib
@@ -59,11 +59,11 @@ class BibliotecaParaAlmas:
                 return {"sucesso": True, "resultados": cached.get("resultados", []), "fonte": "cache_interno"}
 
         if not self.biblioteca_principal:
-            return {"sucesso": False, "erro": "Biblioteca não disponível."}
+            return {"sucesso": False, "erro": "Biblioteca no disponível."}
 
         func = getattr(self.biblioteca_principal, "consultar", None)
         if not callable(func):
-            return {"sucesso": False, "erro": "Biblioteca inválida."}
+            return {"sucesso": False, "erro": "Biblioteca invlida."}
 
         try:
             resultado = func(
@@ -82,7 +82,7 @@ class BibliotecaParaAlmas:
                 try:
                     loop = asyncio.get_event_loop()
                     if loop.is_running():
-                        return {"sucesso": False, "erro": "Consulta assíncrona; use consultar_async."}
+                        return {"sucesso": False, "erro": "Consulta assncrona; use consultar_async."}
                     resultado = asyncio.run(resultado)
                 except RuntimeError:
                     resultado = asyncio.run(resultado)
@@ -111,7 +111,7 @@ class BibliotecaParaAlmas:
         rerankear: bool = True,
         exportar: Optional[str] = None,
     ) -> Dict[str, Any]:
-        # Similar ao sync, mas await na biblioteca principal
+        # Similar ação sync, mas await na biblioteca principal
         if not pergunta:
             return {"sucesso": False, "erro": "Pergunta vazia."}
 
@@ -128,11 +128,11 @@ class BibliotecaParaAlmas:
                 return {"sucesso": True, "resultados": cached.get("resultados", []), "fonte": "cache_interno"}
 
         if not self.biblioteca_principal:
-            return {"sucesso": False, "erro": "Biblioteca não disponível."}
+            return {"sucesso": False, "erro": "Biblioteca no disponível."}
 
         func = getattr(self.biblioteca_principal, "consultar_async", None) or getattr(self.biblioteca_principal, "consultar", None)
         if not callable(func):
-            return {"sucesso": False, "erro": "Biblioteca inválida."}
+            return {"sucesso": False, "erro": "Biblioteca invlida."}
 
         try:
             resultado = func(
@@ -171,6 +171,6 @@ class BibliotecaParaAlmas:
         return self.consultar(consulta, fonte_preferida="biblia", n_resultados=n_resultados, rerankear=False)
 
     def pesquisar_doutrina(self, tema: str) -> Dict[str, Any]:
-        pergunta = f"O que a Bíblia e as publicações relevantes ensinam sobre {tema}?"
+        pergunta = f"O que a Bblia e as publicaes relevantes ensinam sobre {tema}?"
         return self.consultar(pergunta, analisar_contexto=True, gerar_preview=True)
 

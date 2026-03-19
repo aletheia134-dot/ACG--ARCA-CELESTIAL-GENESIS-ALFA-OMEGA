@@ -9,7 +9,7 @@ from pathlib import Path
 from datetime import datetime
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS
 
 import customtkinter as ctk
@@ -24,15 +24,15 @@ class FerramentaOrganizador:
                 'extensoes': ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.webp', '.ico'],
                 'pasta': 'Imagens'
             },
-            # Vídeos
+            # Vdeos
             'videos': {
                 'extensoes': ['.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv', '.webm', '.m4v'],
-                'pasta': 'Vídeos'
+                'pasta': 'Vdeos'
             },
-            # Íudio
+            # udio
             'audio': {
                 'extensoes': ['.mp3', '.wav', '.flac', '.aac', '.ogg', '.m4a', '.wma'],
-                'pasta': 'Íudio'
+                'pasta': 'udio'
             },
             # Documentos
             'documentos': {
@@ -50,11 +50,11 @@ class FerramentaOrganizador:
                 'extensoes': ['.exe', '.msi', '.bat', '.sh', '.app', '.deb', '.rpm'],
                 'pasta': 'Programas'
             },
-            # Código
+            # Cdigo
             'codigo': {
                 'extensoes': ['.py', '.js', '.html', '.css', '.cpp', '.c', '.java', '.php', 
                              '.rb', '.go', '.rs', '.swift'],
-                'pasta': 'Código'
+                'pasta': 'Cdigo'
             },
             # Outros
             'outros': {
@@ -72,14 +72,14 @@ class FerramentaOrganizador:
         
         Args:
             pasta_origem: Pasta a ser organizada
-            pasta_destino: Pasta destino (se None, usa a própria pasta)
+            pasta_destino: Pasta destino (se None, usa a prpria pasta)
             mover: True move, False copia
             criar_subpastas: Cria subpastas por categoria
         """
         try:
             origem = Path(pasta_origem)
             if not origem.exists():
-                return None, "Pasta de origem não existe"
+                return None, "Pasta de origem no existe"
             
             if pasta_destino:
                 destino = Path(pasta_destino)
@@ -136,17 +136,17 @@ class FerramentaOrganizador:
     def organizar_por_data(self, pasta_origem, pasta_destino=None,
                           formato='%Y/%m', mover=True):
         """
-        Organiza arquivos por data de modificação
+        Organiza arquivos por data de modificao
         
         formatos:
-            '%Y' - só ano
-            '%Y/%m' - ano/mês
-            '%Y/%m/%d' - ano/mês/dia
+            '%Y' - s ano
+            '%Y/%m' - ano/ms
+            '%Y/%m/%d' - ano/ms/dia
         """
         try:
             origem = Path(pasta_origem)
             if not origem.exists():
-                return None, "Pasta de origem não existe"
+                return None, "Pasta de origem no existe"
             
             if pasta_destino:
                 destino = Path(pasta_destino)
@@ -164,7 +164,7 @@ class FerramentaOrganizador:
                 if arquivo.is_file():
                     stats['processados'] += 1
                     
-                    # Obtém data de modificação
+                    # Obtm data de modificao
                     mod_time = arquivo.stat().st_mtime
                     data = datetime.fromtimestamp(mod_time)
                     
@@ -202,11 +202,11 @@ class FerramentaOrganizador:
             return None, str(e)
     
     def organizar_por_tamanho(self, pasta_origem, pasta_destino=None, mover=True):
-        """Organiza por tamanho (pequeno, médio, grande)"""
+        """Organiza por tamanho (pequeno, mdio, grande)"""
         try:
             origem = Path(pasta_origem)
             if not origem.exists():
-                return None, "Pasta de origem não existe"
+                return None, "Pasta de origem no existe"
             
             if pasta_destino:
                 destino = Path(pasta_destino)
@@ -215,7 +215,7 @@ class FerramentaOrganizador:
             
             # Cria pastas
             pequenos = destino / "Pequenos (<1MB)"
-            medios = destino / "Médios (1-10MB)"
+            medios = destino / "Mdios (1-10MB)"
             grandes = destino / "Grandes (>10MB)"
             
             pequenos.mkdir(exist_ok=True)
@@ -259,12 +259,12 @@ class FerramentaOrganizador:
         except Exception as e:
             return None, str(e)
     
-    def organizar_por_nome(self, pasta_origem, padrao, pasta_destino=None, mover=True):
-        """Organiza por padrão no nome (ex: começa com letra)"""
+    def organizar_por_nome(self, pasta_origem, padrão, pasta_destino=None, mover=True):
+        """Organiza por padrão no nome (ex: comea com letra)"""
         try:
             origem = Path(pasta_origem)
             if not origem.exists():
-                return None, "Pasta de origem não existe"
+                return None, "Pasta de origem no existe"
             
             if pasta_destino:
                 destino = Path(pasta_destino)
@@ -282,12 +282,12 @@ class FerramentaOrganizador:
                     stats['processados'] += 1
                     
                     # Aplica padrão
-                    if padrao == 'primeira_letra':
+                    if padrão == 'primeira_letra':
                         letra = arquivo.name[0].upper()
                         if not letra.isalpha():
                             letra = '#'
                         pasta_final = destino / letra
-                    elif padrao == 'extensao':
+                    elif padrão == 'extensao':
                         ext = arquivo.suffix[1:].upper() if arquivo.suffix else 'SEM_EXT'
                         pasta_final = destino / ext
                     else:
@@ -310,7 +310,7 @@ class FerramentaOrganizador:
             return None, str(e)
     
     def _get_categoria(self, extensao):
-        """Retorna categoria baseada na extensão"""
+        """Retorna categoria baseada na extenso"""
         for categoria, dados in self.regras.items():
             if extensao in dados['extensoes']:
                 return categoria
@@ -332,19 +332,19 @@ class FerramentaOrganizador:
 
 class InterfaceOrganizador(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸ“ Organizador de Arquivos", "800x700")
+        super().__init__(" Organizador de Arquivos", "800x700")
         self.ferramenta = FerramentaOrganizador()
         self.setup_interface()
     
     def setup_interface(self):
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸ“ Organizador Automático de Arquivos",
+            text=" Organizador Automático de Arquivos",
             font=("Arial", 24, "bold")
         )
         titulo.pack(pady=10)
         
-        # Seleção de pasta
+        # Seleo de pasta
         self.frame_pasta = ctk.CTkFrame(self.frame)
         self.frame_pasta.pack(pady=10, padx=10, fill="x")
         
@@ -361,13 +361,13 @@ class InterfaceOrganizador(InterfaceBase):
         
         self.btn_pasta = ctk.CTkButton(
             self.frame_pasta,
-            text="ðŸ“ Selecionar",
+            text=" Selecionar",
             command=self.selecionar_pasta,
             width=80
         )
         self.btn_pasta.pack(side="left", padx=5)
         
-        # Opções
+        # Opes
         self.frame_opcoes = ctk.CTkFrame(self.frame)
         self.frame_opcoes.pack(pady=10, padx=10, fill="x")
         
@@ -379,7 +379,7 @@ class InterfaceOrganizador(InterfaceBase):
         )
         self.chk_mover.pack(pady=2)
         
-        # Abas de organização
+        # Abas de organizao
         self.tabview = ctk.CTkTabview(self.frame)
         self.tabview.pack(pady=10, padx=10, fill="both", expand=True)
         
@@ -399,13 +399,13 @@ class InterfaceOrganizador(InterfaceBase):
         self.tab_nome = self.tabview.add("Por Nome")
         self.setup_tab_nome()
         
-        # Írea de resultados
+        # rea de resultados
         self.frame_resultado = ctk.CTkFrame(self.frame)
         self.frame_resultado.pack(pady=10, padx=10, fill="both", expand=True)
         
         self.lbl_resultado = ctk.CTkLabel(
             self.frame_resultado,
-            text="Resultados aparecerão aqui",
+            text="Resultados aparecero aqui",
             font=("Arial", 12)
         )
         self.lbl_resultado.pack(pady=2)
@@ -432,7 +432,7 @@ class InterfaceOrganizador(InterfaceBase):
         
         self.btn_tipo = ctk.CTkButton(
             self.tab_tipo,
-            text="ðŸ“ Organizar por Tipo",
+            text=" Organizar por Tipo",
             command=self.organizar_tipo,
             width=200,
             height=40,
@@ -450,7 +450,7 @@ class InterfaceOrganizador(InterfaceBase):
         self.formato_var = ctk.StringVar(value="%Y/%m")
         self.formato_combo = ctk.CTkComboBox(
             self.frame_data_opcoes,
-            values=["Apenas Ano", "Ano/Mês", "Ano/Mês/Dia"],
+            values=["Apenas Ano", "Ano/Ms", "Ano/Ms/Dia"],
             variable=self.formato_var,
             width=150
         )
@@ -458,7 +458,7 @@ class InterfaceOrganizador(InterfaceBase):
         
         self.btn_data = ctk.CTkButton(
             self.tab_data,
-            text="ðŸ“… Organizar por Data",
+            text=" Organizar por Data",
             command=self.organizar_data,
             width=200,
             height=40,
@@ -469,7 +469,7 @@ class InterfaceOrganizador(InterfaceBase):
     def setup_tab_tamanho(self):
         self.btn_tamanho = ctk.CTkButton(
             self.tab_tamanho,
-            text="ðŸ“Š Organizar por Tamanho",
+            text=" Organizar por Tamanho",
             command=self.organizar_tamanho,
             width=200,
             height=40,
@@ -481,13 +481,13 @@ class InterfaceOrganizador(InterfaceBase):
         self.frame_nome_opcoes = ctk.CTkFrame(self.tab_nome)
         self.frame_nome_opcoes.pack(pady=10, padx=10, fill="x")
         
-        self.lbl_padrao = ctk.CTkLabel(self.frame_nome_opcoes, text="Padrão:")
+        self.lbl_padrao = ctk.CTkLabel(self.frame_nome_opcoes, text="padrão:")
         self.lbl_padrao.pack(side="left", padx=5)
         
         self.padrao_var = ctk.StringVar(value="primeira_letra")
         self.padrao_combo = ctk.CTkComboBox(
             self.frame_nome_opcoes,
-            values=["Primeira Letra", "Extensão"],
+            values=["Primeira Letra", "Extenso"],
             variable=self.padrao_var,
             width=150
         )
@@ -495,7 +495,7 @@ class InterfaceOrganizador(InterfaceBase):
         
         self.btn_nome = ctk.CTkButton(
             self.tab_nome,
-            text="ðŸ”¤ Organizar por Nome",
+            text=" Organizar por Nome",
             command=self.organizar_nome,
             width=200,
             height=40,
@@ -541,8 +541,8 @@ class InterfaceOrganizador(InterfaceBase):
             elif metodo == 'data':
                 formato_map = {
                     "Apenas Ano": '%Y',
-                    "Ano/Mês": '%Y/%m',
-                    "Ano/Mês/Dia": '%Y/%m/%d'
+                    "Ano/Ms": '%Y/%m',
+                    "Ano/Ms/Dia": '%Y/%m/%d'
                 }
                 resultado, msg = self.ferramenta.organizar_por_data(
                     pasta,
@@ -557,38 +557,38 @@ class InterfaceOrganizador(InterfaceBase):
             elif metodo == 'nome':
                 padrao_map = {
                     "Primeira Letra": 'primeira_letra',
-                    "Extensão": 'extensao'
+                    "Extenso": 'extensao'
                 }
                 resultado, msg = self.ferramenta.organizar_por_nome(
                     pasta,
-                    padrao=padrao_map[self.padrao_var.get()],
+                    padrão=padrao_map[self.padrao_var.get()],
                     mover=mover
                 )
             
             self.progress.set(0.8)
             
             if resultado:
-                texto = f"âœ… Organização concluída!\n\n"
+                texto = f"[OK] Organizao concluda!\n\n"
                 texto += f"Processados: {resultado['processados']}\n"
                 texto += f"Movidos: {resultado['movidos']}\n"
                 
                 if 'por_categoria' in resultado:
                     texto += "\nPor categoria:\n"
                     for cat, qtd in resultado['por_categoria'].items():
-                        texto += f"  • {cat}: {qtd}\n"
+                        texto += f"   {cat}: {qtd}\n"
                 
                 if 'por_data' in resultado:
                     texto += "\nPor data:\n"
                     for data, qtd in sorted(resultado['por_data'].items()):
-                        texto += f"  • {data}: {qtd}\n"
+                        texto += f"   {data}: {qtd}\n"
                 
                 if 'pequenos' in resultado:
-                    texto += f"\n  • Pequenos: {resultado['pequenos']}\n"
-                    texto += f"  • Médios: {resultado['medios']}\n"
-                    texto += f"  • Grandes: {resultado['grandes']}\n"
+                    texto += f"\n   Pequenos: {resultado['pequenos']}\n"
+                    texto += f"   Mdios: {resultado['medios']}\n"
+                    texto += f"   Grandes: {resultado['grandes']}\n"
                 
                 if resultado['erros'] > 0:
-                    texto += f"\nâŒ Erros: {resultado['erros']}"
+                    texto += f"\n[ERRO] Erros: {resultado['erros']}"
                 
                 self.texto_resultado.delete('1.0', 'end')
                 self.texto_resultado.insert('1.0', texto)

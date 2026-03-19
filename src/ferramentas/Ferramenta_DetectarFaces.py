@@ -1,4 +1,4 @@
-# Ferramenta: Detecção Facial em Tempo Real
+# Ferramenta: Deteco Facial em Tempo Real
 # Usa MediaPipe (leve, CPU/GPU)
 
 import sys
@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 
 import cv2
 import mediapipe as mp
@@ -42,6 +42,7 @@ class FerramentaDetectarFaces:
         self.modo = "deteccao"  # deteccao, landmarks, ambos
         self.frame_count = 0
         self.last_time = time.time()
+        self.rostos_detectados = 0  # contador real atualizado a cada frame
     
     def iniciar(self, indice=0):
         self.cap = cv2.VideoCapture(indice)
@@ -58,8 +59,10 @@ class FerramentaDetectarFaces:
         """Apenas detecta rostos com bounding boxes"""
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = self.face_detection.process(rgb)
-        
+        self.rostos_detectados = 0
+
         if results.detections:
+            self.rostos_detectados = len(results.detections)
             h, w, _ = frame.shape
             for detection in results.detections:
                 # Desenha bounding box
@@ -71,7 +74,7 @@ class FerramentaDetectarFaces:
                 
                 cv2.rectangle(frame, (x, y), (x+width, y+height), (0, 255, 0), 2)
                 
-                # Confiança
+                # Confiana
                 confidence = detection.score[0]
                 cv2.putText(frame, f"{confidence:.2f}", (x, y-10),
                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
@@ -111,7 +114,7 @@ class FerramentaDetectarFaces:
         return frame
     
     def processar_ambos(self, frame):
-        """Combina detecção e landmarks"""
+        """Combina deteco e landmarks"""
         frame = self.processar_deteccao(frame)
         frame = self.processar_landmarks(frame)
         return frame
@@ -147,7 +150,7 @@ class FerramentaDetectarFaces:
                 callback(frame)
     
     def processar_imagem(self, caminho_imagem):
-        """Processa uma imagem estática"""
+        """Processa uma imagem esttica"""
         frame = cv2.imread(caminho_imagem)
         if frame is None:
             return None
@@ -160,7 +163,7 @@ class FerramentaDetectarFaces:
 
 class InterfaceDetectarFaces(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸ‘¤ Detecção Facial", "900x700")
+        super().__init__(" Deteco Facial", "900x700")
         self.ferramenta = FerramentaDetectarFaces()
         self.thread_webcam = None
         self.setup_interface()
@@ -168,12 +171,12 @@ class InterfaceDetectarFaces(InterfaceBase):
     def setup_interface(self):
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸ‘¤ Detecção Facial em Tempo Real",
+            text=" Deteco Facial em Tempo Real",
             font=("Arial", 24, "bold")
         )
         titulo.pack(pady=10)
         
-        # Frame de vídeo
+        # Frame de vdeo
         self.frame_video = ctk.CTkFrame(self.frame, width=800, height=600)
         self.frame_video.pack(pady=10)
         
@@ -186,7 +189,7 @@ class InterfaceDetectarFaces(InterfaceBase):
         
         self.btn_iniciar = ctk.CTkButton(
             self.frame_controles,
-            text="â–¶ï¸ Iniciar Webcam",
+            text=" Iniciar Webcam",
             command=self.iniciar_webcam,
             width=120,
             height=35,
@@ -196,7 +199,7 @@ class InterfaceDetectarFaces(InterfaceBase):
         
         self.btn_parar = ctk.CTkButton(
             self.frame_controles,
-            text="â¹ï¸ Parar",
+            text=" Parar",
             command=self.parar_webcam,
             width=80,
             height=35,
@@ -207,7 +210,7 @@ class InterfaceDetectarFaces(InterfaceBase):
         
         self.btn_imagem = ctk.CTkButton(
             self.frame_controles,
-            text="ðŸ–¼ï¸ Processar Imagem",
+            text=" Processar Imagem",
             command=self.processar_imagem,
             width=120,
             height=35
@@ -216,7 +219,7 @@ class InterfaceDetectarFaces(InterfaceBase):
         
         self.btn_foto = ctk.CTkButton(
             self.frame_controles,
-            text="ðŸ“¸ Foto",
+            text=" Foto",
             command=self.tirar_foto,
             width=80,
             height=35,
@@ -235,7 +238,7 @@ class InterfaceDetectarFaces(InterfaceBase):
         
         self.radio_deteccao = ctk.CTkRadioButton(
             self.frame_modos,
-            text="Detecção (bounding boxes)",
+            text="Deteco (bounding boxes)",
             variable=self.modo_var,
             value="deteccao",
             command=self.mudar_modo
@@ -260,13 +263,13 @@ class InterfaceDetectarFaces(InterfaceBase):
         )
         self.radio_ambos.pack(side="left", padx=5)
         
-        # Estatísticas
+        # Estatsticas
         self.frame_stats = ctk.CTkFrame(self.frame)
         self.frame_stats.pack(pady=5, padx=10, fill="x")
         
         self.lbl_stats = ctk.CTkLabel(
             self.frame_stats,
-            text="Aguardando detecção...",
+            text="Aguardando deteco...",
             font=("Arial", 12)
         )
         self.lbl_stats.pack()
@@ -280,8 +283,12 @@ class InterfaceDetectarFaces(InterfaceBase):
             self.lbl_video.configure(image=img_tk, text="")
             self.lbl_video.image = img_tk
             
-            # Atualiza estatísticas (simulado)
-            self.lbl_stats.configure(text="Detectando rostos...")
+            # Atualiza estatísticas reais
+            n = self.ferramenta.rostos_detectados
+            fps = getattr(self.ferramenta, "fps", 0)
+            self.lbl_stats.configure(
+                text=f"Rostos detectados: {n} | FPS: {fps:.1f} | Modo: {self.ferramenta.modo}"
+            )
     
     def iniciar_webcam(self):
         self.ferramenta.iniciar()
@@ -339,7 +346,7 @@ class InterfaceDetectarFaces(InterfaceBase):
             )
             if caminho:
                 # Implementar salvamento
-                self.lbl_stats.configure(text="ðŸ“¸ Foto salva!")
+                self.lbl_stats.configure(text=" Foto salva!")
 
 if __name__ == "__main__":
     app = InterfaceDetectarFaces()

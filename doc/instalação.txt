@@ -1,0 +1,82 @@
+
+1. Criar os Ambientes Virtuais
+
+Execute estes comandos na raiz do projeto para criar as estruturas que estão faltando:
+PowerShell
+
+# Cria as pastas necessárias para cada setor
+python -m venv venvs\core
+python -m venv venvs\media
+python -m venv venvs\web
+python -m venv venvs\finetuning
+
+
+
+
+
+1. Instalação no Setor CORE
+PowerShell
+
+# 1. Entre na pasta do projeto
+cd E:\Arca_Celestial_Genesis_Alfa_Omega
+
+# 2. Ative o ambiente CORE
+.\venvs\core\Scripts\activate
+
+# 3. Instale os requerimentos específicos do CORE
+python -m pip install "packaging>=23.2,<24.0"
+python -m pip install -r Requirements_core.txt
+
+# 4. Desative para mudar de setor
+deactivate
+
+
+
+
+2. Instalação no Setor MEDIA
+PowerShell
+
+# 1. Ative o ambiente MEDIA
+.\venvs\media\Scripts\activate
+
+# 2. Instale os requerimentos (certifique-se de usar == e não =)
+python -m pip install -r Requirements_media.txt
+
+# 3. Desative
+deactivate
+
+
+
+
+3. Instalação no Setor WEB
+PowerShell
+
+# 1. Ative o ambiente WEB
+.\venvs\web\Scripts\activate
+
+# 2. Instale os pacotes de automação
+python -m pip install playwright==1.42.0 selenium==4.18.1 flask==3.0.0
+python -m playwright install chromium
+
+# 3. Desative
+deactivate
+
+4. Instalação no Setor FINETUNING
+PowerShell
+
+
+
+
+
+# 1. Ative o ambiente FINETUNING
+.\venvs\finetuning\Scripts\activate
+
+# 2. Instale o suporte a GPU e o arquivo de treino
+python -m pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu121
+python -m pip install -r Requirements_finetuning.txt
+
+# 3. Desative
+deactivate
+
+
+

@@ -1,0 +1,42 @@
+# ============================================================
+# CORE — Dependências do ambiente principal (venv raiz)
+# Roda: main.py, coracao_orquestrador, interface, memória
+# ============================================================
+
+numpy>=1.24.0
+requests==2.31.0
+psutil>=5.9.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+aiohttp>=3.9.0
+filelock>=3.12.0
+tqdm>=4.65.0
+packaging==23.2
+colorama>=0.4.6
+watchdog>=3.0.0
+RestrictedPython>=6.0
+docker>=6.1.0
+lxml>=4.9.0
+openpyxl>=3.1.0
+pandas>=2.0.0
+scipy>=1.10.0
+setuptools>=68.0.0
+python-dateutil>=2.8.0
+
+# --- ADICIONADOS (estavam faltando) ---
+
+# Interface gráfica (customtkinter - toda a UI usa isso)
+customtkinter>=5.2.0
+
+# Memória vetorial (ChromaDB + embeddings leves)
+chromadb>=0.4.0
+sentence-transformers>=2.3.1
+
+# TTS local (pyttsx3 já está no media mas o core também usa)
+pyttsx3>=2.90
+
+# Pygame (já carrega no boot pelo motor de fala)
+pygame>=2.5.0
+
+# Telemetria ChromaDB
+posthog>=3.0.0

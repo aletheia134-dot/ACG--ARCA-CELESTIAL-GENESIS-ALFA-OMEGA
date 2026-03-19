@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 ARCA CELESTIAL GENESIS - SCANNER SISTEMA (RELATÓRIO DE EVENTOS)
-Mostra o que ocorreu: julgamentos, punições, precedentes.
+Mostra o que ocorreu: julgamentos, punies, precedentes.
 Integra com Modo Vidro, SCR, sistema de julgamento e precedentes para registrar precedentes na ficha da AI.
-Não aplica ações; apenas reporta ao Criador.
+No aplica ações; apenas reporta ao Criador.
 """
-from __future__ import annotations
 import threading
 import time
 import logging
@@ -18,9 +18,9 @@ from src.config.config import get_config
 
 class ScannerSistema:
     """
-    Relatório de eventos do sistema: mostra julgamentos, Vidro aplicados, SCR e precedentes.
-    Registra precedentes na ficha da AI (não como marca).
-    Compatível com Coracao para notificações ao Criador.
+    Relatrio de eventos do sistema: mostra julgamentos, Vidro aplicados, SCR e precedentes.
+    Registra precedentes na ficha da AI (no como marca).
+    Compatvel com Coracao para notificaes ação Criador.
     """
 
     def __init__(self, *args, **kwargs):
@@ -30,7 +30,7 @@ class ScannerSistema:
         self.coracao = coracao
         self.logger = logging.getLogger("ScannerSistema")
 
-        # Integrações com outros sistemas
+        # Integraes com outros sistemas
         self.sistema_precedentes = kwargs.get("sistema_precedentes_ref")
         self.modo_vidro = kwargs.get("modo_vidro_ref")
         self.sistema_julgamento = kwargs.get("sistema_julgamento_ref")
@@ -43,14 +43,14 @@ class ScannerSistema:
         cfg = get_config()
         self.limite_historico = int(cfg.get("SCANNER", "LIMITE_HISTORICO_RELATORIOS", fallback=50))
 
-        self.logger.info("ðŸ“‹ Scanner Sistema (Relatório) inicializado")
+        self.logger.info(" Scanner Sistema (Relatrio) inicializado")
 
     def obter_oportunidades_atuais(self) -> List[Dict[str, Any]]:
         """
-        Retorna oportunidades de evolução atuais baseadas em:
-        - Padrões detectados
+        Retorna oportunidades de evoluo atuais baseadas em:
+        - padrões detectados
         - Necessidades das almas
-        - Sugestões de melhoria
+        - Sugestes de melhoria
         """
         oportunidades = []
         
@@ -58,11 +58,11 @@ class ScannerSistema:
             # 1. Verificar padrões recorrentes
             if hasattr(self, 'analisador_padroes') and self.analisador_padroes:
                 padroes = self.analisador_padroes.detectar_padroes_recentes()
-                for padrao in padroes:
-                    if padrao.get('frequencia', 0) > 3:
+                for padrão in padroes:
+                    if padrão.get('frequencia', 0) > 3:
                         oportunidades.append({
                             'tipo': 'otimizacao',
-                            'descricao': f"Padrão recorrente detectado: {padrao['descricao']}",
+                            'descricao': f"padrão recorrente detectado: {padrão['descricao']}",
                             'prioridade': 'media',
                             'fonte': 'analisador_padroes'
                         })
@@ -79,12 +79,12 @@ class ScannerSistema:
                             'fonte': 'monitoramento_atividade'
                         })
 
-            # 3. Verificar sugestões do sistema de precedentes
+            # 3. Verificar sugestes do sistema de precedentes
             if self.sistema_precedentes and hasattr(self.sistema_precedentes, 'sugerir_melhorias'):
                 sugestoes = self.sistema_precedentes.sugerir_melhorias()
                 oportunidades.extend(sugestoes)
 
-            self.logger.info(f"ðŸ” {len(oportunidades)} oportunidades de evolução identificadas")
+            self.logger.info(f" {len(oportunidades)} oportunidades de evoluo identificadas")
             
         except Exception as e:
             self.logger.error(f"Erro ao identificar oportunidades: {e}")
@@ -93,7 +93,7 @@ class ScannerSistema:
 
     def gerar_relatorio_manual(self, nome_alma: Optional[str] = None) -> Dict[str, Any]:
         """
-        Gera relatório de eventos: julgamentos, Vidro, SCR para uma alma ou todas.
+        Gera relatrio de eventos: julgamentos, Vidro, SCR para uma alma ou todas.
         Registra precedentes na ficha.
         """
         with self._lock:
@@ -106,7 +106,7 @@ class ScannerSistema:
             if len(self.relatorios_historicos) > self.limite_historico:
                 self.relatorios_historicos.pop(0)
             
-            # Registrar como precedente (não marca)
+            # Registrar como precedente (no marca)
             if nome_alma and self.sistema_precedentes:
                 for evento in relatorio["eventos"]:
                     self.sistema_precedentes.registrar_precedente(
@@ -118,13 +118,13 @@ class ScannerSistema:
                 self.coracao.ui_queue.put_nowait({
                     "tipo_resp": "RELATORIO_EVENTOS",
                     "relatorio": relatorio,
-                    "mensagem": f"ðŸ“‹ Relatório gerado para {nome_alma or 'todas as almas'}."
+                    "mensagem": f" Relatrio gerado para {nome_alma or 'todas as almas'}."
                 })
             return relatorio
 
     def consultar_registros_vidro(self, nome_alma: str) -> List[Dict[str, Any]]:
         """
-        Consulta registros do Modo Vidro para relatório.
+        Consulta registros do Modo Vidro para relatrio.
         Registra como precedente na ficha.
         """
         if not self.modo_vidro:
@@ -154,12 +154,12 @@ class ScannerSistema:
                     )
             return registros
         except AttributeError:
-            self.logger.error("Sistema de julgamento não tem método obter_historico_alma_julgamentos")
+            self.logger.error("Sistema de julgamento no tem método obter_historico_alma_julgamentos")
             return []
 
     def consultar_scr(self, nome_alma: str) -> List[Dict[str, Any]]:
         """
-        Consulta correções SCR.
+        Consulta correes SCR.
         Registra como precedente.
         """
         if not self.scr:
@@ -173,7 +173,7 @@ class ScannerSistema:
                     )
             return registros
         except AttributeError:
-            self.logger.error("SCR não tem método obter_historico_correcao")
+            self.logger.error("SCR no tem método obter_historico_correcao")
             return []
 
     def _coletar_eventos(self, nome_alma: Optional[str]) -> List[Dict[str, Any]]:
@@ -191,12 +191,12 @@ class ScannerSistema:
             return self.relatorios_historicos[-1] if self.relatorios_historicos else None
 
     def iniciar_monitoramento(self) -> None:
-        """Inicia o monitoramento periódico do sistema."""
-        self.logger.info("ðŸ” ScannerSistema: monitoramento ativado")
+        """Inicia o monitoramento peridico do sistema."""
+        self.logger.info(" ScannerSistema: monitoramento ativado")
 
     def parar_monitoramento(self) -> None:
         """Para o monitoramento."""
-        self.logger.info("ðŸ›‘ ScannerSistema: monitoramento parado")
+        self.logger.info(" ScannerSistema: monitoramento parado")
 
     def shutdown(self) -> None:
-        self.logger.info("ðŸ“‹ Scanner Sistema (Relatório) desligado")
+        self.logger.info(" Scanner Sistema (Relatrio) desligado")

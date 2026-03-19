@@ -16,25 +16,25 @@ logger.addHandler(logging.NullHandler())
 try:
     import fitz
 except:
-    logging.getLogger(__name__).warning("âš ï¸ fitz não disponível")
+    logging.getLogger(__name__).warning("[AVISO] fitz no disponível")
     fitz = None
 
 try:
     from pdf2image import convert_from_path  # type: ignore
 except:
-    logging.getLogger(__name__).warning("âš ï¸ fitz não disponível")
+    logging.getLogger(__name__).warning("[AVISO] fitz no disponível")
     fitz = None
 
 try:
     import pytesseract
 except:
-    logging.getLogger(__name__).warning("âš ï¸ fitz não disponível")
+    logging.getLogger(__name__).warning("[AVISO] fitz no disponível")
     fitz = None
 
 try:
     from PyPDF2 import PdfReader  # type: ignore
 except:
-    logging.getLogger(__name__).warning("âš ï¸ fitz não disponível")
+    logging.getLogger(__name__).warning("[AVISO] fitz no disponível")
     fitz = None
 
 
@@ -77,7 +77,7 @@ def _is_text_sufficient(t: Optional[str], min_chars: int = 120) -> bool:
 
 def extract_text_pymupdf(pdf_path: Path) -> str:
     if fitz is None:
-        raise RuntimeError("PyMuPDF (fitz) não disponível")
+        raise RuntimeError("PyMuPDF (fitz) no disponível")
     parts: List[str] = []
     try:
         doc = fitz.open(str(pdf_path))
@@ -95,7 +95,7 @@ def extract_text_pymupdf(pdf_path: Path) -> str:
 
 def extract_text_pypdf2(pdf_path: Path) -> str:
     if PdfReader is None:
-        raise RuntimeError("PyPDF2 não disponível")
+        raise RuntimeError("PyPDF2 no disponível")
     parts: List[str] = []
     try:
         reader = PdfReader(str(pdf_path))
@@ -113,9 +113,9 @@ def extract_text_pypdf2(pdf_path: Path) -> str:
 
 def ocr_pdf_via_images(pdf_path: Path, poppler_path: Optional[str] = None, ocr_lang: str = "por") -> str:
     if convert_from_path is None:
-        raise RuntimeError("pdf2image não disponível")
+        raise RuntimeError("pdf2image no disponível")
     if pytesseract is None:
-        raise RuntimeError("pytesseract não disponível")
+        raise RuntimeError("pytesseract no disponível")
     try:
         images = convert_from_path(str(pdf_path), dpi=300, poppler_path=poppler_path) if poppler_path else convert_from_path(str(pdf_path), dpi=300)
     except Exception:
@@ -144,7 +144,7 @@ class LocalConsultorBiblia:
             try:
                 pytesseract.pytesseract.tesseract_cmd = str(tesseract_cmd)
             except Exception:
-                logger.debug("Não foi possível definir tesseract_cmd para pytesseract")
+                logger.debug("No foi possível definir tesseract_cmd para pytesseract")
         self._structured: Dict[str, Any] = {}
         self._pdf_texts: Dict[str, str] = {}
         if not self.caminho:

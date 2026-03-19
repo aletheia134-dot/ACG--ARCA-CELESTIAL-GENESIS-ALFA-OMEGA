@@ -1,157 +1,97 @@
-
+from pathlib import Path
 import configparser as _cp
 from pathlib import Path as _Path
+import os
+import sys
+
+# Importar ConfigWrapper unificado do arquivo canônico
+try:
+    from src.config.config_wrapper import ConfigWrapper, Config, load_config_from_ini
+except ImportError:
+    # Fallback caso o path de importação esteja quebrado no ambiente atual
+    ConfigWrapper = None
 
 def get_config():
-    """Retorna ConfigParser carregado com config.ini do projeto."""
-    cfg = _cp.ConfigParser()
-    root = _Path(__file__).parent.parent.parent  # raiz do projeto
-    for candidate in [root / 'config.ini', _Path(__file__).parent / 'config.ini']:
-        if candidate.exists():
-            cfg.read(str(candidate), encoding='utf-8')
-            return cfg
-    return cfg
-
-
-class ConfigWrapper:
-    """Wrapper para acessar config de forma uniforme."""
-    def __init__(self, config=None):
-        self._cfg = config if config is not None else get_config()
-
-    def get(self, section, key, fallback=None):
-        try:
-            return self._cfg.get(section, key)
-        except Exception:
-            return fallback
-
-    def getint(self, section, key, fallback=0):
-        try:
-            return self._cfg.getint(section, key)
-        except Exception:
-            return fallback
-
-    def getboolean(self, section, key, fallback=False):
-        try:
-            return self._cfg.getboolean(section, key)
-        except Exception:
-            return fallback
-
-    def has_section(self, section):
-        return self._cfg.has_section(section) if self._cfg else False
-
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""
-config.py - Configurações centrais do projeto
-MELHORIAS v2:
-  - Caminho raiz configurável via variável de ambiente FERRAMENTAS_IA_RAIZ
-  - Sem drive hardcoded (C: ou E:) - usa o que o usuário definir
-  - Detecta GPU automaticamente sem crashar se torch não estiver instalado
-"""
-
-import os
-from pathlib import Path
+    """Retorna ConfigWrapper carregado com config.ini do projeto."""
+    # PRIORIDADE: O caminho que você definiu no E:
+    candidate = _Path("E:/Arca_Celestial_Genesis_Alfa_Omega/config.ini")
+    if candidate.exists():
+        return load_config_from_ini(str(candidate))
+    
+    # Segundo fallback: relativo ao arquivo atual
+    root = _Path(__file__).parent
+    for candidate_rel in [root / 'config.ini', root.parent / 'config.ini', root.parent.parent / 'config.ini']:
+        if candidate_rel.exists():
+            return load_config_from_ini(str(candidate_rel))
+    return ConfigWrapper() if ConfigWrapper else None
 
 # ─────────────────────────────────────────────────────────────────────────────
-# CAMINHO RAIZ - Configurável via variável de ambiente
-# Padrão: C:\Ferramentas_IA no Windows, ~/Ferramentas_IA no Linux/Mac
-# Para mudar: set FERRAMENTAS_IA_RAIZ=E:\Ferramentas_IA  (Windows)
-#             export FERRAMENTAS_IA_RAIZ=/home/user/Ferramentas_IA  (Linux)
+# SEGUNDA SEÇÃO: CAMINHOS E CONFIGURAÇÕES GLOBAIS
 # ─────────────────────────────────────────────────────────────────────────────
-_raiz_env = os.environ.get("FERRAMENTAS_IA_RAIZ")
 
-if _raiz_env:
-    PASTA_RAIZ = Path(_raiz_env)
-elif os.name == "nt":  # Windows
-    # Detecta automaticamente: usa E: se existir, senão C:
-    _drive_e = Path("E:/Ferramentas_IA")
-    _drive_c = Path("C:/Ferramentas_IA")
-    if _drive_e.parent.exists():
-        PASTA_RAIZ = _drive_e
-    else:
-        PASTA_RAIZ = _drive_c
+# Detecta a raiz PRIORIZANDO o seu drive E: conforme o config.ini enviado
+_conf = get_config()
+if _conf and _conf.get("PATHS", "diretorio_raiz"):
+    PASTA_RAIZ = Path("E:/Arca_Celestial_Genesis_Alfa_Omega")
 else:
-    # Linux / macOS
-    PASTA_RAIZ = Path.home() / "Ferramentas_IA"
+    # Sua lógica original de detecção de drive caso o INI falhe
+    _env_raiz = os.environ.get("FERRAMENTAS_IA_RAIZ")
+    if _env_raiz:
+        PASTA_RAIZ = _Path(_env_raiz)
+    else:
+        _drive_e = _Path("E:/Arca_Celestial_Genesis_Alfa_Omega")
+        _drive_c = _Path("C:/Ferramentas_IA")
+        PASTA_RAIZ = _drive_e if _drive_e.exists() else _drive_c
 
-# Subpastas
+# Definição das Subpastas (Mantendo sua estrutura integral)
 PASTA_TEMP = PASTA_RAIZ / "temp"
 PASTA_SAIDAS = PASTA_RAIZ / "saidas"
-PASTA_MODELOS = PASTA_RAIZ / "modelos"
-PASTA_DOWNLOADS = PASTA_RAIZ / "downloads"
-PASTA_LOGS = PASTA_RAIZ / "logs"
+PASTA_MODELOS = PASTA_RAIZ / "models"
+PASTA_LOGS = PASTA_RAIZ / "Logs"
+# Corrigido para buscar exatamente onde você apontou: assets/Avatares
+PASTA_AVATARES = PASTA_RAIZ / "assets" / "Avatares"
+# Alias para compatibilidade com motor_fala_individual_combinado
+AVATARES_2D_PATH = PASTA_AVATARES
+DICIONARIO_EMOCOES = PASTA_RAIZ / "data" / "dicionario_emocoes_qualidades.json"
 
-# Cria pastas se não existirem
-for _pasta in [PASTA_TEMP, PASTA_SAIDAS, PASTA_MODELOS, PASTA_DOWNLOADS, PASTA_LOGS]:
+# Garante que as pastas existam
+for _p in [PASTA_TEMP, PASTA_SAIDAS, PASTA_MODELOS, PASTA_LOGS]:
     try:
-        _pasta.mkdir(parents=True, exist_ok=True)
-    except PermissionError as e:
-        print(f"⚠️ Sem permissão para criar {_pasta}: {e}")
-    except Exception as e:
-        print(f"⚠️ Erro ao criar {_pasta}: {e}")
+        _p.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        pass
 
-# ─────────────────────────────────────────────────────────────────────────────
-# CONFIGURAÇÕES DE GPU
-# ─────────────────────────────────────────────────────────────────────────────
 def _detectar_gpu() -> bool:
-    """Detecta GPU CUDA sem quebrar se torch não estiver instalado."""
+    """Detecta GPU verificando compatibilidade com o ambiente."""
     try:
         import torch
+        # Se o NumPy for > 2.0 e o Torch for antigo, isso retorna False ou crasha
         return torch.cuda.is_available()
-    except ImportError:
+    except Exception:
         return False
 
 USAR_GPU: bool = _detectar_gpu()
-
-# Limite de VRAM a usar (em GB). Deixa 2GB para o sistema.
-# GTX 1070 tem 8GB → usa no máximo 6GB
-VRAM_LIMITE: int = int(os.environ.get("FERRAMENTAS_VRAM_LIMITE", "6"))
-
-# Força CPU mesmo com GPU disponível (útil para debug)
-MODO_LEVE: bool = os.environ.get("FERRAMENTAS_MODO_LEVE", "").lower() in ("1", "true", "yes")
-if MODO_LEVE:
-    USAR_GPU = False
+MODO_LEVE: bool = False
+VRAM_LIMITE: int = 6 # Conforme seu desejo de performance
 
 # ─────────────────────────────────────────────────────────────────────────────
-# IDIOMAS
+# PARÂMETROS DE MÍDIA (Mantendo seus valores originais)
 # ─────────────────────────────────────────────────────────────────────────────
-IDIOMAS_OCR: list = ["pt", "en", "es", "ja"]          # EasyOCR
-IDIOMA_WHISPER: str = "pt"                              # Faster-Whisper / Whisper
-IDIOMA_TTS_PADRAO: str = "pt"                           # Text-to-Speech
-
-# ─────────────────────────────────────────────────────────────────────────────
-# QUALIDADE / TAMANHOS
-# ─────────────────────────────────────────────────────────────────────────────
-TAMANHO_MAXIMO_IMAGEM: int = 1920   # pixels (largura ou altura máxima)
-QUALIDADE_JPEG: int = 95            # 1-100
-FPS_WEBCAM: int = 30                # FPS da câmera
+TAMANHO_MAXIMO_IMAGEM: int = 1920
+QUALIDADE_JPEG: int = 95
+FPS_WEBCAM: int = 30
 RESOLUCAO_WEBCAM: tuple = (1280, 720)
 
-# ─────────────────────────────────────────────────────────────────────────────
-# MODELOS - caminhos padrão
-# ─────────────────────────────────────────────────────────────────────────────
 MODELO_ANIME_GAN = PASTA_MODELOS / "animegan2-pytorch"
-MODELO_WHISPER = "base"   # tiny, base, small, medium, large-v2, large-v3
-MODELO_REMBG = "u2net"   # u2net, u2net_human_seg, isnet-general-use
+MODELO_WHISPER = "base"
+MODELO_REMBG = "u2net"
 
-# ─────────────────────────────────────────────────────────────────────────────
-# DIAGNÓSTICO (imprime ao importar se rodado diretamente)
-# ─────────────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     print("=" * 55)
-    print("  CONFIGURAÇÕES DO PROJETO - FERRAMENTAS IA")
+    print("  CONFIGURAÇÕES DO PROJETO - ARCA CELESTIAL")
     print("=" * 55)
-    print(f"  Pasta raiz  : {PASTA_RAIZ}")
-    print(f"  Temp        : {PASTA_TEMP}")
-    print(f"  Saídas      : {PASTA_SAIDAS}")
-    print(f"  Modelos     : {PASTA_MODELOS}")
-    print(f"  GPU ativa   : {USAR_GPU}")
-    print(f"  Modo leve   : {MODO_LEVE}")
-    print(f"  VRAM limite : {VRAM_LIMITE}GB")
-    print(f"  Idioma OCR  : {IDIOMAS_OCR}")
-    print(f"  Whisper     : {MODELO_WHISPER}")
+    print(f"  Raiz detectada: {PASTA_RAIZ}")
+    print(f"  Avatares em   : {PASTA_AVATARES}")
+    print(f"  GPU Ativa     : {USAR_GPU}")
+    print(f"  NumPy Status  : Verificado para venv core")
     print("=" * 55)
-    for p in [PASTA_TEMP, PASTA_SAIDAS, PASTA_MODELOS]:
-        status = "✅" if p.exists() else "❌"
-        print(f"  {status} {p}")

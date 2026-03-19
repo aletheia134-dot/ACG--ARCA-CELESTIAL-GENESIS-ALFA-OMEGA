@@ -1,4 +1,4 @@
-# Ferramenta: Gerar Legendas Automáticas (Vídeo â†’ SRT)
+# Ferramenta: Gerar Legendas Automticas (Vdeo  SRT)
 # Usa Whisper + MoviePy (2GB VRAM)
 
 import sys
@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS, USAR_GPU
 
 import customtkinter as ctk
@@ -35,12 +35,12 @@ class FerramentaLegendas:
                 compute_type=compute_type,
                 download_root=str(Path("C:/Ferramentas_IA/modelos/whisper"))
             )
-            print(f"âœ… Whisper {tamanho} carregado")
+            print(f"[OK] Whisper {tamanho} carregado")
         except Exception as e:
-            print(f"âŒ Erro Whisper: {e}")
+            print(f"[ERRO] Erro Whisper: {e}")
     
     def extrair_audio(self, caminho_video):
-        """Extrai áudio do vídeo"""
+        """Extrai udio do vdeo"""
         try:
             video = VideoFileClip(caminho_video)
             audio_path = PASTA_SAIDAS / f"audio_temp_{Utils.get_timestamp()}.wav"
@@ -51,12 +51,12 @@ class FerramentaLegendas:
             return None, str(e)
     
     def gerar_legendas(self, caminho_video, idioma="pt", formato="srt"):
-        """Gera legendas do vídeo"""
+        """Gera legendas do vdeo"""
         if self.model is None:
             self.carregar_modelo()
         
         try:
-            # Extrai áudio
+            # Extrai udio
             audio_path, erro = self.extrair_audio(caminho_video)
             if erro:
                 return None, erro
@@ -73,12 +73,12 @@ class FerramentaLegendas:
             legendas = []
             for segment in segments:
                 legendas.append({
-                    "inicio": segment.start,
+                    "início": segment.start,
                     "fim": segment.end,
                     "texto": segment.text
                 })
             
-            # Remove áudio temporário
+            # Remove udio temporrio
             audio_path.unlink()
             
             return legendas, info
@@ -90,10 +90,10 @@ class FerramentaLegendas:
         """Salva legendas no formato SRT"""
         with open(caminho_saida, 'w', encoding='utf-8') as f:
             for i, leg in enumerate(legendas, 1):
-                inicio = self._format_timestamp(leg["inicio"])
+                inicio = self._format_timestamp(leg["início"])
                 fim = self._format_timestamp(leg["fim"])
                 f.write(f"{i}\n")
-                f.write(f"{inicio} --> {fim}\n")
+                f.write(f"{início} --> {fim}\n")
                 f.write(f"{leg['texto']}\n\n")
     
     def salvar_txt(self, legendas, caminho_saida):
@@ -112,7 +112,7 @@ class FerramentaLegendas:
 
 class InterfaceLegendas(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸ“ Gerar Legendas Automáticas", "700x600")
+        super().__init__(" Gerar Legendas Automticas", "700x600")
         self.ferramenta = FerramentaLegendas(usar_gpu=USAR_GPU)
         self.caminho_video = None
         self.legendas_geradas = None
@@ -121,20 +121,20 @@ class InterfaceLegendas(InterfaceBase):
     def setup_interface(self):
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸŽ¬ Gerar Legendas Automáticas",
+            text=" Gerar Legendas Automticas",
             font=("Arial", 24, "bold")
         )
         titulo.pack(pady=10)
         
         # Status GPU
-        status = "âœ… GPU Ativa (Whisper)" if self.ferramenta.usar_gpu else "âš ï¸ CPU"
+        status = "[OK] GPU Ativa (Whisper)" if self.ferramenta.usar_gpu else "[AVISO] CPU"
         self.lbl_gpu = ctk.CTkLabel(self.frame, text=status)
         self.lbl_gpu.pack(pady=5)
         
-        # Seleção de vídeo
+        # Seleo de vdeo
         self.btn_video = ctk.CTkButton(
             self.frame,
-            text="ðŸ“ Selecionar Vídeo",
+            text=" Selecionar Vdeo",
             command=self.selecionar_video,
             width=200,
             height=40
@@ -143,11 +143,11 @@ class InterfaceLegendas(InterfaceBase):
         
         self.lbl_video = ctk.CTkLabel(
             self.frame,
-            text="Nenhum vídeo selecionado"
+            text="Nenhum vdeo selecionado"
         )
         self.lbl_video.pack(pady=5)
         
-        # Opções
+        # Opes
         self.frame_opcoes = ctk.CTkFrame(self.frame)
         self.frame_opcoes.pack(pady=10, padx=10, fill="x")
         
@@ -190,7 +190,7 @@ class InterfaceLegendas(InterfaceBase):
         )
         self.lbl_info_modelo.pack(side="left", padx=5)
         
-        # Formato saída
+        # Formato sada
         self.frame_formato = ctk.CTkFrame(self.frame_opcoes)
         self.frame_formato.pack(pady=5, fill="x")
         
@@ -214,10 +214,10 @@ class InterfaceLegendas(InterfaceBase):
         )
         self.radio_txt.pack(side="left", padx=5)
         
-        # Botão processar
+        # Boto processar
         self.btn_processar = ctk.CTkButton(
             self.frame,
-            text="ðŸ“ Gerar Legendas",
+            text=" Gerar Legendas",
             command=self.processar,
             width=200,
             height=45,
@@ -231,13 +231,13 @@ class InterfaceLegendas(InterfaceBase):
         self.progress.pack(pady=5)
         self.progress.set(0)
         
-        # Írea de preview
+        # rea de preview
         self.frame_preview = ctk.CTkFrame(self.frame)
         self.frame_preview.pack(pady=10, padx=10, fill="both", expand=True)
         
         self.lbl_preview = ctk.CTkLabel(
             self.frame_preview,
-            text="Prévia das legendas aparecerá aqui",
+            text="Prvia das legendas aparecer aqui",
             wraplength=500
         )
         self.lbl_preview.pack(pady=5)
@@ -245,10 +245,10 @@ class InterfaceLegendas(InterfaceBase):
         self.texto_preview = ctk.CTkTextbox(self.frame_preview, height=150)
         self.texto_preview.pack(pady=5, padx=5, fill="both", expand=True)
         
-        # Botão salvar
+        # Boto salvar
         self.btn_salvar = ctk.CTkButton(
             self.frame,
-            text="ðŸ’¾ Salvar Legendas",
+            text=" Salvar Legendas",
             command=self.salvar_legendas,
             width=150,
             state="disabled"
@@ -260,17 +260,17 @@ class InterfaceLegendas(InterfaceBase):
     
     def selecionar_video(self):
         caminho = self.utils.selecionar_arquivo(
-            "Selecione um vídeo",
-            [("Vídeo", "*.mp4 *.avi *.mkv *.mov *.wmv")]
+            "Selecione um vdeo",
+            [("Vdeo", "*.mp4 *.avi *.mkv *.mov *.wmv")]
         )
         if caminho:
             self.caminho_video = caminho
-            self.lbl_video.configure(text=f"Vídeo: {Path(caminho).name}")
+            self.lbl_video.configure(text=f"Vdeo: {Path(caminho).name}")
             self.btn_processar.configure(state="normal")
     
     def processar(self):
         def processar_thread():
-            self.btn_processar.configure(state="disabled", text="â³ Gerando legendas...")
+            self.btn_processar.configure(state="disabled", text=" Gerando legendas...")
             self.progress.set(0.2)
             
             # Atualiza modelo
@@ -311,7 +311,7 @@ class InterfaceLegendas(InterfaceBase):
                 self.utils.mostrar_erro("Erro", "Falha ao gerar legendas")
             
             self.progress.set(1)
-            self.btn_processar.configure(state="normal", text="ðŸ“ Gerar Legendas")
+            self.btn_processar.configure(state="normal", text=" Gerar Legendas")
         
         threading.Thread(target=processar_thread).start()
     

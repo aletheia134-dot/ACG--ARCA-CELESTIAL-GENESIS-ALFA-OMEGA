@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS
 
 import fitz  # pymupdf
@@ -49,25 +49,25 @@ class FerramentaPDFparaTexto:
             return False, str(e)
     
     def extrair_texto_todas(self):
-        """Extrai texto de todas as páginas"""
+        """Extrai texto de todas as pginas"""
         if self.documento is None:
-            return None, "PDF não carregado"
+            return None, "PDF no carregado"
         
         try:
             texto_completo = []
             for num_pagina in range(self.total_paginas):
                 pagina = self.documento[num_pagina]
                 texto = pagina.get_text()
-                texto_completo.append(f"--- Página {num_pagina + 1} ---\n{texto}")
+                texto_completo.append(f"--- Pgina {num_pagina + 1} ---\n{texto}")
             
             return "\n\n".join(texto_completo), "Sucesso"
         except Exception as e:
             return None, str(e)
     
     def extrair_texto_paginas(self, paginas):
-        """Extrai texto de páginas específicas"""
+        """Extrai texto de pginas especficas"""
         if self.documento is None:
-            return None, "PDF não carregado"
+            return None, "PDF no carregado"
         
         try:
             texto_completo = []
@@ -75,16 +75,16 @@ class FerramentaPDFparaTexto:
                 if 0 <= num_pagina < self.total_paginas:
                     pagina = self.documento[num_pagina]
                     texto = pagina.get_text()
-                    texto_completo.append(f"--- Página {num_pagina + 1} ---\n{texto}")
+                    texto_completo.append(f"--- Pgina {num_pagina + 1} ---\n{texto}")
             
             return "\n\n".join(texto_completo), "Sucesso"
         except Exception as e:
             return None, str(e)
     
     def extrair_texto_com_formato(self, manter_formatacao=False):
-        """Extrai texto mantendo ou não formatação"""
+        """Extrai texto mantendo ou no formatao"""
         if self.documento is None:
-            return None, "PDF não carregado"
+            return None, "PDF no carregado"
         
         try:
             texto_completo = []
@@ -92,7 +92,7 @@ class FerramentaPDFparaTexto:
                 pagina = self.documento[num_pagina]
                 
                 if manter_formatacao:
-                    # Extrai com informações de formatação
+                    # Extrai com informações de formatao
                     blocos = pagina.get_text("dict")
                     texto_pagina = []
                     for bloco in blocos["blocks"]:
@@ -105,7 +105,7 @@ class FerramentaPDFparaTexto:
                     # Apenas texto simples
                     texto = pagina.get_text()
                 
-                texto_completo.append(f"--- Página {num_pagina + 1} ---\n{texto}")
+                texto_completo.append(f"--- Pgina {num_pagina + 1} ---\n{texto}")
             
             return "\n\n".join(texto_completo), "Sucesso"
         except Exception as e:
@@ -114,7 +114,7 @@ class FerramentaPDFparaTexto:
     def extrair_imagens(self, pasta_saida):
         """Extrai imagens do PDF"""
         if self.documento is None:
-            return None, "PDF não carregado"
+            return None, "PDF no carregado"
         
         try:
             pasta_saida = Path(pasta_saida)
@@ -145,9 +145,9 @@ class FerramentaPDFparaTexto:
             return None, str(e)
     
     def extrair_tabelas(self):
-        """Tenta extrair tabelas (aproximação)"""
+        """Tenta extrair tabelas (aproximao)"""
         if self.documento is None:
-            return None, "PDF não carregado"
+            return None, "PDF no carregado"
         
         try:
             tabelas = []
@@ -164,7 +164,7 @@ class FerramentaPDFparaTexto:
                             linha_texto = []
                             for span in linha["spans"]:
                                 linha_texto.append(span["text"])
-                            if len(linha_texto) > 1:  # Possível linha de tabela
+                            if len(linha_texto) > 1:  # Possvel linha de tabela
                                 linhas_tabela.append(" | ".join(linha_texto))
                 
                 if linhas_tabela:
@@ -184,28 +184,28 @@ class FerramentaPDFparaTexto:
 
 class InterfacePDFparaTexto(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸ“„ Extrair Texto de PDF", "800x700")
+        super().__init__(" Extrair Texto de PDF", "800x700")
         self.ferramenta = FerramentaPDFparaTexto()
         self.info_pdf = None
         self.texto_extraido = None
         self.setup_interface()
     
     def setup_interface(self):
-        # Título
+        # Ttulo
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸ“„ Extrair Texto de Arquivos PDF",
+            text=" Extrair Texto de Arquivos PDF",
             font=("Arial", 24, "bold")
         )
         titulo.pack(pady=10)
         
-        # Seleção de arquivo
+        # Seleo de arquivo
         self.frame_arquivo = ctk.CTkFrame(self.frame)
         self.frame_arquivo.pack(pady=10, padx=10, fill="x")
         
         self.btn_pdf = ctk.CTkButton(
             self.frame_arquivo,
-            text="ðŸ“ Selecionar PDF",
+            text=" Selecionar PDF",
             command=self.selecionar_pdf,
             width=150,
             height=40
@@ -219,7 +219,7 @@ class InterfacePDFparaTexto(InterfaceBase):
         )
         self.lbl_arquivo.pack(side="left", padx=10)
         
-        # Informações do PDF
+        # informações do PDF
         self.frame_info = ctk.CTkFrame(self.frame)
         self.frame_info.pack(pady=10, padx=10, fill="x")
         
@@ -248,14 +248,14 @@ class InterfacePDFparaTexto(InterfaceBase):
         self.progress.set(0)
     
     def setup_tab_texto(self):
-        # Opções
+        # Opes
         self.frame_opcoes = ctk.CTkFrame(self.tab_texto)
         self.frame_opcoes.pack(pady=5, fill="x")
         
         self.manter_formatacao = ctk.BooleanVar(value=False)
         self.chk_formatacao = ctk.CTkCheckBox(
             self.frame_opcoes,
-            text="Manter formatação aproximada",
+            text="Manter formatao aproximada",
             variable=self.manter_formatacao
         )
         self.chk_formatacao.pack(side="left", padx=5)
@@ -263,7 +263,7 @@ class InterfacePDFparaTexto(InterfaceBase):
         self.selecionar_paginas = ctk.BooleanVar(value=False)
         self.chk_selecionar = ctk.CTkCheckBox(
             self.frame_opcoes,
-            text="Selecionar páginas específicas",
+            text="Selecionar pginas especficas",
             variable=self.selecionar_paginas,
             command=self.toggle_paginas
         )
@@ -277,10 +277,10 @@ class InterfacePDFparaTexto(InterfaceBase):
         )
         self.entry_paginas.pack(side="left", padx=5)
         
-        # Botão extrair
+        # Boto extrair
         self.btn_extrair = ctk.CTkButton(
             self.tab_texto,
-            text="ðŸ“ Extrair Texto",
+            text=" Extrair Texto",
             command=self.extrair_texto,
             width=150,
             height=35,
@@ -289,20 +289,20 @@ class InterfacePDFparaTexto(InterfaceBase):
         )
         self.btn_extrair.pack(pady=10)
         
-        # Írea de texto resultado
-        self.lbl_resultado = ctk.CTkLabel(self.tab_texto, text="Texto extraído:")
+        # rea de texto resultado
+        self.lbl_resultado = ctk.CTkLabel(self.tab_texto, text="Texto extrado:")
         self.lbl_resultado.pack(pady=(10,0))
         
         self.texto_resultado = ctk.CTkTextbox(self.tab_texto, height=200)
         self.texto_resultado.pack(pady=5, padx=5, fill="both", expand=True)
         
-        # Botões
+        # Botes
         self.frame_botoes = ctk.CTkFrame(self.tab_texto)
         self.frame_botoes.pack(pady=5)
         
         self.btn_copiar = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ“‹ Copiar",
+            text=" Copiar",
             command=self.copiar_texto,
             width=100,
             state="disabled"
@@ -311,7 +311,7 @@ class InterfacePDFparaTexto(InterfaceBase):
         
         self.btn_salvar = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ’¾ Salvar TXT",
+            text=" Salvar TXT",
             command=self.salvar_texto,
             width=100,
             state="disabled"
@@ -328,7 +328,7 @@ class InterfacePDFparaTexto(InterfaceBase):
         
         self.btn_extrair_imagens = ctk.CTkButton(
             self.tab_imagens,
-            text="ðŸ–¼ï¸ Extrair Imagens",
+            text=" Extrair Imagens",
             command=self.extrair_imagens,
             width=150,
             height=35,
@@ -353,7 +353,7 @@ class InterfacePDFparaTexto(InterfaceBase):
         
         self.btn_extrair_tabelas = ctk.CTkButton(
             self.tab_tabelas,
-            text="ðŸ“Š Detectar Tabelas",
+            text=" Detectar Tabelas",
             command=self.extrair_tabelas,
             width=150,
             height=35,
@@ -387,15 +387,15 @@ class InterfacePDFparaTexto(InterfaceBase):
                 self.info_pdf = info
                 
                 # Mostra informações
-                info_texto = f"Título: {info['titulo']}\n"
+                info_texto = f"Ttulo: {info['titulo']}\n"
                 info_texto += f"Autor: {info['autor']}\n"
-                info_texto += f"Páginas: {info['total_paginas']}\n"
+                info_texto += f"Pginas: {info['total_paginas']}\n"
                 info_texto += f"Criado: {info['criacao']}"
                 
                 self.texto_info.delete('1.0', 'end')
                 self.texto_info.insert('1.0', info_texto)
                 
-                # Ativa botões
+                # Ativa botes
                 self.btn_extrair.configure(state="normal")
                 self.btn_extrair_imagens.configure(state="normal")
                 self.btn_extrair_tabelas.configure(state="normal")
@@ -404,11 +404,11 @@ class InterfacePDFparaTexto(InterfaceBase):
     
     def extrair_texto(self):
         def extrair_thread():
-            self.btn_extrair.configure(state="disabled", text="â³ Extraindo...")
+            self.btn_extrair.configure(state="disabled", text=" Extraindo...")
             self.progress.set(0.2)
             
             if self.selecionar_paginas.get():
-                # Parse páginas
+                # Parse pginas
                 paginas_texto = self.entry_paginas.get()
                 paginas = []
                 
@@ -432,18 +432,18 @@ class InterfacePDFparaTexto(InterfaceBase):
                 self.texto_resultado.insert('1.0', texto[:1000] + "...\n\n(Texto truncado no preview)")
                 self.btn_copiar.configure(state="normal")
                 self.btn_salvar.configure(state="normal")
-                self.utils.mostrar_info("Sucesso", "Texto extraído!")
+                self.utils.mostrar_info("Sucesso", "Texto extrado!")
             else:
                 self.utils.mostrar_erro("Erro", msg)
             
             self.progress.set(1)
-            self.btn_extrair.configure(state="normal", text="ðŸ“ Extrair Texto")
+            self.btn_extrair.configure(state="normal", text=" Extrair Texto")
         
         threading.Thread(target=extrair_thread).start()
     
     def extrair_imagens(self):
         def extrair_thread():
-            self.btn_extrair_imagens.configure(state="disabled", text="â³ Extraindo...")
+            self.btn_extrair_imagens.configure(state="disabled", text=" Extraindo...")
             self.progress.set(0.2)
             
             pasta_saida = PASTA_SAIDAS / f"imagens_{Path(self.ferramenta.caminho_pdf).stem}"
@@ -455,19 +455,19 @@ class InterfacePDFparaTexto(InterfaceBase):
             if imagens:
                 self.lista_imagens.delete('1.0', 'end')
                 for img in imagens:
-                    self.lista_imagens.insert('end', f"âœ… {Path(img).name}\n")
-                self.utils.mostrar_info("Sucesso", f"{len(imagens)} imagens extraídas!")
+                    self.lista_imagens.insert('end', f"[OK] {Path(img).name}\n")
+                self.utils.mostrar_info("Sucesso", f"{len(imagens)} imagens extradas!")
             else:
                 self.utils.mostrar_erro("Erro", msg)
             
             self.progress.set(1)
-            self.btn_extrair_imagens.configure(state="normal", text="ðŸ–¼ï¸ Extrair Imagens")
+            self.btn_extrair_imagens.configure(state="normal", text=" Extrair Imagens")
         
         threading.Thread(target=extrair_thread).start()
     
     def extrair_tabelas(self):
         def tabelas_thread():
-            self.btn_extrair_tabelas.configure(state="disabled", text="â³ Detectando...")
+            self.btn_extrair_tabelas.configure(state="disabled", text=" Detectando...")
             self.progress.set(0.2)
             
             tabelas, msg = self.ferramenta.extrair_tabelas()
@@ -477,7 +477,7 @@ class InterfacePDFparaTexto(InterfaceBase):
             if tabelas:
                 self.texto_tabelas.delete('1.0', 'end')
                 for tabela in tabelas:
-                    self.texto_tabelas.insert('end', f"--- Página {tabela['pagina']} ---\n")
+                    self.texto_tabelas.insert('end', f"--- Pgina {tabela['pagina']} ---\n")
                     for linha in tabela['conteudo'][:10]:
                         self.texto_tabelas.insert('end', f"{linha}\n")
                     if len(tabela['conteudo']) > 10:
@@ -487,7 +487,7 @@ class InterfacePDFparaTexto(InterfaceBase):
                 self.utils.mostrar_erro("Erro", msg or "Nenhuma tabela encontrada")
             
             self.progress.set(1)
-            self.btn_extrair_tabelas.configure(state="normal", text="ðŸ“Š Detectar Tabelas")
+            self.btn_extrair_tabelas.configure(state="normal", text=" Detectar Tabelas")
         
         threading.Thread(target=tabelas_thread).start()
     

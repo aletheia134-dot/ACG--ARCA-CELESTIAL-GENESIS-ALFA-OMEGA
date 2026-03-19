@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
-construtor_ferramentas_incremental.py - Construção Incremental de Ferramentas
+construtor_ferramentas_incremental.py - Construo Incremental de Ferramentas
 
-Construir ferramenta AOS POUCOS, sem travar o Coração.Responsabilidades:
+Construir ferramenta AOS POUCOS, sem travar o Corao.Responsabilidades:
 - Executar em thread separada
 - Atualizar progresso
 - Reportar etapas
 - Detectar erros
-- Notificar Coração
+- Notificar Corao
 
-MUDANÇAS v2:
-âœ… Aguarda código da IA antes de começar
-âœ… Integra com SolicitadorArquivos
-âœ… Imports corrigidos (Tuple)
+MUDANAS v2:
+[OK] Aguarda cdigo da IA antes de comear
+[OK] Integra com SolicitadorArquivos
+[OK] Imports corrigidos (Tuple)
 """
-from __future__ import annotations
 
 
 import ast
@@ -31,11 +31,11 @@ logger.addHandler(logging.NullHandler())
 
 class ConstrutorFerramentasIncremental:
     """
-    Constrói ferramentas em thread separada.Etapas:
-    0.Aguardar código da IA
-    1.Parse do código (10%)
-    2.Compilação (25%)
-    3.Testes unitários (50%)
+    Constri ferramentas em thread separada.Etapas:
+    0.Aguardar cdigo da IA
+    1.Parse do cdigo (10%)
+    2.Compilao (25%)
+    3.Testes unitrios (50%)
     4.Testes sandbox (75%)
     5.Empacotamento (100%)
     """
@@ -43,8 +43,8 @@ class ConstrutorFerramentasIncremental:
     def __init__(self, gerenciador_propostas: Any, coracao_ref: Any):
         """
         Args:
-            gerenciador_propostas: Ref ao GerenciadorPropostas
-            coracao_ref: Ref ao Coração
+            gerenciador_propostas: Ref ação GerenciadorPropostas
+            coracao_ref: Ref ação Corao
         """
         self.gerenciador = gerenciador_propostas
         self.coracao = coracao_ref
@@ -55,17 +55,17 @@ class ConstrutorFerramentasIncremental:
 
     def iniciar_construcao(self, proposta_id: str, ia_solicitante: str) -> Tuple[bool, str]:
         """
-        Inicia construção em thread.Returns:
+        Inicia construo em thread.Returns:
             (sucesso, mensagem)
         """
         with self._lock:
             if proposta_id in self._threads_construcao:
-                return False, "Construção já em andamento"
+                return False, "Construo j em andamento"
         
         # Obter proposta
         proposta = self.gerenciador.obter_proposta(proposta_id)
         if not proposta:
-            return False, "Proposta não encontrada"
+            return False, "Proposta no encontrada"
         
         # Iniciar thread
         thread = threading.Thread(
@@ -79,20 +79,20 @@ class ConstrutorFerramentasIncremental:
             self._threads_construcao[proposta_id] = thread
         
         thread.start()
-        msg = f"ðŸ”¨ Construção iniciada para {proposta_id}"
+        msg = f" Construo iniciada para {proposta_id}"
         self.logger.info(msg)
         
         return True, msg
 
     def _builder_thread(self, proposta_id: str, ia_solicitante: str, proposta: Dict[str, Any]) -> None:
-        """Thread de construção."""
+        """Thread de construo."""
         try:
-            # ================== ETAPA 0: AGUARDAR CÓDIGO ==================
+            # ================== ETAPA 0: AGUARDAR CDIGO ==================
             self.gerenciador.atualizar_progresso(proposta_id, 5, "aguardando_codigo", 
-                                                "IA deve enviar código...")
-            self.logger.info("â³ Aguardando código de %s para proposta %s", ia_solicitante, proposta_id)
+                                                "IA deve enviar cdigo...")
+            self.logger.info(" Aguardando cdigo de %s para proposta %s", ia_solicitante, proposta_id)
             
-            # Aguardar por até 24 horas a IA enviar código
+            # Aguardar por at 24 horas a IA enviar cdigo
             timeout = 86400  # 24 horas
             inicio = time.time()
             codigo_recebido = False
@@ -106,45 +106,45 @@ class ConstrutorFerramentasIncremental:
             
             if not codigo_recebido:
                 self.gerenciador.registrar_resultado_testes(proposta_id, False, 
-                                                           "âŒ Timeout: IA não enviou código em 24h")
-                self.logger.error("âŒ Timeout esperando código de %s", ia_solicitante)
+                                                           "[ERRO] Timeout: IA no enviou cdigo em 24h")
+                self.logger.error("[ERRO] Timeout esperando cdigo de %s", ia_solicitante)
                 return
             
-            self.logger.info("âœ… Código recebido de %s", ia_solicitante)
+            self.logger.info("[OK] Cdigo recebido de %s", ia_solicitante)
             codigo = proposta.get("codigo_ou_comando")
             
             # ================== ETAPA 1: PARSE (10%) ==================
-            self.gerenciador.atualizar_progresso(proposta_id, 10, "parsing_codigo", "Analisando código...")
+            self.gerenciador.atualizar_progresso(proposta_id, 10, "parsing_codigo", "Analisando cdigo...")
             time.sleep(0.5)
             
             if not self._validar_parse(codigo):
                 self.gerenciador.atualizar_progresso(proposta_id, 0, "erro_parse", "Erro ao fazer parse")
-                self.logger.error("âŒ Parse falhou para %s", proposta_id)
-                self.gerenciador.registrar_resultado_testes(proposta_id, False, "Parse do código falhou")
+                self.logger.error("[ERRO] Parse falhou para %s", proposta_id)
+                self.gerenciador.registrar_resultado_testes(proposta_id, False, "Parse do cdigo falhou")
                 return
             
-            # ================== ETAPA 2: COMPILAÇÍO (25%) ==================
-            self.gerenciador.atualizar_progresso(proposta_id, 25, "compilando", "Compilando código...")
+            # ================== ETAPA 2: COMPILAO (25%) ==================
+            self.gerenciador.atualizar_progresso(proposta_id, 25, "compilando", "Compilando cdigo...")
             time.sleep(0.5)
             
             if not self._validar_compilacao(codigo):
                 self.gerenciador.atualizar_progresso(proposta_id, 0, "erro_compilacao", "Erro ao compilar")
-                self.logger.error("âŒ Compilação falhou para %s", proposta_id)
-                self.gerenciador.registrar_resultado_testes(proposta_id, False, "Compilação do código falhou")
+                self.logger.error("[ERRO] Compilao falhou para %s", proposta_id)
+                self.gerenciador.registrar_resultado_testes(proposta_id, False, "Compilao do cdigo falhou")
                 return
             
-            # ================== ETAPA 3: TESTES UNITÍRIOS (50%) ==================
+            # ================== ETAPA 3: TESTES UNITRIOS (50%) ==================
             self.gerenciador.atualizar_progresso(proposta_id, 50, "testes_unitarios", "Executando testes...")
             time.sleep(0.5)
             
-            # (Você pode adicionar lógica de testes reais aqui)
+            # (você pode adicionar lógica de testes reais aqui)
             testes_ok = True
             
             # ================== ETAPA 4: SANDBOX (75%) ==================
             self.gerenciador.atualizar_progresso(proposta_id, 75, "sandbox_tests", "Testando em sandbox...")
             time.sleep(0.5)
             
-            # (Você pode adicionar sandbox real aqui)
+            # (você pode adicionar sandbox real aqui)
             sandbox_ok = True
             
             # ================== ETAPA 5: EMPACOTAMENTO (100%) ==================
@@ -152,20 +152,20 @@ class ConstrutorFerramentasIncremental:
             
             # Registrar sucesso
             self.gerenciador.marcar_pronto_testes(proposta_id)
-            self.gerenciador.registrar_resultado_testes(proposta_id, True, "âœ… Todas as etapas concluídas com sucesso")
+            self.gerenciador.registrar_resultado_testes(proposta_id, True, "[OK] Todas as etapas concludas com sucesso")
             
-            self.logger.info("âœ… Construção concluída: %s", proposta_id)
+            self.logger.info("[OK] Construo concluda: %s", proposta_id)
             
         except Exception as e:
-            self.logger.exception("Erro durante construção: %s", e)
-            self.gerenciador.registrar_resultado_testes(proposta_id, False, f"âŒ Erro: {str(e)}")
+            self.logger.exception("Erro durante construo: %s", e)
+            self.gerenciador.registrar_resultado_testes(proposta_id, False, f"[ERRO] Erro: {str(e)}")
         
         finally:
             with self._lock:
                 self._threads_construcao.pop(proposta_id, None)
 
     def _validar_parse(self, codigo: str) -> bool:
-        """Valida se código pode ser parseado como AST."""
+        """válida se cdigo pode ser parseado como AST."""
         try:
             ast.parse(codigo)
             return True
@@ -175,7 +175,7 @@ class ConstrutorFerramentasIncremental:
             return False
 
     def _validar_compilacao(self, codigo: str) -> bool:
-        """Valida se código compila."""
+        """válida se cdigo compila."""
         try:
             compile(codigo, "<modulo>", "exec")
             return True
@@ -191,24 +191,24 @@ class ConstrutorFerramentasIncremental:
         return proposta.get("progresso_json", {})
 
     def parar_construcao(self, proposta_id: str) -> Tuple[bool, str]:
-        """Para construção em andamento."""
+        """Para construo em andamento."""
         with self._lock:
             if proposta_id not in self._threads_construcao:
-                return False, "Nenhuma construção em andamento"
+                return False, "Nenhuma construo em andamento"
         
-        # Na prática, Python não tem forma de matar thread
+        # Na prtica, Python no tem forma de matar thread
         # Apenas marcamos como cancelado
-        self.logger.warning("Construção %s cancelada pelo usuário", proposta_id)
-        return True, "Construção cancelada"
+        self.logger.warning("Construo %s cancelada pelo usurio", proposta_id)
+        return True, "Construo cancelada"
 
     def shutdown(self) -> None:
         """Desliga construtor."""
-        self.logger.info("ðŸ›‘ Desligando ConstrutorIncremental...")
+        self.logger.info(" Desligando ConstrutorIncremental...")
         # Aguarda threads finalizarem
         with self._lock:
             for thread in self._threads_construcao.values():
                 if thread.is_alive():
                     thread.join(timeout=5)
-        self.logger.info("âœ… ConstrutorIncremental desligado")
+        self.logger.info("[OK] ConstrutorIncremental desligado")
 
 

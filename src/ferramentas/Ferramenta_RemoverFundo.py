@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS, USAR_GPU
 
 from rembg import remove, new_session
@@ -24,22 +24,22 @@ class FerramentaRemoverFundo:
         self.carregar_modelo()
     
     def carregar_modelo(self):
-        """Carrega modelo U²-Net para remoção de fundo"""
+        """Carrega modelo U-Net para remoo de fundo"""
         try:
-            # Modelo 'u2net' é o padrão (1.5GB VRAM)
+            # Modelo 'u2net'  o padrão (1.5GB VRAM)
             self.session = new_session(
                 model_name="u2net",
                 providers=['CUDAExecutionProvider'] if self.usar_gpu else ['CPUExecutionProvider']
             )
-            print(f"âœ… Modelo rembg carregado (GPU: {self.usar_gpu})")
+            print(f"[OK] Modelo rembg carregado (GPU: {self.usar_gpu})")
         except Exception as e:
-            print(f"âŒ Erro ao carregar rembg: {e}")
+            print(f"[ERRO] Erro ao carregar rembg: {e}")
             self.session = None
     
     def processar(self, caminho_imagem, saida_transparente=True, cor_fundo=None):
         """Remove fundo da imagem"""
         if self.session is None:
-            return None, "Modelo não carregado"
+            return None, "Modelo no carregado"
         
         try:
             # Abre imagem
@@ -77,7 +77,7 @@ class FerramentaRemoverFundo:
             return None, str(e)
     
     def processar_lote(self, pasta_entrada, pasta_saida, transparente=True):
-        """Processa várias imagens"""
+        """Processa vrias imagens"""
         resultados = []
         imagens = list(Path(pasta_entrada).glob("*.jpg")) + \
                   list(Path(pasta_entrada).glob("*.png"))
@@ -90,15 +90,15 @@ class FerramentaRemoverFundo:
                 ext = "png" if transparente else "jpg"
                 nome_saida = f"sem_fundo_{img_path.stem}.{ext}"
                 img_saida.save(Path(pasta_saida) / nome_saida)
-                resultados.append(f"âœ… {img_path.name} -> {nome_saida}")
+                resultados.append(f"[OK] {img_path.name} -> {nome_saida}")
             else:
-                resultados.append(f"âŒ {img_path.name}: {msg}")
+                resultados.append(f"[ERRO] {img_path.name}: {msg}")
         
         return resultados
 
 class InterfaceRemoverFundo(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸ–¼ï¸ Remover Fundo de Imagens", "700x650")
+        super().__init__(" Remover Fundo de Imagens", "700x650")
         self.ferramenta = FerramentaRemoverFundo(usar_gpu=USAR_GPU)
         self.caminho_imagem = None
         self.imagem_processada = None
@@ -107,17 +107,17 @@ class InterfaceRemoverFundo(InterfaceBase):
     def setup_interface(self):
         titulo = ctk.CTkLabel(
             self.frame,
-            text="âœ‚ï¸ Remover Fundo de Imagens",
+            text=" Remover Fundo de Imagens",
             font=("Arial", 22, "bold")
         )
         titulo.pack(pady=10)
         
         # Status GPU
-        status = "âœ… GPU Ativa (GTX 1070 - 1.5GB VRAM)" if self.ferramenta.usar_gpu else "âš ï¸ CPU"
+        status = "[OK] GPU Ativa (GTX 1070 - 1.5GB VRAM)" if self.ferramenta.usar_gpu else "[AVISO] CPU"
         self.lbl_gpu = ctk.CTkLabel(self.frame, text=status)
         self.lbl_gpu.pack(pady=5)
         
-        # Opções
+        # Opes
         self.frame_opcoes = ctk.CTkFrame(self.frame)
         self.frame_opcoes.pack(pady=10, padx=10, fill="x")
         
@@ -141,10 +141,10 @@ class InterfaceRemoverFundo(InterfaceBase):
         
         self.cor_fundo = (255, 255, 255)  # branco
         
-        # Botão selecionar
+        # Boto selecionar
         self.btn_imagem = ctk.CTkButton(
             self.frame,
-            text="ðŸ“ Selecionar Imagem",
+            text=" Selecionar Imagem",
             command=self.selecionar_imagem,
             width=200,
             height=40
@@ -175,13 +175,13 @@ class InterfaceRemoverFundo(InterfaceBase):
         self.lbl_processado = ctk.CTkLabel(self.frame_processado, text="Processe uma imagem")
         self.lbl_processado.pack(expand=True)
         
-        # Botões
+        # Botes
         self.frame_botoes = ctk.CTkFrame(self.frame)
         self.frame_botoes.pack(pady=10)
         
         self.btn_processar = ctk.CTkButton(
             self.frame_botoes,
-            text="âœ‚ï¸ Remover Fundo",
+            text=" Remover Fundo",
             command=self.processar,
             width=150,
             height=40,
@@ -192,7 +192,7 @@ class InterfaceRemoverFundo(InterfaceBase):
         
         self.btn_salvar = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ’¾ Salvar",
+            text=" Salvar",
             command=self.salvar_imagem,
             width=100,
             height=40,
@@ -235,7 +235,7 @@ class InterfaceRemoverFundo(InterfaceBase):
         if not self.caminho_imagem:
             return
         
-        self.btn_processar.configure(text="â³ Processando...", state="disabled")
+        self.btn_processar.configure(text=" Processando...", state="disabled")
         self.frame.update()
         
         transparente = self.transparente_var.get()
@@ -262,7 +262,7 @@ class InterfaceRemoverFundo(InterfaceBase):
         else:
             self.utils.mostrar_erro("Erro", msg)
         
-        self.btn_processar.configure(text="âœ‚ï¸ Remover Fundo", state="normal")
+        self.btn_processar.configure(text=" Remover Fundo", state="normal")
     
     def salvar_imagem(self):
         if self.imagem_processada:

@@ -1,4 +1,4 @@
-# Ferramenta: Detecção de Objetos em Tempo Real
+# Ferramenta: Deteco de Objetos em Tempo Real
 # Usa YOLOv5 (tiny/nano) - 1-2GB VRAM
 
 import sys
@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import USAR_GPU
 
 import cv2
@@ -40,12 +40,12 @@ class FerramentaDetectarObjetos:
                 pretrained=True,
                 device=self.device
             )
-            self.model.conf = 0.5  # confiança mínima
+            self.model.conf = 0.5  # confiana mnima
             self.model.iou = 0.45  # NMS IoU threshold
             self.nomes_classes = self.model.names
-            print(f"âœ… YOLO carregado na {self.device}")
+            print(f"[OK] YOLO carregado na {self.device}")
         except Exception as e:
-            print(f"âŒ Erro YOLO: {e}")
+            print(f"[ERRO] Erro YOLO: {e}")
             self.model = None
     
     def iniciar_webcam(self, indice=0):
@@ -90,7 +90,7 @@ class FerramentaDetectarObjetos:
         return frame, results
     
     def processar_imagem(self, caminho_imagem):
-        """Processa imagem estática"""
+        """Processa imagem esttica"""
         frame = cv2.imread(caminho_imagem)
         if frame is None:
             return None, None
@@ -132,7 +132,7 @@ class FerramentaDetectarObjetos:
 
 class InterfaceDetectarObjetos(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸ” Detecção de Objetos", "900x700")
+        super().__init__(" Deteco de Objetos", "900x700")
         self.ferramenta = FerramentaDetectarObjetos(usar_gpu=USAR_GPU)
         self.thread_webcam = None
         self.setup_interface()
@@ -140,17 +140,17 @@ class InterfaceDetectarObjetos(InterfaceBase):
     def setup_interface(self):
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸ” Detecção de Objetos em Tempo Real (YOLO)",
+            text=" Deteco de Objetos em Tempo Real (YOLO)",
             font=("Arial", 24, "bold")
         )
         titulo.pack(pady=10)
         
         # Status GPU
-        status = "âœ… GPU Ativa (YOLO)" if self.ferramenta.usar_gpu else "âš ï¸ CPU (lento)"
+        status = "[OK] GPU Ativa (YOLO)" if self.ferramenta.usar_gpu else "[AVISO] CPU (lento)"
         self.lbl_gpu = ctk.CTkLabel(self.frame, text=status)
         self.lbl_gpu.pack(pady=5)
         
-        # Frame de vídeo
+        # Frame de vdeo
         self.frame_video = ctk.CTkFrame(self.frame, width=800, height=600)
         self.frame_video.pack(pady=10)
         
@@ -163,7 +163,7 @@ class InterfaceDetectarObjetos(InterfaceBase):
         
         self.btn_iniciar = ctk.CTkButton(
             self.frame_controles,
-            text="â–¶ï¸ Iniciar Webcam",
+            text=" Iniciar Webcam",
             command=self.iniciar_webcam,
             width=120,
             height=35,
@@ -173,7 +173,7 @@ class InterfaceDetectarObjetos(InterfaceBase):
         
         self.btn_parar = ctk.CTkButton(
             self.frame_controles,
-            text="â¹ï¸ Parar",
+            text=" Parar",
             command=self.parar_webcam,
             width=80,
             height=35,
@@ -184,7 +184,7 @@ class InterfaceDetectarObjetos(InterfaceBase):
         
         self.btn_imagem = ctk.CTkButton(
             self.frame_controles,
-            text="ðŸ–¼ï¸ Processar Imagem",
+            text=" Processar Imagem",
             command=self.processar_imagem,
             width=120,
             height=35
@@ -193,7 +193,7 @@ class InterfaceDetectarObjetos(InterfaceBase):
         
         self.btn_foto = ctk.CTkButton(
             self.frame_controles,
-            text="ðŸ“¸ Foto",
+            text=" Foto",
             command=self.tirar_foto,
             width=80,
             height=35,
@@ -201,11 +201,11 @@ class InterfaceDetectarObjetos(InterfaceBase):
         )
         self.btn_foto.pack(side="left", padx=5)
         
-        # Confiança
+        # Confiana
         self.frame_conf = ctk.CTkFrame(self.frame)
         self.frame_conf.pack(pady=5, padx=10, fill="x")
         
-        self.lbl_conf = ctk.CTkLabel(self.frame_conf, text="Confiança mínima:")
+        self.lbl_conf = ctk.CTkLabel(self.frame_conf, text="Confiana mnima:")
         self.lbl_conf.pack(side="left", padx=5)
         
         self.conf_slider = ctk.CTkSlider(
@@ -227,7 +227,7 @@ class InterfaceDetectarObjetos(InterfaceBase):
         
         self.lbl_classes = ctk.CTkLabel(
             self.frame_classes,
-            text="Classes detectadas aparecerão aqui",
+            text="Classes detectadas aparecero aqui",
             wraplength=500
         )
         self.lbl_classes.pack()

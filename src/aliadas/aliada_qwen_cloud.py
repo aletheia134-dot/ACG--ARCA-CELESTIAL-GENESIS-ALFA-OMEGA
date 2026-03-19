@@ -1,5 +1,5 @@
-# src/aliadas/aliada_qwen_cloud.py
 from __future__ import annotations
+# src/aliadas/aliada_qwen_cloud.py
 import os
 import time
 import logging
@@ -23,12 +23,12 @@ MAX_BACKOFF = 10.0
 
 class AliadaQwenCloud:
     """
-    Cliente robusto para o serviço Qwen Cloud.
+    Cliente robusto para o servio Qwen Cloud.
 
     - Usa requests.Session para pooling de conexões.
-    - Retry exponencial com jitter para timeouts/erros transitórios.
-    - Extração de campos comuns de resposta (output, result, text, generated_text, choices, data).
-    - API pública:
+    - Retry exponencial com jitter para timeouts/erros transitrios.
+    - Extrao de campos comuns de resposta (output, result, text, generated_text, choices, data).
+    - API pblica:
       - processar(comando, contexto) -> (ok: bool, texto_or_none: Optional[str], status: str)
       - health_check() -> bool
       - shutdown()
@@ -49,7 +49,7 @@ class AliadaQwenCloud:
 
         if not self.endpoint:
             raise LLMUnavailableError(
-                "AliadaQwenCloud: endpoint não configurado (cfg['endpoint'] or QWEN_CLOUD_API_URL)"
+                "AliadaQwenCloud: endpoint no configurado (cfg['endpoint'] or QWEN_CLOUD_API_URL)"
             )
 
         self.session: Session = requests.Session()
@@ -64,7 +64,7 @@ class AliadaQwenCloud:
 
     def _extract_text(self, data: Any) -> Optional[str]:
         """
-        Tenta extrair texto útil da resposta JSON.
+        Tenta extrair texto til da resposta JSON.
         Procura por chaves comuns: output, result, text, generated_text, prediction, choices, data.
         """
         if data is None:
@@ -102,7 +102,7 @@ class AliadaQwenCloud:
     def _call_api(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """
         Faz POST para o endpoint com retries/backoff.
-        Lança LLMTimeoutError ou LLMExecutionError nas condições finais de falha.
+        Lana LLMTimeoutError ou LLMExecutionError nas condies finais de falha.
         """
         headers = self._build_headers()
         attempt = 0
@@ -141,10 +141,10 @@ class AliadaQwenCloud:
     def processar(self, comando: str, contexto: Optional[Dict[str, Any]] = None) -> Tuple[bool, Optional[str], str]:
         """
         Interface principal.
-        Retorna (ok, texto|None, status) onde status é "ok" ou "timeout" / "unavailable" / "error".
+        Retorna (ok, texto|None, status) onde status  "ok" ou "timeout" / "unavailable" / "error".
         """
         if self._closed:
-            logger.error("AliadaQwenCloud chamada após shutdown")
+            logger.error("AliadaQwenCloud chamada aps shutdown")
             return False, None, "error:shutdown"
 
         payload: Dict[str, Any] = {"input": comando}

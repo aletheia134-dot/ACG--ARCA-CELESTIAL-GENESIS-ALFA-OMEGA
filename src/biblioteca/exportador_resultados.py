@@ -1,16 +1,16 @@
+from __future__ import annotations
 # src/biblioteca/analisador_contexto.py
 # -*- coding: utf-8 -*-
 """
 ARCA CELESTIAL GENESIS - ANALISADOR CONTEXTO BIBLIOTECA TEOLÓGICA
-Componente para interpretação da intenção da consulta do usuário.
-Implementação reforçada e determinística (sem placebos):
- - normalização robusta de texto
- - detecção de tipo de busca via padrões e heurísticas (referência, explicação, comparação, história, doutrina)
- - extração de palavras-chave com ranking por frequência + preservação de ordem
- - detecção simples de referências bíblicas (capítulo:versículo e ranges)
- - recomendações de fonte e número de resultados
+Componente para interpretao da intenção da consulta do usurio.
+Implementao reforada e determinstica (sem placebos):
+ - normalizao robusta de texto
+ - deteco de tipo de busca via padrões e heursticas (referncia, explicao, comparao, história, doutrina)
+ - extrao de palavras-chave com ranking por frequncia + preservao de ordem
+ - deteco simples de referncias bblicas (captulo:versculo e ranges)
+ - recomendaes de fonte e número de resultados
 """
-from __future__ import annotations
 import logging
 import re
 import unicodedata
@@ -22,28 +22,28 @@ logger = logging.getLogger("AnalisadorContexto")
 
 
 def _normalize_text(text: Optional[str]) -> str:
-    """Normaliza texto (casefold + remoção de acentos) para comparações."""
+    """Normaliza texto (casefold + remoo de acentos) para comparaes."""
     if not text:
         return ""
-    # NFKD + remoção de diacríticos
+    # NFKD + remoo de diacrticos
     nfkd = unicodedata.normalize("NFKD", str(text))
     without_accents = "".join(c for c in nfkd if not unicodedata.combining(c))
     return without_accents.casefold().strip()
 
 
 # Precompile common regexes once
-# Detecta referências como "João 3:16", "1 João 3:16-18", "1Co 13:4-7" (aceita letras, pontos e números iniciais)
+# Detecta referncias como "Joo 3:16", "1 Joo 3:16-18", "1Co 13:4-7" (aceita letras, pontos e números iniciais)
 _RE_REFERENCIA = re.compile(
-    r"\b(?:[1-3]\s*)?[A-Za-zÀ-Í¿\.]{2,}\s+\d+:\d+(?:-\d+)?\b", flags=re.IGNORECASE
+    r"\b(?:[1-3]\\s*)?[A-Za-z-\\.]{2,}\\s+\\d+:\\d+(?:-\\d+)?\b", flags=re.IGNORECASE
 )
 
-# Heurísticas para intenção
+# Heursticas para intenção
 _PADROES_TIPO_BUSCA = {
     "referencia": _RE_REFERENCIA,
-    "explicacao": re.compile(r"\b(explique(?:-me)?|o que (?:é|e|significa)|significado|definiç(?:a|ao)|definir)\b", flags=re.IGNORECASE),
-    "comparacao": re.compile(r"\b(compare(?:r)?|diferen(c|ç)a|versus|vs\.?)\b", flags=re.IGNORECASE),
-    "historia": re.compile(r"\b(hist[oó]ria|narr(a|ã)o|acontecimento|evento|quando aconteceu)\b", flags=re.IGNORECASE),
-    "doutrina": re.compile(r"\b(doutrina|cren[çc]a|cr[eê]ncia|ensinamento|o que a b[ií]blia|o que a bíblia)\b", flags=re.IGNORECASE),
+    "explicacao": re.compile(r"\b(explique(?:-me)?|o que (?:|e|significa)|significado|defini(?:a|ação)|definir)\b", flags=re.IGNORECASE),
+    "comparacao": re.compile(r"\b(compare(?:r)?|diferen(c|)a|versus|vs\\.?)\b", flags=re.IGNORECASE),
+    "historia": re.compile(r"\b(hist[o]ria|narr(a|)o|acontecimento|evento|quando aconteceu)\b", flags=re.IGNORECASE),
+    "doutrina": re.compile(r"\b(doutrina|cren[c]a|cr[e]ncia|ensinamento|o que a b[i]blia|o que a bblia)\b", flags=re.IGNORECASE),
 }
 
 # Fontes conhecidas (normalizadas)
@@ -57,16 +57,16 @@ _FONTES_CONHECIDAS_TERMS = {
 
 _DEFAULT_STOPWORDS = {
     "o", "a", "os", "as", "um", "uma", "uns", "umas", "e", "ou", "mas", "de", "da", "do", "das", "dos",
-    "em", "no", "na", "nos", "nas", "para", "com", "por", "ao", "aos", "se", "nao", "não", "sim", "que",
+    "em", "no", "na", "nos", "nas", "para", "com", "por", "ao", "aos", "se", "nao", "no", "sim", "que",
     "este", "esta", "esse", "essa", "isto", "aquilo", "aquele", "como", "qual", "quais", "quem", "me", "minha",
-    "meu", "seu", "sua", "por que", "porque", "porquê"
+    "meu", "seu", "sua", "por que", "porque", "porqu"
 }
 
 
 def _extract_reference(text: str) -> Optional[str]:
     """
-    Tenta extrair uma referência bíblica simples da string.
-    Retorna a primeira ocorrência ou None.
+    Tenta extrair uma referncia bblica simples da string.
+    Retorna a primeira ocorrncia ou None.
     """
     if not text:
         return None
@@ -78,15 +78,15 @@ def _extract_reference(text: str) -> Optional[str]:
 
 def _tokenize_and_rank(text: str, top_n: int, stopwords: Optional[set] = None) -> List[str]:
     """
-    Tokeniza o texto, remove stopwords, computa frequência e retorna top_n tokens.
-    Preserva ordem relativa entre tokens com mesma frequência pela primeira ocorrência.
+    Tokeniza o texto, remove stopwords, computa frequncia e retorna top_n tokens.
+    Preserva ordem relativa entre tokens com mesma frequncia pela primeira ocorrncia.
     """
     if not text:
         return []
     stop = stopwords or _DEFAULT_STOPWORDS
     # normalize, remove non-word chars (preserve unicode letters and digits)
     norm = _normalize_text(text)
-    cleaned = re.sub(r"[^\w\s]", " ", norm, flags=re.UNICODE)
+    cleaned = re.sub(r"[^\\w\\s]", " ", norm, flags=re.UNICODE)
     tokens = [t for t in cleaned.split() if len(t) > 2 and not t.isdigit()]
     if not tokens:
         return []
@@ -115,7 +115,7 @@ def _tokenize_and_rank(text: str, top_n: int, stopwords: Optional[set] = None) -
 
 class AnalisadorContexto:
     """
-    Analisa a intenção e o contexto da pergunta do usuário.
+    Analisa a intenção e o contexto da pergunta do usurio.
     Retorna:
       {
         "tipo_busca": str,
@@ -135,11 +135,11 @@ class AnalisadorContexto:
         extra = set(w.strip().casefold() for w in (stopwords_extra or []))
         self.stopwords = set(_DEFAULT_STOPWORDS) | extra
         self.padroes_tipo_busca = _PADROES_TIPO_BUSCA
-        logger.info("ðŸ§  Analisador de Contexto inicializado (top_n_keywords=%d).", self.top_n_keywords)
+        logger.info(" Analisador de Contexto inicializado (top_n_keywords=%d).", self.top_n_keywords)
 
     def analisar(self, pergunta: Optional[str]) -> Dict[str, Any]:
         """
-        Analisa a pergunta e retorna dicionário com intenção e metadados.
+        Analisa a pergunta e retorna dicionrio com intenção e metadados.
         """
         timestamp = datetime.utcnow().isoformat() + "Z"
         if not pergunta or not pergunta.strip():
@@ -157,7 +157,7 @@ class AnalisadorContexto:
         texto_original = pergunta.strip()
         texto_normalizado = _normalize_text(texto_original)
 
-        # detectar referência bíblica
+        # detectar referncia bblica
         referencia = _extract_reference(texto_original)
 
         # 1) Detectar tipo de busca (prioridade: referencia > padroes definidos > heuristicas)
@@ -165,13 +165,13 @@ class AnalisadorContexto:
         if referencia:
             tipo_busca = "referencia"
         else:
-            for tipo, padrao in self.padroes_tipo_busca.items():
+            for tipo, padrão in self.padroes_tipo_busca.items():
                 try:
-                    if padrao.search(texto_original):
+                    if padrão.search(texto_original):
                         tipo_busca = tipo
                         break
                 except Exception:
-                    logger.debug("Erro ao aplicar padrao %s", tipo, exc_info=True)
+                    logger.debug("Erro ao aplicar padrão %s", tipo, exc_info=True)
 
         # 2) Extrair palavras-chave e rankear
         palavras_chave = _tokenize_and_rank(texto_original, self.top_n_keywords, stopwords=self.stopwords)
@@ -206,11 +206,11 @@ class AnalisadorContexto:
             "referencia_encontrada": referencia
         }
 
-        logger.debug("Análise de contexto concluída: %s", analise)
+        logger.debug("Anlise de contexto concluda: %s", analise)
         return analise
 
     def _extrair_palavras_chave_simples(self, texto: str) -> List[str]:
         """
-        Compatibilidade com API anterior: expõe método para extrair palavras chave sem ranking avançado.
+        Compatibilidade com API anterior: expe método para extrair palavras chave sem ranking avanado.
         """
         return _tokenize_and_rank(texto, self.top_n_keywords, stopwords=self.stopwords)

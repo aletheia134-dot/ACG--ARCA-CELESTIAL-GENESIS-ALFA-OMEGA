@@ -13,7 +13,7 @@ logger = logging.getLogger("CamaraDeliberativa")
 
 class ScannerSistema:
     """
-    Implementação base que fornece operações reais de coleta e relatório.
+    Implementao base que fornece operações reais de coleta e relatrio.
     """
     def __init__(
         self,
@@ -44,7 +44,7 @@ class ScannerSistema:
                 limite_historico = 50
         self.limite_historico = limite_historico
 
-        self.logger.info("ðŸ“‹ Scanner Sistema (Relatório) inicializado (limite=%s)", self.limite_historico)
+        self.logger.info(" Scanner Sistema (Relatrio) inicializado (limite=%s)", self.limite_historico)
 
     def gerar_relatorio_manual(self, nome_alma: Optional[str] = None) -> Dict[str, Any]:
         with self._lock:
@@ -71,10 +71,10 @@ class ScannerSistema:
                     self.coracao.ui_queue.put_nowait({
                         "tipo_resp": "RELATORIO_EVENTOS",
                         "relatorio": relatorio,
-                        "mensagem": f"ðŸ“‹ Relatório gerado para {nome_alma or 'todas as almas'}."
+                        "mensagem": f" Relatrio gerado para {nome_alma or 'todas as almas'}."
                     })
                 except Exception:
-                    self.logger.exception("Falha ao enviar relatório para UI queue")
+                    self.logger.exception("Falha ao enviar relatrio para UI queue")
 
             return relatorio
 
@@ -100,7 +100,7 @@ class ScannerSistema:
         try:
             registros = self.sistema_julgamento.obter_historico_alma_julgamentos(nome_alma)
         except Exception:
-            self.logger.debug("Sistema de julgamento não tem método de histórico ou falhou")
+            self.logger.debug("Sistema de julgamento no tem método de histórico ou falhou")
             return []
         if self.sistema_precedentes:
             for reg in registros:
@@ -116,7 +116,7 @@ class ScannerSistema:
         try:
             registros = self.scr.obter_historico_correcao(nome_alma)
         except Exception:
-            self.logger.debug("SCR não tem método de histórico ou falhou")
+            self.logger.debug("SCR no tem método de histórico ou falhou")
             return []
         if self.sistema_precedentes:
             for reg in registros:
@@ -141,12 +141,12 @@ class ScannerSistema:
             return self.relatorios_historicos[-1] if self.relatorios_historicos else None
 
     def shutdown(self) -> None:
-        self.logger.info("ðŸ“‹ Scanner Sistema (Relatório) desligado")
+        self.logger.info(" Scanner Sistema (Relatrio) desligado")
 
 
 class CamaraDeliberativa(ScannerSistema):
     """
-    Implementação real de CamaraDeliberativa, compatível com o restante do sistema.
+    Implementao real de CamaraDeliberativa, compatvel com o restante do sistema.
     """
     def __init__(
         self,
@@ -213,7 +213,7 @@ class CamaraDeliberativa(ScannerSistema):
         self.logger.info("Periodic scanner running (interval %s s)", self.scan_interval_sec)
         while not self._periodic_stop.wait(self.scan_interval_sec):
             try:
-                self.logger.debug("Periodic scan: gerando relatório automático")
+                self.logger.debug("Periodic scan: gerando relatrio automático")
                 self.gerar_relatorio_manual(None)
             except Exception:
                 self.logger.exception("Erro durante periodic scan")

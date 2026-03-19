@@ -1,4 +1,4 @@
-# Ferramenta: Converter Formatos de Íudio
+# Ferramenta: Converter Formatos de udio
 # Usa pydub (leve, CPU)
 
 import sys
@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS
 
 from pydub import AudioSegment
@@ -30,7 +30,7 @@ class FerramentaConverterAudio:
         }
     
     def carregar_audio(self, caminho):
-        """Carrega arquivo de áudio"""
+        """Carrega arquivo de udio"""
         try:
             self.audio = AudioSegment.from_file(caminho)
             self.caminho_original = caminho
@@ -44,9 +44,9 @@ class FerramentaConverterAudio:
             return False, str(e)
     
     def converter(self, formato_destino, bitrate="192k", pasta_saida=None):
-        """Converte áudio para outro formato"""
+        """Converte udio para outro formato"""
         if self.audio is None:
-            return None, "Nenhum áudio carregado"
+            return None, "Nenhum udio carregado"
         
         try:
             if not pasta_saida:
@@ -88,7 +88,7 @@ class FerramentaConverterAudio:
 
 class InterfaceConverterAudio(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸ”„ Conversor de Íudio", "700x600")
+        super().__init__(" Conversor de udio", "700x600")
         self.ferramenta = FerramentaConverterAudio()
         self.caminho_audio = None
         self.info_original = None
@@ -97,15 +97,15 @@ class InterfaceConverterAudio(InterfaceBase):
     def setup_interface(self):
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸ”„ Converter Formatos de Íudio",
+            text=" Converter Formatos de udio",
             font=("Arial", 22, "bold")
         )
         titulo.pack(pady=10)
         
-        # Seleção
+        # Seleo
         self.btn_audio = ctk.CTkButton(
             self.frame,
-            text="ðŸ“ Selecionar Íudio",
+            text=" Selecionar udio",
             command=self.selecionar_audio,
             width=200,
             height=40
@@ -118,14 +118,14 @@ class InterfaceConverterAudio(InterfaceBase):
         )
         self.lbl_arquivo.pack(pady=5)
         
-        # Info do áudio
+        # Info do udio
         self.frame_info = ctk.CTkFrame(self.frame)
         self.frame_info.pack(pady=10, padx=10, fill="x")
         
         self.lbl_info = ctk.CTkLabel(self.frame_info, text="")
         self.lbl_info.pack()
         
-        # Frame conversão
+        # Frame converso
         self.frame_conversao = ctk.CTkFrame(self.frame)
         self.frame_conversao.pack(pady=10, padx=10, fill="x")
         
@@ -240,13 +240,13 @@ class InterfaceConverterAudio(InterfaceBase):
         
         self.velocidade_slider.configure(command=atualizar_velocidade)
         
-        # Botões
+        # Botes
         self.frame_botoes = ctk.CTkFrame(self.frame)
         self.frame_botoes.pack(pady=20)
         
         self.btn_converter = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ”„ Converter",
+            text=" Converter",
             command=self.converter,
             width=150,
             height=40,
@@ -257,8 +257,8 @@ class InterfaceConverterAudio(InterfaceBase):
     
     def selecionar_audio(self):
         caminho = self.utils.selecionar_arquivo(
-            "Selecione um áudio",
-            [("Íudio", "*.mp3 *.wav *.flac *.ogg *.m4a *.aac *.wma")]
+            "Selecione um udio",
+            [("udio", "*.mp3 *.wav *.flac *.ogg *.m4a *.aac *.wma")]
         )
         if caminho:
             self.caminho_audio = caminho
@@ -268,7 +268,7 @@ class InterfaceConverterAudio(InterfaceBase):
             if sucesso:
                 self.info_original = info
                 self.lbl_info.configure(
-                    text=f"Duração: {info['duracao']:.1f}s | "
+                    text=f"Durao: {info['duracao']:.1f}s | "
                          f"Canais: {info['canais']} | "
                          f"Taxa: {info['frame_rate']}Hz"
                 )
@@ -278,7 +278,7 @@ class InterfaceConverterAudio(InterfaceBase):
     
     def converter(self):
         def converter_thread():
-            self.btn_converter.configure(state="disabled", text="â³ Convertendo...")
+            self.btn_converter.configure(state="disabled", text=" Convertendo...")
             
             # Aplica ajustes
             audio_ajustado = self.ferramenta.ajustar(
@@ -300,7 +300,7 @@ class InterfaceConverterAudio(InterfaceBase):
             else:
                 self.utils.mostrar_erro("Erro", msg)
             
-            self.btn_converter.configure(state="normal", text="ðŸ”„ Converter")
+            self.btn_converter.configure(state="normal", text=" Converter")
         
         threading.Thread(target=converter_thread).start()
 

@@ -1,4 +1,4 @@
-# Ferramenta: Extrair Íudio de Vídeo (Vídeo â†’ MP3/WAV)
+# Ferramenta: Extrair udio de Vdeo (Vdeo  MP3/WAV)
 # Usa MoviePy (CPU)
 
 import sys
@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS
 
 from moviepy import VideoFileClip
@@ -22,12 +22,12 @@ class FerramentaExtrairAudio:
     
     def extrair(self, caminho_video, formato="mp3", bitrate="192k", 
                 pasta_saida=None, nome_personalizado=None):
-        """Extrai áudio do vídeo"""
+        """Extrai udio do vdeo"""
         try:
-            # Carrega vídeo
+            # Carrega vdeo
             video = VideoFileClip(caminho_video)
             
-            # Define nome saída
+            # Define nome sada
             if not pasta_saida:
                 pasta_saida = PASTA_SAIDAS
             
@@ -39,7 +39,7 @@ class FerramentaExtrairAudio:
             
             caminho_saida = Path(pasta_saida) / nome_arquivo
             
-            # Extrai áudio
+            # Extrai udio
             if formato == "mp3":
                 video.audio.write_audiofile(
                     str(caminho_saida),
@@ -66,7 +66,7 @@ class FerramentaExtrairAudio:
             return None, str(e)
     
     def get_info_video(self, caminho_video):
-        """Obtém informações do vídeo"""
+        """Obtm informações do vdeo"""
         try:
             video = VideoFileClip(caminho_video)
             info = {
@@ -83,7 +83,7 @@ class FerramentaExtrairAudio:
 
 class InterfaceExtrairAudio(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸŽµ Extrair Íudio de Vídeo", "700x550")
+        super().__init__(" Extrair udio de Vdeo", "700x550")
         self.ferramenta = FerramentaExtrairAudio()
         self.caminho_video = None
         self.setup_interface()
@@ -91,15 +91,15 @@ class InterfaceExtrairAudio(InterfaceBase):
     def setup_interface(self):
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸŽ¬ Extrair Íudio de Vídeo",
+            text=" Extrair udio de Vdeo",
             font=("Arial", 24, "bold")
         )
         titulo.pack(pady=10)
         
-        # Seleção
+        # Seleo
         self.btn_video = ctk.CTkButton(
             self.frame,
-            text="ðŸ“ Selecionar Vídeo",
+            text=" Selecionar Vdeo",
             command=self.selecionar_video,
             width=200,
             height=40
@@ -108,11 +108,11 @@ class InterfaceExtrairAudio(InterfaceBase):
         
         self.lbl_video = ctk.CTkLabel(
             self.frame,
-            text="Nenhum vídeo selecionado"
+            text="Nenhum vdeo selecionado"
         )
         self.lbl_video.pack(pady=5)
         
-        # Info vídeo
+        # Info vdeo
         self.frame_info = ctk.CTkFrame(self.frame)
         self.frame_info.pack(pady=10, padx=10, fill="x")
         
@@ -123,7 +123,7 @@ class InterfaceExtrairAudio(InterfaceBase):
         )
         self.lbl_info.pack(pady=5)
         
-        # Opções
+        # Opes
         self.frame_opcoes = ctk.CTkFrame(self.frame)
         self.frame_opcoes.pack(pady=10, padx=10, fill="x")
         
@@ -182,7 +182,7 @@ class InterfaceExtrairAudio(InterfaceBase):
         )
         self.nome_entry.pack(side="left", padx=5)
         
-        # Pasta saída
+        # Pasta sada
         self.frame_pasta = ctk.CTkFrame(self.frame_opcoes)
         self.frame_pasta.pack(pady=5, fill="x")
         
@@ -199,16 +199,16 @@ class InterfaceExtrairAudio(InterfaceBase):
         
         self.btn_pasta = ctk.CTkButton(
             self.frame_pasta,
-            text="ðŸ“",
+            text="",
             command=self.selecionar_pasta,
             width=30
         )
         self.btn_pasta.pack(side="left", padx=5)
         
-        # Botão extrair
+        # Boto extrair
         self.btn_extrair = ctk.CTkButton(
             self.frame,
-            text="ðŸŽµ Extrair Íudio",
+            text=" Extrair udio",
             command=self.extrair,
             width=200,
             height=45,
@@ -224,32 +224,32 @@ class InterfaceExtrairAudio(InterfaceBase):
     
     def selecionar_video(self):
         caminho = self.utils.selecionar_arquivo(
-            "Selecione um vídeo",
-            [("Vídeo", "*.mp4 *.avi *.mkv *.mov *.wmv *.flv")]
+            "Selecione um vdeo",
+            [("Vdeo", "*.mp4 *.avi *.mkv *.mov *.wmv *.flv")]
         )
         if caminho:
             self.caminho_video = caminho
-            self.lbl_video.configure(text=f"Vídeo: {Path(caminho).name}")
+            self.lbl_video.configure(text=f"Vdeo: {Path(caminho).name}")
             
             info = self.ferramenta.get_info_video(caminho)
             if info:
                 self.lbl_info.configure(
-                    text=f"Duração: {info['duracao']:.1f}s\n"
-                         f"Resolução: {info['largura']}x{info['altura']}\n"
-                         f"Íudio: {'âœ… Presente' if info['audio'] else 'âŒ Ausente'}"
+                    text=f"Durao: {info['duracao']:.1f}s\n"
+                         f"Resoluo: {info['largura']}x{info['altura']}\n"
+                         f"udio: {'[OK] Presente' if info['audio'] else '[ERRO] Ausente'}"
                 )
                 self.btn_extrair.configure(
                     state="normal" if info['audio'] else "disabled"
                 )
     
     def selecionar_pasta(self):
-        pasta = self.utils.selecionar_pasta("Selecione a pasta de saída")
+        pasta = self.utils.selecionar_pasta("Selecione a pasta de sada")
         if pasta:
             self.pasta_var.set(pasta)
     
     def extrair(self):
         def extrair_thread():
-            self.btn_extrair.configure(state="disabled", text="â³ Extraindo...")
+            self.btn_extrair.configure(state="disabled", text=" Extraindo...")
             self.progress.set(0.3)
             
             nome = self.nome_entry.get().strip()
@@ -270,7 +270,7 @@ class InterfaceExtrairAudio(InterfaceBase):
                 tamanho_mb = resultado['tamanho'] / (1024 * 1024)
                 self.utils.mostrar_info(
                     "Sucesso",
-                    f"Íudio extraído!\n"
+                    f"udio extrado!\n"
                     f"Arquivo: {Path(resultado['arquivo']).name}\n"
                     f"Tamanho: {tamanho_mb:.1f}MB"
                 )
@@ -278,7 +278,7 @@ class InterfaceExtrairAudio(InterfaceBase):
                 self.utils.mostrar_erro("Erro", msg)
             
             self.progress.set(1)
-            self.btn_extrair.configure(state="normal", text="ðŸŽµ Extrair Íudio")
+            self.btn_extrair.configure(state="normal", text=" Extrair udio")
         
         threading.Thread(target=extrair_thread).start()
 

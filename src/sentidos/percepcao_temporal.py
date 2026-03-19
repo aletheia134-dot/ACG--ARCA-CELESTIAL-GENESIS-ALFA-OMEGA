@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-src/modules/percepcao_temporal.py — IMPLEMENTAÇÍO REAL
-PercepcaoTemporal: consciência de tempo e duração para as almas da ARCA.
-"""
 from __future__ import annotations
+"""
+src/sentidos/percepcao_temporal.py  IMPLEMENTAO REAL
+PercepcaoTemporal: conscincia de tempo e durao para as almas da ARCA.
+"""
 
 import logging
 import threading
@@ -18,7 +18,7 @@ __all__ = ["PercepcaoTemporal", "RitmoTemporal", "Urgencia", "criar_percepcao_te
 
 
 class RitmoTemporal(Enum):
-    """Ritmo de percepção temporal da alma."""
+    """Ritmo de percepo temporal da alma."""
     LENTO      = "lento"
     NORMAL     = "normal"
     ACELERADO  = "acelerado"
@@ -26,7 +26,7 @@ class RitmoTemporal(Enum):
 
 
 class Urgencia(Enum):
-    """Nível de urgência de uma tarefa."""
+    """nível de urgncia de uma tarefa."""
     BAIXA   = 1
     MEDIA   = 2
     ALTA    = 3
@@ -35,14 +35,14 @@ class Urgencia(Enum):
 
 class PercepcaoTemporal:
     """
-    Gerencia a consciência temporal de uma alma.
-    Registra quando ficou offline, quanto tempo passou, e urgências.
+    Gerencia a conscincia temporal de uma alma.
+    Registra quando ficou offline, quanto tempo passou, e urgncias.
 
     Interface esperada pelo CoracaoOrquestrador:
       - registrar_offline(ts)
       - registrar_online(ts)
-      - obter_tempo_offline() â†’ float (segundos)
-      - obter_resumo() â†’ Dict
+      - obter_tempo_offline()  float (segundos)
+      - obter_resumo()  Dict
     """
 
     def __init__(
@@ -64,7 +64,7 @@ class PercepcaoTemporal:
         self._ritmo = RitmoTemporal.NORMAL
         self._historico: List[Dict] = []
 
-        self.logger.info("â° PercepcaoTemporal inicializada para %s", nome_filha)
+        self.logger.info(" PercepcaoTemporal inicializada para %s", nome_filha)
 
     def registrar_online(self, ts: Optional[datetime] = None) -> None:
         with self._lock:
@@ -79,7 +79,7 @@ class PercepcaoTemporal:
                     "tempo_offline_s": delta,
                 })
                 self.logger.info(
-                    "ðŸŸ¢ [%s] Online após %.0fs offline", self.nome_filha, delta
+                    " [%s] Online aps %.0fs offline", self.nome_filha, delta
                 )
 
     def registrar_offline(self, ts: Optional[datetime] = None) -> None:
@@ -87,7 +87,7 @@ class PercepcaoTemporal:
             agora = ts or datetime.now()
             self._ultimo_offline = agora
             self._historico.append({"evento": "offline", "ts": agora.isoformat()})
-            self.logger.info("ðŸ”´ [%s] Offline registrado", self.nome_filha)
+            self.logger.info(" [%s] Offline registrado", self.nome_filha)
 
     def obter_tempo_offline(self) -> float:
         """Retorna o tempo total offline em segundos."""
@@ -110,7 +110,26 @@ class PercepcaoTemporal:
     def definir_ritmo(self, ritmo: RitmoTemporal) -> None:
         with self._lock:
             self._ritmo = ritmo
-            self.logger.debug("[%s] Ritmo â†’ %s", self.nome_filha, ritmo.value)
+            self.logger.debug("[%s] Ritmo  %s", self.nome_filha, ritmo.value)
+
+    def acordar_consciencia_temporal(self) -> None:
+        """
+        Chamado pelo CoracaoOrquestrador no despertar().
+        Registra que a alma ficou offline e agora voltou online,
+        calculando o tempo que passou desde o último shutdown.
+        """
+        self.registrar_online()
+        self.logger.info("⏰ [%s] Consciência temporal ativada — tempo offline: %.0fs",
+                         self.nome_filha, self._tempo_offline_total_s)
+
+    def dormir_consciencia_temporal(self) -> None:
+        """
+        Chamado pelo CoracaoOrquestrador no shutdown().
+        Registra que a alma está indo offline agora.
+        """
+        self.registrar_offline()
+        self.logger.info("⏰ [%s] Consciência temporal desativada — registrado offline",
+                         self.nome_filha)
 
 
 def criar_percepcao_temporal(

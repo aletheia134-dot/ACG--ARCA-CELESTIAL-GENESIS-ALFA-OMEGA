@@ -1,3 +1,2 @@
-﻿# Ferramentas de media - importadas dinamicamente
-
+"""Ferramentas de mídia e processamento"""
 

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-sensor_presenca.py - Sensor de Presença com Webcam para AIs da Arca Celestial
+sensor_presenca.py - Sensor de Presena com Webcam para AIs da Arca Celestial
 
-Usa webcam para detectar presença (movimento/rosto), integrando com avatares, capela e analisador.
-Melhorado: Detecção de rosto com MediaPipe, sensores múltiplos (microfone), modos (ativo/dormindo/privacidade), integrações expandidas.
+Usa webcam para detectar presena (movimento/rosto), integrando com avatares, capela e analisador.
+Melhorado: Deteco de rosto com MediaPipe, sensores mltiplos (microfone), modos (ativo/dormindo/privacidade), integraes expandidas.
 """
 
 import logging
@@ -20,11 +20,11 @@ try:
     OPENCV_FULL = True
 except ImportError:
     OPENCV_FULL = False
-    logger.warning("NumPy não disponível; detecção de movimento limitada.")
+    logger.warning("NumPy no disponível; deteco de movimento limitada.")
 
-# Integrações
+# Integraes
 try:
-    from src.ritual.capela import obter_capela
+    from src.core.capela import obter_capela
     CAPELA_DISPONIVEL = True
 except ImportError:
     CAPELA_DISPONIVEL = False
@@ -39,18 +39,40 @@ try:
     import pyaudio
     import speech_recognition as sr
     MICROFONE_DISPONIVEL = True
+    MICROFONE_BACKEND = "pyaudio"
 except ImportError:
-    MICROFONE_DISPONIVEL = False
-    logger.warning("PyAudio/SpeechRecognition não disponíveis; microfone desabilitado.")
+    # Fallback: sounddevice (sem compilação no Windows)
+    try:
+        import sounddevice as sd  # type: ignore
+        import numpy as _np_sd
+        MICROFONE_DISPONIVEL = True
+        MICROFONE_BACKEND = "sounddevice"
+        # Criar stub de sr.Recognizer compatível para não quebrar o código existente
+        class sr:  # type: ignore
+            class Recognizer:
+                def listen(self, source, timeout=1, phrase_time_limit=5):
+                    return None
+            class Microphone:
+                def __enter__(self): return self
+                def __exit__(self, *a): pass
+        logger.info("Microfone via sounddevice ativado (fallback sem PyAudio)")
+    except ImportError:
+        MICROFONE_DISPONIVEL = False
+        MICROFONE_BACKEND = "nenhum"
+        logger.warning(
+            "Microfone desabilitado. Para ativar instale um dos seguintes no venv core:\n"
+            "  pip install sounddevice          (recomendado, sem compilacao)\n"
+            "  pip install pyaudio SpeechRecognition  (requer VC++ build tools)"
+        )
 
 class SensorPresenca:
     """
-    Sensor de presença usando webcam: detecta movimento/rosto para presença do Criador.
-    Melhorado: Detecção facial avançada, microfone, modos, integrações expandidas.
+    Sensor de presena usando webcam: detecta movimento/rosto para presena do Criador.
+    Melhorado: Deteco facial avanada, microfone, modos, integraes expandidas.
     """
 
     def __init__(self, callback_presenca: Optional[Callable[[bool], None]] = None, device_id: int = 0):
-        self.callback = callback_presenca  # Função chamada ao detectar presença/ausência
+        self.callback = callback_presenca  # Funo chamada ao detectar presena/ausncia
         self.device_id = device_id  # ID da webcam (0=default)
         self.logger = logging.getLogger("SensorPresenca")
         
@@ -59,9 +81,9 @@ class SensorPresenca:
         self._stop_event = threading.Event()
         self._presenca_atual = False
         self._tempo_ultimo_movimento = time.time()
-        self._timeout_ausencia = 30  # Segundos sem movimento â†’ ausência
+        self._timeout_ausencia = 30  # Segundos sem movimento  ausncia
         
-        # Para detecção de movimento
+        # Para deteco de movimento
         self._frame_anterior: Optional[np.ndarray] = None
         self._thresh_movimento = 5000  # Limiar de pixels mudados
         
@@ -70,12 +92,12 @@ class SensorPresenca:
         self._microfone_ativo = False
         self._audio_thread: Optional[threading.Thread] = None
         
-        self.logger.info("Sensor de Presença inicializado (webcam device %d, melhorado).", self.device_id)
+        self.logger.info("Sensor de Presena inicializado (webcam device %d, melhorado).", self.device_id)
 
     def iniciar(self) -> bool:
         """Inicia o sensor em thread separada."""
         if self._cap is not None:
-            self.logger.info("Sensor já iniciado.")
+            self.logger.info("Sensor j iniciado.")
             return True
         
         self._cap = cv2.VideoCapture(self.device_id)
@@ -92,7 +114,7 @@ class SensorPresenca:
         if MICROFONE_DISPONIVEL and self._modo == "ativo":
             self._iniciar_microfone()
         
-        self.logger.info("Sensor de Presença iniciado (thread ativa, microfone %s).", "ativo" if self._microfone_ativo else "inativo")
+        self.logger.info("Sensor de Presena iniciado (thread ativa, microfone %s).", "ativo" if self._microfone_ativo else "inativo")
         return True
 
     def parar(self) -> None:
@@ -105,7 +127,7 @@ class SensorPresenca:
             self._cap = None
         if self._audio_thread and self._audio_thread.is_alive():
             self._audio_thread.join(timeout=2)
-        self.logger.info("Sensor de Presença parado.")
+        self.logger.info("Sensor de Presena parado.")
 
     def _loop_deteccao(self) -> None:
         """Loop principal: captura frames, detecta movimento/rosto."""
@@ -120,7 +142,7 @@ class SensorPresenca:
                 time.sleep(0.1)
                 continue
             
-            # Detecta presença (movimento ou rosto)
+            # Detecta presena (movimento ou rosto)
             movimento_detectado = self._detectar_movimento(frame)
             rosto_detectado = self._detectar_rosto(frame) if self._modo == "ativo" else False
             presenca_detectada = movimento_detectado or rosto_detectado
@@ -129,19 +151,19 @@ class SensorPresenca:
                 self._tempo_ultimo_movimento = time.time()
                 if not self._presenca_atual:
                     self._presenca_atual = True
-                    self.logger.info("Presença detectada (movimento/rosto).")
+                    self.logger.info("Presena detectada (movimento/rosto).")
                     self._on_presenca_mudou(True)
             else:
-                # Verifica timeout para ausência
+                # Verifica timeout para ausncia
                 if time.time() - self._tempo_ultimo_movimento > self._timeout_ausencia:
                     if self._presenca_atual:
                         self._presenca_atual = False
-                        self.logger.info("Ausência detectada (sem movimento/rosto por %ds).", self._timeout_ausencia)
+                        self.logger.info("Ausncia detectada (sem movimento/rosto por %ds).", self._timeout_ausencia)
                         self._on_presenca_mudou(False)
             
             time.sleep(0.5)  # Intervalo entre checks
         
-        self.logger.info("Loop de detecção finalizado.")
+        self.logger.info("Loop de deteco finalizado.")
 
     def _detectar_movimento(self, frame: np.ndarray) -> bool:
         """Detecta movimento comparando frames."""
@@ -180,35 +202,67 @@ class SensorPresenca:
             return len(faces) > 0
 
     def _iniciar_microfone(self):
-        """Inicia detecção de som via microfone."""
+        """Inicia detecção de som via microfone (pyaudio ou sounddevice)."""
         if not MICROFONE_DISPONIVEL:
             return
-        
-        def _listen():
-            r = sr.Recognizer()
-            with sr.Microphone() as source:
-                while not self._stop_event.is_set():
-                    try:
-                        audio = r.listen(source, timeout=1, phrase_time_limit=5)
-                        if audio:
-                            self.logger.debug("Som detectado via microfone.")
-                            # Pode integrar com voz
-                    except:
-                        pass
-        
-        self._audio_thread = threading.Thread(target=_listen, daemon=True)
-        self._audio_thread.start()
-        self._microfone_ativo = True
+
+        if MICROFONE_BACKEND == "sounddevice":
+            def _listen_sd():
+                try:
+                    import sounddevice as _sd
+                    import numpy as _np
+                    LIMIAR_RMS = 0.01  # nível mínimo de som para considerar presença
+                    while not self._stop_event.is_set():
+                        try:
+                            bloco = _sd.rec(int(0.5 * 16000), samplerate=16000,
+                                            channels=1, dtype='float32', blocking=True)
+                            rms = float(_np.sqrt(_np.mean(bloco ** 2)))
+                            if rms > LIMIAR_RMS:
+                                self._tempo_ultimo_movimento = time.time()
+                                self.logger.debug("Som detectado (rms=%.4f)", rms)
+                        except Exception:
+                            time.sleep(0.5)
+                except Exception as e:
+                    self.logger.warning("Erro no microfone sounddevice: %s", e)
+
+            self._audio_thread = threading.Thread(target=_listen_sd, daemon=True,
+                                                   name="MicSoundDevice")
+            self._audio_thread.start()
+            self._microfone_ativo = True
+            self.logger.info("Microfone iniciado via sounddevice")
+
+        else:
+            # Backend pyaudio + SpeechRecognition
+            def _listen():
+                r = sr.Recognizer()
+                try:
+                    with sr.Microphone() as source:
+                        while not self._stop_event.is_set():
+                            try:
+                                audio = r.listen(source, timeout=1, phrase_time_limit=5)
+                                if audio:
+                                    self._tempo_ultimo_movimento = time.time()
+                                    self.logger.debug("Som detectado via microfone PyAudio")
+                            except Exception:
+                                pass
+                except Exception as e:
+                    self.logger.warning("Erro no microfone PyAudio: %s", e)
+
+            self._audio_thread = threading.Thread(target=_listen, daemon=True,
+                                                   name="MicPyAudio")
+            self._audio_thread.start()
+            self._microfone_ativo = True
+            self.logger.info("Microfone iniciado via PyAudio")
 
     def _on_presenca_mudou(self, presente: bool) -> None:
-        """Chamado quando presença muda: integra com AIs."""
+        """Chamado quando presena muda: integra com AIs."""
         if self.callback:
             try:
                 self.callback(presente)
             except Exception as e:
                 self.logger.exception("Erro no callback customizado: %s", e)
         
-        # Integração com Capela
+        # Integrao com Capela
         if CAPELA_DISPONIVEL:
             capela = obter_capela()
             if presente:
@@ -216,7 +270,7 @@ class SensorPresenca:
             else:
                 capela.entrar_capela(duracao_s=300)  # 5min
         
-        # Integração com Avatares
+        # Integrao com Avatares
         if AVATAR_DISPONIVEL and hasattr(self, '_avatar_ref'):
             avatar = self._avatar_ref
             if presente:
@@ -224,11 +278,11 @@ class SensorPresenca:
             else:
                 avatar.atualizar_rosto("solidao_leve")
         
-        # Integração com Emocoes
+        # Integrao com Emocoes
         try:
-            from src.emocoes import gerenciador_emocoes
+            from src.emocoes.estado_emocional import EstadoEmocional as _GerenciadorEmocoes
             if presente:
-                gerenciador_emocoes.definir_humor("alegre")
+                _definir_humor_seguro("alegre")
         except:
             pass
         
@@ -236,7 +290,7 @@ class SensorPresenca:
         if not presente and self._modo == "dormindo":
             self.parar()
         
-        self.logger.debug("Integrações AIs executadas (presença: %s).", presente)
+        self.logger.debug("Integraes AIs executadas (presena: %s).", presente)
 
     def status_presenca(self) -> dict:
         """Retorna status atual."""
@@ -250,10 +304,10 @@ class SensorPresenca:
         }
 
     def configurar_timeout(self, segundos: int) -> None:
-        """Configura timeout para ausência."""
+        """Configura timeout para ausncia."""
         if segundos > 0:
             self._timeout_ausencia = segundos
-            self.logger.info("Timeout ausência configurado para %ds.", segundos)
+            self.logger.info("Timeout ausncia configurado para %ds.", segundos)
 
     def ativar_modo(self, modo: str):
         """Ativa modo: ativo, dormindo, privacidade."""
@@ -266,11 +320,11 @@ class SensorPresenca:
             self.logger.info("Modo sensor alterado para %s.", modo)
 
 
-# Instância global
+# Instncia global
 _sensor_presenca: Optional[SensorPresenca] = None
 
 def obter_sensor_presenca(callback: Optional[Callable[[bool], None]] = None) -> SensorPresenca:
-    """Retorna instância singleton."""
+    """Retorna instncia singleton."""
     global _sensor_presenca
     if _sensor_presenca is None:
         _sensor_presenca = SensorPresenca(callback=callback)
@@ -281,11 +335,11 @@ def obter_sensor_presenca(callback: Optional[Callable[[bool], None]] = None) -> 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     
-    print("ðŸ–¥ï¸ Teste Sensor de Presença")
+    print(" Teste Sensor de Presena")
     print("=" * 40)
     
     def callback_teste(presente: bool):
-        print(f"Callback: Presença mudou para {presente}")
+        print(f"Callback: Presena mudou para {presente}")
     
     sensor = obter_sensor_presenca(callback=callback_teste)
     
@@ -297,6 +351,6 @@ if __name__ == "__main__":
         print("Falha ao iniciar sensor.")
     
     print(f"Status final: {sensor.status_presenca()}")
-    print("âœ… Sensor testado (melhorado)!")
+    print("[OK] Sensor testado (melhorado)!")
 
 # --- FIM DO ARQUIVO sensor_presenca.py ---

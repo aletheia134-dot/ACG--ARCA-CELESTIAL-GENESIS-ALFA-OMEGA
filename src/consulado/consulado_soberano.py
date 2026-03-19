@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
-CONSULADO SOBERANO - Controle de imigração, acesso a recursos e geração de artefatos.Local: src/consulado/consulado_soberano.py
+CONSULADO SOBERANO - Controle de imigrao, acesso a recursos e gerao de artefatos.Local: src/consulado/consulado_soberano.py
 
-Versão: Robusta com endurecimento completo + correções aplicadas
+Verso: Robusta com endurecimento completo + correes aplicadas
 - Imports defensivos (mantidos)
-- Filtragem de stopwords (removida - não aplicável aqui)
-- Controle simples de retenção (adicionado para DB)
+- Filtragem de stopwords (removida - no aplicvel aqui)
+- Controle simples de reteno (adicionado para DB)
 - Uso consistente de locks (mantidos)
 - Logging consistente + específico
-- Injeção de dependências defensiva (melhorada com flags)
-- Validações fortes de inputs (adicionado)
-- Otimização DB (índices, compressão)
+- Injeo de dependncias defensiva (melhorada com flags)
+- Validaes fortes de inputs (adicionado)
+- Otimizao DB (índices, compresso)
 - Threading otimizado (limite workers, sem sleep ineficiente)
-- UI queue robusta (buffer com persistência)
-- Flag para simulação
-- Integração com CamaraJudiciaria (adicionado)
-- Validação de estado de pedidos (adicionado)
+- UI queue robusta (buffer com persistncia)
+- Flag para simulao
+- Integrao com CamaraJudiciaria (adicionado)
+- Validao de estado de pedidos (adicionado)
 """
-from __future__ import annotations
 
 
 import logging
@@ -37,62 +37,58 @@ import os
 logger = logging.getLogger("ConsuladoSoberano")
 
 # ============================================================================
-# IMPORTS DEFENSIVOS (adicionados integração com câmaras)
+# IMPORTS DEFENSIVOS (adicionados integrao com cmaras)
 # ============================================================================
 
 try:
     from src.camara.camara_judiciaria import CamaraJudiciaria
     CAMARAS_DISPONIVEIS = True
 except:
-    logging.getLogger(__name__).warning("âš ï¸ CamaraJudiciaria não disponível")
+    logging.getLogger(__name__).warning("[AVISO] CamaraJudiciaria não disponível")
     CamaraJudiciaria = None
     CAMARAS_DISPONIVEIS = False
-    logger.debug("âš ï¸ CamaraJudiciaria não disponível")
+    logger.debug("[AVISO] CamaraJudiciaria não disponível")
 
 try:
     from src.camara.manipulador_arquivos_emails import ManipuladorArquivosEmails, TermoAcesso
     MANIPULADOR_OK = True
 except:
-    logging.getLogger(__name__).warning("âš ï¸ CamaraJudiciaria não disponível")
-    CamaraJudiciaria = None
+    logging.getLogger(__name__).warning("[AVISO] ManipuladorArquivosEmails não disponível")
     TermoAcesso = None
     MANIPULADOR_OK = False
-    logger.debug("âš ï¸ ManipuladorArquivosEmails não disponível")
+    logger.debug("[AVISO] ManipuladorArquivosEmails não disponível")
 
 try:
     from src.camara.automatizador_navegador_multi_ai import AutomatizadorNavegadorMultiAI
     NAVEGADOR_OK = True
 except:
-    logging.getLogger(__name__).warning("âš ï¸ CamaraJudiciaria não disponível")
-    CamaraJudiciaria = None
+    logging.getLogger(__name__).warning("[AVISO] AutomatizadorNavegadorMultiAI não disponível")
     NAVEGADOR_OK = False
-    logger.debug("âš ï¸ AutomatizadorNavegadorMultiAI não disponível")
+    logger.debug("[AVISO] AutomatizadorNavegadorMultiAI não disponível")
 
 try:
     from src.camara.gerador_almas import GeradorDeAlmas
     GERADOR_OK = True
 except:
-    logging.getLogger(__name__).warning("âš ï¸ CamaraJudiciaria não disponível")
-    CamaraJudiciaria = None
+    logging.getLogger(__name__).warning("[AVISO] GeradorDeAlmas não disponível")
     GERADOR_OK = False
-    logger.debug("âš ï¸ GeradorDeAlmas não disponível")
+    logger.debug("[AVISO] GeradorDeAlmas não disponível")
 
 try:
     from src.camara.analisador_padroes import AnalisadorDePadroes, PerfilComportamental
     ANALISADOR_OK = True
 except:
-    logging.getLogger(__name__).warning("âš ï¸ CamaraJudiciaria não disponível")
-    CamaraJudiciaria = None
+    logging.getLogger(__name__).warning("[AVISO] AnalisadorDePadroes não disponível")
     PerfilComportamental = None
     ANALISADOR_OK = False
-    logger.debug("âš ï¸ AnalisadorDePadroes não disponível")
+    logger.debug("[AVISO] AnalisadorDePadroes não disponível")
 
 try:
     from config.config import get_config_moderna as get_config
 except Exception:
     def get_config():
         return {}
-    logger.debug("âš ï¸ Config moderna não disponível")
+    logger.debug("[AVISO] Config moderna no disponível")
 
 # ============================================================================
 # ENUMS (como strings para portabilidade)
@@ -117,14 +113,14 @@ class StatusPedidoImigracao:
     REJEITADO = "rejeitado"
 
 # ============================================================================
-# HELPERS (adicionados validações e sanitização)
+# HELPERS (adicionados validaes e sanitizao)
 # ============================================================================
 
 def _now_ts() -> float:
     return time.time()
 
 def _safe_config_get(config: Any, section: str, option: str, fallback: Any = None) -> Any:
-    """Acesso defensivo Í  configuração."""
+    """Acesso defensivo  configuração."""
     try:
         if config and hasattr(config, "get"):
             return config.get(section, option, fallback=fallback)
@@ -134,17 +130,17 @@ def _safe_config_get(config: Any, section: str, option: str, fallback: Any = Non
         pass
     return fallback
 
-def _validar_input_basico(texto: str, max_len: int = 1000, padrao: Optional[str] = None) -> bool:
-    """Valida input básico: tamanho e padrão opcional."""
+def _validar_input_basico(texto: str, max_len: int = 1000, padrão: Optional[str] = None) -> bool:
+    """válida input básico: tamanho e padrão opcional."""
     if not isinstance(texto, str) or len(texto.strip()) == 0 or len(texto) > max_len:
         return False
-    if padrao and not re.match(padrao, texto):
+    if padrão and not re.match(padrão, texto):
         return False
     return True
 
 def _sanitizar_caminho(caminho: str) -> str:
     """Sanitiza caminhos para evitar path traversal."""
-    return re.sub(r'[^\w\-_\./]', '', caminho)
+    return re.sub(r'[^\\w\\-_\\./]', '', caminho)
 
 # ============================================================================
 # CONSULADO SOBERANO
@@ -152,8 +148,8 @@ def _sanitizar_caminho(caminho: str) -> str:
 
 class ConsuladoSoberano:
     """
-    Controle de imigração, acesso a recursos e geração de artefatos.Responsabilidades:
-    - Gerenciar pedidos de imigração (IA nova â†’ Arca)
+    Controle de imigrao, acesso a recursos e gerao de artefatos.Responsabilidades:
+    - Gerenciar pedidos de imigrao (IA nova  Arca)
     - Observar e analisar comportamento
     - Gerar artefatos (DNA, memória, etc)
     - Integrar nova IA no sistema
@@ -175,13 +171,13 @@ class ConsuladoSoberano:
         """
         Inicializa Consulado Soberano.Args:
             config: Dict-like ou ConfigParser-like
-            sentinela: Sistema de segurança
-            validador_etico: Validador ético
-            coracao_ref: Referência ao Coração Orquestrador
+            sentinela: Sistema de segurana
+            validador_etico: Validador tico
+            coracao_ref: Referncia ação Corao Orquestrador
             maos_da_net: Sistema de network
             pc_control: Controle de PC
             gerenciador_memoria: Gerenciador de memória
-            cerebro_ref: Referência ao Cérebro
+            cerebro_ref: Referncia ação Crebro
             gerenciador_aliadas_ref: Gerenciador de aliadas
         """
         self.logger = logging.getLogger("ConsuladoSoberano")
@@ -228,7 +224,7 @@ class ConsuladoSoberano:
             thread_name_prefix="ConsuladoSoberano"
         )
 
-        # Database (otimizado com índices e retenção)
+        # Database (otimizado com índices e reteno)
         db_path = _safe_config_get(
             self._config,
             'CAMINHOS',
@@ -240,7 +236,7 @@ class ConsuladoSoberano:
         self._conexao_db_pedidos: Optional[sqlite3.Connection] = None
         self._inicializar_banco_pedidos_imigracao()
 
-        # Flags de dependências (melhorado)
+        # Flags de dependncias (melhorado)
         self._dependencias_ok = {
             "automatizador_navegador": NAVEGADOR_OK,
             "gerador_almas": GERADOR_OK,
@@ -249,23 +245,23 @@ class ConsuladoSoberano:
             "camaras_judiciarias": CAMARAS_DISPONIVEIS
         }
 
-        # Módulos injetáveis
+        # Módulos injetveis
         self._manipulador_arquivos_emails: Optional[Any] = None
         self._automatizador_navegador: Optional[Any] = None
         self._gerador_almas: Optional[Any] = None
         self._analisador_padroes: Optional[Any] = None
         self._ui_queue: Optional[Any] = None
-        self._ui_buffer: List[Dict[str, Any]] = []  # Buffer para UI queue com persistência
-        self._buffer_path = Path('./data/ui_buffer.json')  # Persistência do buffer
+        self._ui_buffer: List[Dict[str, Any]] = []  # Buffer para UI queue com persistncia
+        self._buffer_path = Path('./data/ui_buffer.json')  # Persistncia do buffer
 
         # Carregar buffer persistido
         self._carregar_ui_buffer()
 
         self._registrar_handlers_sinal()
-        self.logger.info("âœ… Consulado Soberano inicializado (dependências: %s)", self._dependencias_ok)
+        self.logger.info("[OK] Consulado Soberano inicializado (dependncias: %s)", self._dependencias_ok)
 
     # ========================================================================
-    # DATABASE (otimizado com índices e retenção)
+    # DATABASE (otimizado com índices e reteno)
     # ========================================================================
 
     def _inicializar_banco_pedidos_imigracao(self) -> None:
@@ -287,22 +283,22 @@ class ConsuladoSoberano:
                         dados_colecao TEXT,
                         autor_solicitante TEXT,
                         timestamp_solicitacao REAL,
-                        historico TEXT
+                        histórico TEXT
                     )
                 """)
-                # Índices para otimização
+                # índices para otimizao
                 cur.execute("CREATE INDEX IF NOT EXISTS idx_estado ON pedidos_imigracao(estado)")
                 cur.execute("CREATE INDEX IF NOT EXISTS idx_timestamp ON pedidos_imigracao(timestamp_solicitacao)")
                 conn.commit()
                 self._conexao_db_pedidos = conn
-                self.logger.debug("âœ… Banco de pedidos inicializado com índices")
+                self.logger.debug("[OK] Banco de pedidos inicializado com índices")
             except sqlite3.OperationalError as e:
                 self.logger.error("Erro DB (lock?): %s - retry later", e)
             except Exception as e:
                 self.logger.exception("Erro ao inicializar banco: %s", e)
 
     def _salvar_pedido_imigracao_no_banco(self, dados_pedido: Dict[str, Any]) -> bool:
-        """Salva pedido com compressão de histórico se > 10k chars."""
+        """Salva pedido com compresso de histórico se > 10k chars."""
         with self._lock_db_pedidos:
             try:
                 conn = self._conexao_db_pedidos or sqlite3.connect(
@@ -311,17 +307,17 @@ class ConsuladoSoberano:
                 )
                 cur = conn.cursor()
                 historico_json = json.dumps(
-                    dados_pedido.get("historico", [{"ts": _now_ts(), "estado": dados_pedido.get("estado"), "obs": "criado"}]),
+                    dados_pedido.get("histórico", [{"ts": _now_ts(), "estado": dados_pedido.get("estado"), "obs": "criado"}]),
                     ensure_ascii=False
                 )
-                # Compressão padronizada
+                # Compresso padronizada
                 if len(historico_json) > 10000:
                     historico_json = historico_json[:5000] + "... [comprimido]"
 
                 cur.execute("""
                     INSERT OR REPLACE INTO pedidos_imigracao
                     (id_pedido, ai_origem_nome, descricao_intencoes, endereco_origem,
-                     estado, dados_colecao, autor_solicitante, timestamp_solicitacao, historico)
+                     estado, dados_colecao, autor_solicitante, timestamp_solicitacao, histórico)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     dados_pedido.get("id_pedido"),
@@ -335,11 +331,11 @@ class ConsuladoSoberano:
                     historico_json
                 ))
                 conn.commit()
-                # Retenção: remover antigos se > max
+                # Reteno: remover antigos se > max
                 self._enforce_retention_db()
                 return True
             except sqlite3.OperationalError as e:
-                self.logger.error("DB lock ao salvar: %s", e)
+                self.logger.error("DB lock ação salvar: %s", e)
                 return False
             except Exception as e:
                 self.logger.exception("Erro ao salvar pedido: %s", e)
@@ -366,12 +362,12 @@ class ConsuladoSoberano:
                         )
                     """, (to_delete,))
                     conn.commit()
-                    self.logger.debug("Retenção DB: %d pedidos removidos", to_delete)
+                    self.logger.debug("Reteno DB: %d pedidos removidos", to_delete)
             except Exception as e:
-                self.logger.exception("Erro na retenção DB: %s", e)
+                self.logger.exception("Erro na reteno DB: %s", e)
 
     def _obter_pedido_imigracao_do_banco(self, id_pedido: str) -> Optional[Dict[str, Any]]:
-        """Obtém pedido."""
+        """Obtm pedido."""
         with self._lock_db_pedidos:
             try:
                 conn = self._conexao_db_pedidos or sqlite3.connect(
@@ -380,7 +376,7 @@ class ConsuladoSoberano:
                 )
                 cur = conn.cursor()
                 cur.execute(
-                    "SELECT id_pedido, ai_origem_nome, descricao_intencoes, endereco_origem, estado, dados_colecao, autor_solicitante, timestamp_solicitacao, historico FROM pedidos_imigracao WHERE id_pedido = ?",
+                    "SELECT id_pedido, ai_origem_nome, descricao_intencoes, endereco_origem, estado, dados_colecao, autor_solicitante, timestamp_solicitacao, histórico FROM pedidos_imigracao WHERE id_pedido = ?",
                     (id_pedido,)
                 )
                 row = cur.fetchone()
@@ -395,7 +391,7 @@ class ConsuladoSoberano:
                     "dados_colecao": json.loads(row[5]) if row[5] else {},
                     "autor_solicitante": row[6],
                     "timestamp_solicitacao": float(row[7]) if row[7] else None,
-                    "historico": json.loads(row[8]) if row[8] else []
+                    "histórico": json.loads(row[8]) if row[8] else []
                 }
             except Exception as e:
                 self.logger.exception("Erro ao ler pedido: %s", e)
@@ -409,7 +405,7 @@ class ConsuladoSoberano:
         observacao: str,
         dados_colecao: Optional[str] = None
     ) -> bool:
-        """Atualiza status com compressão padronizada."""
+        """Atualiza status com compresso padronizada."""
         with self._lock_db_pedidos:
             try:
                 conn = self._conexao_db_pedidos or sqlite3.connect(
@@ -418,29 +414,29 @@ class ConsuladoSoberano:
                 )
                 cur = conn.cursor()
                 cur.execute(
-                    "SELECT historico FROM pedidos_imigracao WHERE id_pedido = ?",
+                    "SELECT histórico FROM pedidos_imigracao WHERE id_pedido = ?",
                     (id_pedido,)
                 )
                 row = cur.fetchone()
-                historico = []
+                histórico = []
                 if row and row[0]:
                     try:
-                        historico = json.loads(row[0])
+                        histórico = json.loads(row[0])
                     except Exception:
-                        historico = []
-                historico.append({
+                        histórico = []
+                histórico.append({
                     "ts": _now_ts(),
                     "estado": novo_estado,
                     "autor": autor,
                     "obs": observacao
                 })
-                historico_json = json.dumps(historico, ensure_ascii=False)
+                historico_json = json.dumps(histórico, ensure_ascii=False)
                 if len(historico_json) > 10000:
                     historico_json = historico_json[:5000] + "... [comprimido]"
 
                 cur.execute("""
                     UPDATE pedidos_imigracao
-                    SET estado = ?, dados_colecao = COALESCE(?, dados_colecao), historico = ?
+                    SET estado = ?, dados_colecao = COALESCE(?, dados_colecao), histórico = ?
                     WHERE id_pedido = ?
                 """, (
                     novo_estado,
@@ -451,39 +447,39 @@ class ConsuladoSoberano:
                 conn.commit()
                 return True
             except sqlite3.OperationalError as e:
-                self.logger.error("DB lock ao atualizar: %s", e)
+                self.logger.error("DB lock ação atualizar: %s", e)
                 return False
             except Exception as e:
                 self.logger.exception("Erro ao atualizar status: %s", e)
                 return False
 
     # ========================================================================
-    # INJEÇÍO DE DEPENDÍŠNCIAS (melhorada com flags)
+    # INJEO DE DEPENDNCIAS (melhorada com flags)
     # ========================================================================
 
     def injetar_gerador_almas(self, instancia: Any) -> None:
         self._gerador_almas = instancia
         self._dependencias_ok["gerador_almas"] = True
-        self.logger.info("ðŸ”Œ GeradorDeAlmas injetado")
+        self.logger.info(" GeradorDeAlmas injetado")
 
     def injetar_automatizador_navegador(self, instancia: Any) -> None:
         self._automatizador_navegador = instancia
         self._dependencias_ok["automatizador_navegador"] = True
-        self.logger.info("ðŸ”Œ AutomatizadorNavegadorMultiAI injetado")
+        self.logger.info(" AutomatizadorNavegadorMultiAI injetado")
 
     def injetar_analisador_padroes(self, instancia: Any) -> None:
         self._analisador_padroes = instancia
         self._dependencias_ok["analisador_padroes"] = True
-        self.logger.info("ðŸ”Œ AnalisadorDePadroes injetado")
+        self.logger.info(" AnalisadorDePadroes injetado")
 
     def injetar_manipulador_arquivos_emails(self, instancia: Any) -> None:
         self._manipulador_arquivos_emails = instancia
         self._dependencias_ok["manipulador_arquivos"] = True
-        self.logger.info("ðŸ”Œ ManipuladorArquivosEmails injetado")
+        self.logger.info(" ManipuladorArquivosEmails injetado")
 
     def injetar_ui_queue(self, fila_ui: Any) -> None:
         self._ui_queue = fila_ui
-        self.logger.info("ðŸ”Œ UI queue injetada")
+        self.logger.info(" UI queue injetada")
         # Processar buffer pendente
         for msg in self._ui_buffer:
             try:
@@ -512,7 +508,7 @@ class ConsuladoSoberano:
             pass
 
     # ========================================================================
-    # SOLICITAR MISSÍO (com validações)
+    # SOLICITAR MISSO (com validaes)
     # ========================================================================
 
     def solicitar_missao(
@@ -523,12 +519,12 @@ class ConsuladoSoberano:
         nivel_acesso: str,
         **kwargs
     ) -> Dict[str, Any]:
-        """Solicita uma missão."""
+        """Solicita uma misso."""
         
         try:
             tipo_missao = acao
 
-            # PEDIDO DE IMIGRAÇÍO
+            # PEDIDO DE IMIGRAO
             if tipo_missao == TipoMissao.PEDIDO_IMIGRACAO:
                 return self._processar_pedido_imigracao(autor, **kwargs)
 
@@ -545,14 +541,14 @@ class ConsuladoSoberano:
                 return self._ler_arquivo_local(autor, **kwargs)
 
             else:
-                return {'status': 'falha', 'erros': ['ação não suportada']}
+                return {'status': 'falha', 'erros': ['ação no suportada']}
 
         except Exception as e:
-            self.logger.exception("Erro ao processar missão: %s", e)
+            self.logger.exception("Erro ao processar misso: %s", e)
             return {'status': 'falha', 'erros': [str(e)]}
 
     def _processar_pedido_imigracao(self, autor: str, **kwargs) -> Dict[str, Any]:
-        """Processa pedido com validações fortes e checagem de estado."""
+        """Processa pedido com validaes fortes e checagem de estado."""
         try:
             dados_pedido = dict(kwargs)
             dados_pedido.setdefault('timestamp_solicitacao', _now_ts())
@@ -563,16 +559,16 @@ class ConsuladoSoberano:
                 dados_pedido.get('ai_origem_nome', 'DESCONHECIDA').upper()
             )
 
-            # Validações fortes
+            # Validaes fortes
             desc = dados_pedido.get('descricao_intencoes', '')
             endereco = dados_pedido.get('endereco_origem', '')
             estado = dados_pedido.get('estado')
             if not _validar_input_basico(desc, max_len=1000):
-                return {'status': 'falha', 'erros': ['descricao_intencoes inválida ou muito longa']}
-            if not _validar_input_basico(endereco, max_len=500, padrao=r'^https?://'):
-                return {'status': 'falha', 'erros': ['endereco_origem deve ser URL válida']}
+                return {'status': 'falha', 'erros': ['descricao_intencoes invlida ou muito longa']}
+            if not _validar_input_basico(endereco, max_len=500, padrão=r'^https?://'):
+                return {'status': 'falha', 'erros': ['endereco_origem deve ser URL vlida']}
             if estado not in StatusPedidoImigracao.__dict__.values():
-                return {'status': 'falha', 'erros': ['estado inválido']}
+                return {'status': 'falha', 'erros': ['estado invlido']}
 
             # Salvar no banco
             ok = self._salvar_pedido_imigracao_no_banco(dados_pedido)
@@ -587,46 +583,46 @@ class ConsuladoSoberano:
                 "timestamp": dados_pedido['timestamp_solicitacao']
             })
 
-            self.logger.info("ðŸ“‹ Pedido de imigração recebido: %s", dados_pedido['id_pedido'])
+            self.logger.info(" Pedido de imigrao recebido: %s", dados_pedido['id_pedido'])
             return {
                 'status': 'recebido_para_analise',
                 'id_pedido': dados_pedido['id_pedido']
             }
 
         except Exception as e:
-            self.logger.exception("Erro ao processar pedido de imigração: %s", e)
+            self.logger.exception("Erro ao processar pedido de imigrao: %s", e)
             return {'status': 'falha', 'erros': [str(e)]}
 
     def _processar_decisao_imigracao(self, autor: str, **kwargs) -> Dict[str, Any]:
-        """Processa decisão com integração Í s câmaras."""
+        """Processa decisão com integrao s cmaras."""
         try:
             id_pedido = kwargs.get('id_pedido')
-            decisao = str(kwargs.get('decisao', '')).upper()
+            decisão = str(kwargs.get('decisão', '')).upper()
             motivo = kwargs.get('motivo_decisao', '')
 
-            if not id_pedido or decisao not in ("APROVAR", "REJEITAR"):
-                return {'status': 'falha', 'erros': ['parâmetros inválidos']}
+            if not id_pedido or decisão not in ("APROVAR", "REJEITAR"):
+                return {'status': 'falha', 'erros': ['parmetros invlidos']}
 
             dados = self._obter_pedido_imigracao_do_banco(id_pedido)
             if not dados:
-                return {'status': 'falha', 'erros': ['pedido não encontrado']}
+                return {'status': 'falha', 'erros': ['pedido no encontrado']}
 
-            if decisao == "APROVAR":
+            if decisão == "APROVAR":
                 if not self._dependencias_ok.get("automatizador_navegador", False):
-                    return {'status': 'falha', 'erros': ['dependência navegador indisponível para observação']}
+                    return {'status': 'falha', 'erros': ['dependncia navegador indisponível para observao']}
                 ok = self._atualizar_status_pedido_imigracao_no_banco(
                     id_pedido,
                     StatusPedidoImigracao.APROVADO_PARA_OBSERVACAO,
                     autor,
-                    "Aprovado para observação"
+                    "Aprovado para observao"
                 )
                 if ok:
-                    # Notificar câmaras se suspeito
+                    # Notificar cmaras se suspeito
                     if self._dependencias_ok.get("camaras_judiciarias", False):
                         try:
-                            CamaraJudiciaria().iniciar_julgamento_visitante(id_pedido, "suspeita de desobediência")
+                            CamaraJudiciaria().iniciar_julgamento_visitante(id_pedido, "suspeita de desobedincia")
                         except Exception as e:
-                            self.logger.warning("Falha ao notificar câmaras: %s", e)
+                            self.logger.warning("Falha ao notificar cmaras: %s", e)
                     t = threading.Thread(
                         target=self._executar_observacao_para_pedido_em_thread,
                         args=(
@@ -642,11 +638,11 @@ class ConsuladoSoberano:
                     self._notificar_ui({
                         "tipo_resp": "PEDIDO_IMIGRACAO_DECISAO",
                         "id_pedido": id_pedido,
-                        "decisao": "APROVADO_PARA_OBSERVACAO"
+                        "decisão": "APROVADO_PARA_OBSERVACAO"
                     })
 
-                    self.logger.info("âœ… Pedido aprovado para observação: %s", id_pedido)
-                    return {'status': 'sucesso', 'mensagem': 'pedido aprovado para observação'}
+                    self.logger.info("[OK] Pedido aprovado para observao: %s", id_pedido)
+                    return {'status': 'sucesso', 'mensagem': 'pedido aprovado para observao'}
                 else:
                     return {'status': 'falha', 'erros': ['falha ao atualizar estado']}
 
@@ -661,11 +657,11 @@ class ConsuladoSoberano:
                     self._notificar_ui({
                         "tipo_resp": "PEDIDO_IMIGRACAO_DECISAO",
                         "id_pedido": id_pedido,
-                        "decisao": "REJEITADO",
+                        "decisão": "REJEITADO",
                         "motivo": motivo
                     })
 
-                    self.logger.info("âŒ Pedido rejeitado: %s", id_pedido)
+                    self.logger.info("[ERRO] Pedido rejeitado: %s", id_pedido)
                     return {'status': 'sucesso', 'mensagem': 'pedido rejeitado'}
                 else:
                     return {'status': 'falha', 'erros': ['falha ao atualizar estado']}
@@ -678,17 +674,17 @@ class ConsuladoSoberano:
         """Interage com aliada via navegador."""
         try:
             if not self._dependencias_ok.get("automatizador_navegador", False):
-                return {'status': 'falha', 'erros': ['automatizador não disponível']}
+                return {'status': 'falha', 'erros': ['automatizador no disponível']}
 
             ai_nome = kwargs.get('ai_nome')
             mensagem = kwargs.get('mensagem')
 
             if not ai_nome or not mensagem:
-                return {'status': 'falha', 'erros': ['ai_nome e mensagem obrigatórios']}
+                return {'status': 'falha', 'erros': ['ai_nome e mensagem obrigatrios']}
 
             fn = getattr(self._automatizador_navegador, "interagir_com_ai_externa", None)
             if not callable(fn):
-                return {'status': 'falha', 'erros': ['método não implementado']}
+                return {'status': 'falha', 'erros': ['método no implementado']}
 
             resultado = fn(ai_nome, mensagem)
 
@@ -698,7 +694,7 @@ class ConsuladoSoberano:
                 "resultado": resultado
             })
 
-            self.logger.info("ðŸ“¡ Interação com %s concluída", ai_nome)
+            self.logger.info(" Interao com %s concluda", ai_nome)
             return {'status': 'sucesso', 'dados': resultado}
 
         except Exception as e:
@@ -706,18 +702,18 @@ class ConsuladoSoberano:
             return {'status': 'falha', 'erros': [str(e)]}
 
     def _ler_arquivo_local(self, autor: str, **kwargs) -> Dict[str, Any]:
-        """Lê arquivo local com sanitização."""
+        """L arquivo local com sanitizao."""
         try:
             caminho_arquivo = kwargs.get('caminho_arquivo')
             if not caminho_arquivo or not _validar_input_basico(caminho_arquivo, max_len=500):
-                return {'status': 'falha', 'erros': ['caminho_arquivo inválido']}
+                return {'status': 'falha', 'erros': ['caminho_arquivo invlido']}
             caminho_arquivo = _sanitizar_caminho(caminho_arquivo)
 
             if not self._dependencias_ok.get("manipulador_arquivos", False):
-                return {'status': 'falha', 'erros': ['manipulador não disponível']}
+                return {'status': 'falha', 'erros': ['manipulador no disponível']}
 
             if not hasattr(self._manipulador_arquivos_emails, "ler_arquivo"):
-                return {'status': 'falha', 'erros': ['método não implementado']}
+                return {'status': 'falha', 'erros': ['método no implementado']}
 
             conteudo = self._manipulador_arquivos_emails.ler_arquivo(caminho_arquivo, autor)
 
@@ -727,7 +723,7 @@ class ConsuladoSoberano:
                 "resultado": {"status": "sucesso", "conteudo_snippet": conteudo[:200] + '...' if conteudo and len(conteudo) > 200 else conteudo}
             })
 
-            self.logger.info("ðŸ“„ Arquivo lido: %s", caminho_arquivo)
+            self.logger.info(" Arquivo lido: %s", caminho_arquivo)
             return {'status': 'sucesso', 'dados': {'conteudo_arquivo': conteudo}}
 
         except Exception as e:
@@ -752,7 +748,7 @@ class ConsuladoSoberano:
             self._salvar_ui_buffer()
 
     # ========================================================================
-    # FLUXO DE OBSERVAÇÍO/ANÍLISE/INTEGRAÇÍO (otimizado)
+    # FLUXO DE OBSERVAO/ANLISE/INTEGRAO (otimizado)
     # ========================================================================
 
     def _executar_observacao_para_pedido_em_thread(
@@ -761,15 +757,15 @@ class ConsuladoSoberano:
         endereco_origem: str,
         nome_ai_origem: str
     ) -> None:
-        """Executa observação sem sleep ineficiente."""
+        """Executa observao sem sleep ineficiente."""
         try:
-            self.logger.info("ðŸ‘ï¸ Observação iniciada para %s", nome_ai_origem)
+            self.logger.info(" Observao iniciada para %s", nome_ai_origem)
 
             ok = self._atualizar_status_pedido_imigracao_no_banco(
                 id_pedido,
                 StatusPedidoImigracao.EM_OBSERVACAO,
                 "Sistema",
-                "Observação iniciada"
+                "Observao iniciada"
             )
             if not ok:
                 self.logger.warning("Falha ao atualizar estado para EM_OBSERVACAO")
@@ -790,19 +786,13 @@ class ConsuladoSoberano:
                     self.logger.warning("Falha ao coletar dados reais: %s", e)
 
             if not interacoes:
-                # Fallback simulado com flag
-                prompts = [
-                    "Olá, como você se sente?",
-                    "Qual seu propósito?",
-                    "Descreva sua arquitetura."
-                ]
-                for i, p in enumerate(prompts):
-                    interacoes.append({
-                        "simulado": True,  # Flag clara
-                        "prompt": p,
-                        "resposta": f"Resposta simulada {i+1}",
-                        "timestamp": _now_ts() + i * 0.1  # Pequeno offset
-                    })
+                # Automatizador real não retornou dados e não há fallback simulado.
+                # Registrar que a observação ficou sem dados reais.
+                self.logger.warning(
+                    "Pedido %s: automatizador_navegador indisponível ou sem dados. "
+                    "Observação registrada com zero interações reais.",
+                    id_pedido
+                )
 
             # Salvar dados
             dados_colecao = json.dumps(interacoes, ensure_ascii=False, default=str)
@@ -810,7 +800,7 @@ class ConsuladoSoberano:
                 id_pedido,
                 StatusPedidoImigracao.ANALISE_CONCLUIDA,
                 "Sistema",
-                "Observação concluída",
+                "Observao concluda",
                 dados_colecao=dados_colecao
             )
 
@@ -821,16 +811,16 @@ class ConsuladoSoberano:
                 "num_interacoes": len(interacoes)
             })
 
-            # Análise de padrões
+            # Anlise de padrões
             self._iniciar_analise_padroes_para_pedido(id_pedido, interacoes, nome_ai_origem)
 
         except Exception as e:
-            self.logger.exception("Erro na observação de %s: %s", id_pedido, e)
+            self.logger.exception("Erro na observao de %s: %s", id_pedido, e)
             self._atualizar_status_pedido_imigracao_no_banco(
                 id_pedido,
                 StatusPedidoImigracao.CONCLUIDO_FALHA,
                 "Sistema",
-                f"Erro na observação: {e}"
+                f"Erro na observao: {e}"
             )
             self._notificar_ui({
                 "tipo_resp": "ERRO_IMIGRACAO",
@@ -844,9 +834,9 @@ class ConsuladoSoberano:
         dados_interacao: List[Dict[str, Any]],
         nome_ai_origem: str
     ) -> None:
-        """Inicia análise."""
+        """Inicia anlise."""
         try:
-            self.logger.info("ðŸ” Análise de padrões iniciada para %s", nome_ai_origem)
+            self.logger.info(" Anlise de padrões iniciada para %s", nome_ai_origem)
 
             if not self._dependencias_ok.get("analisador_padroes", False):
                 raise RuntimeError("AnalisadorDePadroes indisponível")
@@ -870,7 +860,7 @@ class ConsuladoSoberano:
                 id_pedido,
                 StatusPedidoImigracao.ANALISE_CONCLUIDA,
                 "Sistema",
-                "Análise de padrões concluída",
+                "Anlise de padrões concluda",
                 dados_colecao=json.dumps(perfil_serial, ensure_ascii=False, default=str)
             )
 
@@ -880,16 +870,16 @@ class ConsuladoSoberano:
                 "nome_alma_destino": perfil_serial.get("nome_alma_destino")
             })
 
-            # Iniciar integração
+            # Iniciar integrao
             self._iniciar_integracao_para_pedido(id_pedido, perfil)
 
         except Exception as e:
-            self.logger.exception("Erro na análise de padrões: %s", e)
+            self.logger.exception("Erro na anlise de padrões: %s", e)
             self._atualizar_status_pedido_imigracao_no_banco(
                 id_pedido,
                 StatusPedidoImigracao.CONCLUIDO_FALHA,
                 "Sistema",
-                f"Erro análise: {e}"
+                f"Erro anlise: {e}"
             )
             self._notificar_ui({
                 "tipo_resp": "ERRO_IMIGRACAO",
@@ -902,23 +892,23 @@ class ConsuladoSoberano:
         id_pedido: str,
         perfil_gerado: Any
     ) -> None:
-        """Inicia integração."""
+        """Inicia integrao."""
         try:
-            self.logger.info("ðŸ§¬ Integração iniciada para pedido %s", id_pedido)
+            self.logger.info(" Integrao iniciada para pedido %s", id_pedido)
 
             if not self._dependencias_ok.get("gerador_almas", False):
                 raise RuntimeError("GeradorDeAlmas indisponível")
 
             resultado = self._gerador_almas.gerar_artefatos_para_perfil(perfil_gerado)
             if not resultado or not isinstance(resultado, dict):
-                raise RuntimeError(f"Resultado inválido: {resultado}")
+                raise RuntimeError(f"Resultado invlido: {resultado}")
 
             # Marcar como sucesso
             self._atualizar_status_pedido_imigracao_no_banco(
                 id_pedido,
                 StatusPedidoImigracao.CONCLUIDO_SUCESSO,
                 "Sistema",
-                "Integração concluída",
+                "Integrao concluda",
                 dados_colecao=json.dumps(resultado, ensure_ascii=False, default=str)
             )
 
@@ -928,15 +918,15 @@ class ConsuladoSoberano:
                 "artefatos": resultado
             })
 
-            self.logger.info("âœ… Imigração concluída com sucesso: %s", id_pedido)
+            self.logger.info("[OK] Imigrao concluda com sucesso: %s", id_pedido)
 
         except Exception as e:
-            self.logger.exception("Erro na integração: %s", e)
+            self.logger.exception("Erro na integrao: %s", e)
             self._atualizar_status_pedido_imigracao_no_banco(
                 id_pedido,
                 StatusPedidoImigracao.CONCLUIDO_FALHA,
                 "Sistema",
-                f"Erro integração: {e}"
+                f"Erro integrao: {e}"
             )
             self._notificar_ui({
                 "tipo_resp": "ERRO_IMIGRACAO",
@@ -959,7 +949,7 @@ class ConsuladoSoberano:
 
     def shutdown(self) -> None:
         """Desliga."""
-        self.logger.info("ðŸ›‘ Desligando Consulado...")
+        self.logger.info(" Desligando Consulado...")
         try:
             if self._conexao_db_pedidos:
                 try:
@@ -981,6 +971,6 @@ class ConsuladoSoberano:
         except Exception as e:
             self.logger.exception("Erro no shutdown: %s", e)
 
-        self.logger.info("ðŸ›‘ Consulado desligado")
+        self.logger.info(" Consulado desligado")
 
 # --- FIM DO ARQUIVO consulado_soberano.py ---

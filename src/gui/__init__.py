@@ -1,3 +1,3 @@
-﻿from .controlador_gui import ControladorGUI
+from .controlador_gui import ControladorGUI
 
 

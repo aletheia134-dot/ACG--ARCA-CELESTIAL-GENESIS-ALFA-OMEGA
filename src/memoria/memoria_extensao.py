@@ -1,12 +1,12 @@
-from src.diagnostico.erros import LLMTimeoutError, LLMUnavailableError, LLMExecutionError, MemoriaIndisponivelError, DryRunError, PlaceholderError
 from __future__ import annotations
+from src.diagnostico.erros import LLMTimeoutError, LLMUnavailableError, LLMExecutionError, MemoriaIndisponivelError, DryRunError, PlaceholderError
 import argparse
 import logging
 import sys
 import traceback
 from typing import Optional, Tuple, Any
 
-parser = argparse.ArgumentParser(description="Teste completo da extensão de memória (hardened).")
+parser = argparse.ArgumentParser(description="Teste completo da extenso de memória (hardened).")
 parser.add_argument("--dry-run", dest="dry_run", action="store_true", default=True,
                     help="Executar em modo dry-run (padrão). Evita operações mutantes.")
 parser.add_argument("--apply", dest="dry_run", action="store_false",
@@ -14,7 +14,7 @@ parser.add_argument("--apply", dest="dry_run", action="store_false",
 parser.add_argument("--only", dest="only", type=str, default="all",
                     help="Executar apenas um teste (ex: '1','2','3' ou 'all').")
 parser.add_argument("--log-level", dest="log_level", default="INFO",
-                    help="Nível de log (DEBUG/INFO/WARNING/ERROR).")
+                    help="nível de log (DEBUG/INFO/WARNING/ERROR).")
 args = parser.parse_args()
 
 logging.basicConfig(
@@ -42,11 +42,11 @@ def safe_import(module_path: str) -> Optional[Any]:
 
 def safe_call(obj: Any, method_name: str, *a, mutates: bool = False, **kw):
     if obj is None:
-        logger.error("Objeto alvo é None; não é possível chamar %s", method_name)
+        logger.error("Objeto alvo  None; no  possível chamar %s", method_name)
         return None
     meth = getattr(obj, method_name, None)
     if not callable(meth):
-        logger.error("Método %s não encontrado em %s", method_name, type(obj).__name__)
+        logger.error("Método %s no encontrado em %s", method_name, type(obj).__name__)
         return None
     if DRY_RUN and mutates:
         logger.info("[DRY-RUN] Skipping mutating call: %s.%s()", type(obj).__name__, method_name)
@@ -61,7 +61,7 @@ def teste_1_sistema_original() -> Tuple[bool, Optional[Any]]:
     logger.info("TESTE 1: Sistema Original")
     MemorySystemReal = safe_import("core.memoria:MemorySystemReal")
     if MemorySystemReal is None:
-        logger.error("Módulo core.memoria.MemorySystemReal não disponível.Abortando sequência de testes.")
+        logger.error("Módulo core.memoria.MemorySystemReal no disponível.Abortando sequncia de testes.")
         return False, None
     try:
         memoria = MemorySystemReal()
@@ -79,11 +79,11 @@ def teste_1_sistema_original() -> Tuple[bool, Optional[Any]]:
         return False, None
 
 def teste_2_extensao_carrega() -> Tuple[bool, Optional[Any], Optional[Any]]:
-    logger.info("TESTE 2: Carregar Extensão")
+    logger.info("TESTE 2: Carregar Extenso")
     MemorySystemReal = safe_import("core.memoria:MemorySystemReal")
     MemoriaExtensao = safe_import("core.memoria_extensao:MemoriaExtensao")
     if MemorySystemReal is None or MemoriaExtensao is None:
-        logger.error("Módulos necessários para a extensão não estão disponíveis.")
+        logger.error("Módulos necessários para a extenso no esto disponíveis.")
         return False, None, None
     try:
         memoria = MemorySystemReal()
@@ -91,17 +91,17 @@ def teste_2_extensao_carrega() -> Tuple[bool, Optional[Any], Optional[Any]]:
         logger.info("MemoriaExtensao carregada; status: %s", getattr(extensao, "ativada", "unknown"))
         return True, memoria, extensao
     except Exception as e:
-        logger.exception("Erro ao carregar extensão: %s", e)
+        logger.exception("Erro ao carregar extenso: %s", e)
         return False, None, None
 
 def teste_3_ativar_extensao(memoria: Any, extensao: Any) -> bool:
-    logger.info("TESTE 3: Ativar Extensão")
+    logger.info("TESTE 3: Ativar Extenso")
     if extensao is None:
-        logger.error("Extensão é None, pulando teste.")
+        logger.error("Extenso  None, pulando teste.")
         return False
     res = safe_call(extensao, "ativar", mutates=True)
     if res == "DRY_RUN_SKIPPED":
-        logger.info("Ativação simulada (dry-run).")
+        logger.info("Ativao simulada (dry-run).")
         return True
     metadata_dbs = getattr(extensao, "metadata_dbs", None)
     biografias_path = getattr(extensao, "biografias_path", None)
@@ -111,15 +111,15 @@ def teste_3_ativar_extensao(memoria: Any, extensao: Any) -> bool:
 def teste_4_adicionar_biografia(extensao: Any) -> bool:
     logger.info("TESTE 4: Adicionar Biografia")
     if extensao is None:
-        logger.error("Extensão é None, pulando teste.")
+        logger.error("Extenso  None, pulando teste.")
         return False
     biografia_teste = (
         "Wellington Ara - Teste de Biografia\n\n"
-        "Este é um teste de biografia para Wellington.\n"
-        "Tem 48 anos e mora no Japão.\n\n"
-        "Cada parágrafo vira uma memória M0 separada.\n"
+        "Este  um teste de biografia para Wellington.\n"
+        "Tem 48 anos e mora no Japo.\n\n"
+        "Cada pargrafo vira uma memória M0 separada.\n"
         "M0 nunca muda - identidade permanente.\n\n"
-        "Esta é uma memória de teste.\n"
+        "Esta  uma memória de teste.\n"
     )
     res = safe_call(extensao, "adicionar_biografia", 'wellington', biografia_teste, mutates=True)
     if res == "DRY_RUN_SKIPPED":
@@ -127,9 +127,9 @@ def teste_4_adicionar_biografia(extensao: Any) -> bool:
         return True
     stats = safe_call(extensao, "get_stats_avancadas", 'wellington')
     if isinstance(stats, dict):
-        logger.info("Stats avançadas (wellington): %s", stats)
+        logger.info("Stats avanadas (wellington): %s", stats)
         return stats.get("m0_biografias", 0) > 0
-    logger.warning("get_stats_avancadas não retornou dict; resultado: %s", stats)
+    logger.warning("get_stats_avancadas no retornou dict; resultado: %s", stats)
     return True
 
 def teste_5_contexto_sem_m0(memoria: Any, extensao: Any) -> bool:
@@ -138,7 +138,7 @@ def teste_5_contexto_sem_m0(memoria: Any, extensao: Any) -> bool:
         logger.error("memoria/extensao ausente.")
         return False
     safe_call(extensao, "desativar", mutates=True)
-    ctx = safe_call(memoria, "get_context", 'wellington', 'Quem é você?', limit=3)
+    ctx = safe_call(memoria, "get_context", 'wellington', 'Quem  você?', limit=3)
     if ctx is None:
         logger.warning("get_context retornou None; falha potencial.")
         return False
@@ -149,7 +149,7 @@ def teste_5_contexto_sem_m0(memoria: Any, extensao: Any) -> bool:
     logger.info("Contexto obtido (len=%d)", length)
     tem_identidade = "IDENTIDADE PERMANENTE" in str(ctx).upper()
     if tem_identidade:
-        logger.warning("M0 aparece no contexto mesmo com extensão desativada (inesperado).")
+        logger.warning("M0 aparece no contexto mesmo com extenso desativada (inesperado).")
         return False
     return True
 
@@ -160,19 +160,19 @@ def teste_6_contexto_com_m0(memoria: Any, extensao: Any) -> bool:
         return False
     res = safe_call(extensao, "ativar", mutates=True)
     if res == "DRY_RUN_SKIPPED":
-        logger.info("Ativação simulada (dry-run); tentando validar indireto.")
-    ctx = safe_call(memoria, "get_context", 'wellington', 'Quem é você?', limit=3)
+        logger.info("Ativao simulada (dry-run); tentando validar indireto.")
+    ctx = safe_call(memoria, "get_context", 'wellington', 'Quem  você?', limit=3)
     if ctx is None:
         logger.warning("get_context retornou None; falha potencial.")
         return False
     tem_identidade = "IDENTIDADE PERMANENTE" in str(ctx).upper()
     if tem_identidade:
-        logger.info("Seção M0 presente (esperado).")
+        logger.info("Seo M0 presente (esperado).")
         return True
     if DRY_RUN:
-        logger.info("Dry-run: M0 pode não ter sido realmente adicionado — considerar --apply para teste real.")
+        logger.info("Dry-run: M0 pode no ter sido realmente adicionado  considerar --apply para teste real.")
         return True
-    logger.warning("M0 não apareceu no contexto; verificar se biografia foi adicionada.")
+    logger.warning("M0 no apareceu no contexto; verificar se biografia foi adicionada.")
     return False
 
 def teste_7_compatibilidade_store(memoria: Any) -> bool:
@@ -182,7 +182,7 @@ def teste_7_compatibilidade_store(memoria: Any) -> bool:
         return False
     MemoryTier = safe_import("core.memoria:MemoryTier")
     if MemoryTier is None:
-        logger.warning("MemoryTier não disponível; tentando usar string 'M1'")
+        logger.warning("MemoryTier no disponível; tentando usar string 'M1'")
         tier_val = "M1"
     else:
         tier_val = MemoryTier.M1
@@ -191,7 +191,7 @@ def teste_7_compatibilidade_store(memoria: Any) -> bool:
                            user_message='Teste de mensagem', ai_response='Teste de resposta do sistema', mutates=True)
         logger.info("store_memory resultado: %s", result)
         stats = safe_call(memoria, "get_ai_memories_count", 'wellington')
-        logger.info("Memórias Wellington (count): %s", stats)
+        logger.info("memórias Wellington (count): %s", stats)
         return True
     except Exception:
         logger.exception("Erro no teste store_memory")
@@ -200,10 +200,10 @@ def teste_7_compatibilidade_store(memoria: Any) -> bool:
 def teste_8_criar_templates(extensao: Any) -> bool:
     logger.info("TESTE 8: Criar Templates de Biografia")
     if extensao is None:
-        logger.error("Extensão ausente.")
+        logger.error("Extenso ausente.")
         return False
     if DRY_RUN:
-        logger.info("Dry-run: pular criação de templates (operacao mutante).")
+        logger.info("Dry-run: pular criao de templates (operação mutante).")
         return True
     try:
         for ai in ['wellington', 'eva', 'lumina']:
@@ -215,9 +215,9 @@ def teste_8_criar_templates(extensao: Any) -> bool:
         return False
 
 def teste_9_stats_avancadas(extensao: Any) -> bool:
-    logger.info("TESTE 9: Estatísticas Avançadas")
+    logger.info("TESTE 9: Estatsticas Avanadas")
     if extensao is None:
-        logger.error("Extensão ausente.")
+        logger.error("Extenso ausente.")
         return False
     try:
         for ai in ['wellington', 'eva', 'lumina']:
@@ -225,19 +225,19 @@ def teste_9_stats_avancadas(extensao: Any) -> bool:
             logger.info("%s -> %s", ai.upper(), stats if isinstance(stats, dict) else "N/A")
         return True
     except Exception:
-        logger.exception("Erro ao coletar stats avançadas")
+        logger.exception("Erro ao coletar stats avanadas")
         return False
 
 TEST_FUNCS = {
     "1": ("Sistema Original", lambda ctx: teste_1_sistema_original()),
-    "2": ("Carregar Extensão", lambda ctx: teste_2_extensao_carrega()),
-    "3": ("Ativar Extensão", lambda ctx: teste_3_ativar_extensao(ctx.get("memoria"), ctx.get("extensao"))),
+    "2": ("Carregar Extenso", lambda ctx: teste_2_extensao_carrega()),
+    "3": ("Ativar Extenso", lambda ctx: teste_3_ativar_extensao(ctx.get("memoria"), ctx.get("extensao"))),
     "4": ("Adicionar Biografia", lambda ctx: teste_4_adicionar_biografia(ctx.get("extensao"))),
     "5": ("Contexto sem M0", lambda ctx: teste_5_contexto_sem_m0(ctx.get("memoria"), ctx.get("extensao"))),
     "6": ("Contexto com M0", lambda ctx: teste_6_contexto_com_m0(ctx.get("memoria"), ctx.get("extensao"))),
     "7": ("Compatibilidade store", lambda ctx: teste_7_compatibilidade_store(ctx.get("memoria"))),
     "8": ("Criar Templates", lambda ctx: teste_8_criar_templates(ctx.get("extensao"))),
-    "9": ("Stats Avançadas", lambda ctx: teste_9_stats_avancadas(ctx.get("extensao"))),
+    "9": ("Stats Avanadas", lambda ctx: teste_9_stats_avancadas(ctx.get("extensao"))),
 }
 
 def executar_todos_testes(selected: str = "all") -> None:
@@ -249,20 +249,20 @@ def executar_todos_testes(selected: str = "all") -> None:
     resultados['Sistema Original'] = ok
     contexto["memoria"] = memoria
     if not ok:
-        logger.error("Sistema original falhou — abortando restante dos testes.")
+        logger.error("Sistema original falhou  abortando restante dos testes.")
         _report_and_exit(resultados)
 
     ok, memoria2, extensao = teste_2_extensao_carrega()
-    resultados['Carregar Extensão'] = ok
+    resultados['Carregar Extenso'] = ok
     contexto["memoria"] = memoria2 or memoria
     contexto["extensao"] = extensao
     if not ok:
-        logger.error("Extensão não carregou — abortando.")
+        logger.error("Extenso no carregou  abortando.")
         _report_and_exit(resultados)
 
     for tid in ("3","4","5","6","7","8","9"):
         if selected != "all" and tid != selected:
-            logger.debug("Pulando teste %s por seleção --only=%s", tid, selected)
+            logger.debug("Pulando teste %s por seleo --only=%s", tid, selected)
             continue
         name = TEST_FUNCS[tid][0]
         logger.info("Executando Teste %s: %s", tid, name)
@@ -278,7 +278,7 @@ def executar_todos_testes(selected: str = "all") -> None:
 def _report_and_exit(resultados: dict) -> None:
     total = len(resultados)
     passed = sum(1 for v in resultados.values() if v)
-    logger.info("=== RELATÓRIO FINAL: %d/%d testes passaram ===", passed, total)
+    logger.info("=== RELATRIO FINAL: %d/%d testes passaram ===", passed, total)
     for k, v in resultados.items():
         logger.info("%-30s %s", k, "PASS" if v else "FAIL")
     if passed == total:
@@ -294,7 +294,7 @@ if __name__ == "__main__":
     except SystemExit:
         raise
     except Exception as e:
-        logger.exception("Erro fatal ao executar testes: %s", e)
+        logger.exception("Erro fatal ação executar testes: %s", e)
         sys.exit(3)
 
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 DETECTOR HDD HITACHI - Sistema Completo Endurecido
 Local: src/core/detector_hdd_hitachi.py
@@ -13,13 +14,12 @@ Principais endurecimentos:
  - Import defensivo (psutil, chromadb, llama_cpp, numpy)
  - WMIC apenas Windows; lsblk em Linux
  - SQLite thread-safe com PRAGMA WAL
- - Llama initialization com múltiplas APIs
- - Cache com escrita atômica
+ - Llama initialization com mltiplas APIs
+ - Cache com escrita atmica
  - Locks para operações críticas
  - Quarantine para arquivos corrompidos/expirados
  - Logging em vez de prints
 """
-from __future__ import annotations
 
 
 import configparser
@@ -52,7 +52,7 @@ logger.addHandler(logging.NullHandler())
 try:
     import numpy as np
 except:
-    logging.getLogger(__name__).warning("âš ï¸ np não disponível")
+    logging.getLogger(__name__).warning("[AVISO] np no disponível")
     np = None
 
 # llama_cpp (opcional - LLM local)
@@ -61,7 +61,7 @@ try:
     from llama_cpp import Llama
     _LLAMACPP_AVAILABLE = True
 except:
-    logging.getLogger(__name__).warning("âš ï¸ np não disponível")
+    logging.getLogger(__name__).warning("[AVISO] np no disponível")
     np = None
 
 # chromadb (opcional - RAG)
@@ -70,14 +70,14 @@ try:
     import chromadb
     _CHROMA_AVAILABLE = True
 except:
-    logging.getLogger(__name__).warning("âš ï¸ np não disponível")
+    logging.getLogger(__name__).warning("[AVISO] np no disponível")
     np = None
 
-# psutil (opcional - detecção de hardware)
+# psutil (opcional - deteco de hardware)
 try:
     import psutil
 except:
-    logging.getLogger(__name__).warning("âš ï¸ np não disponível")
+    logging.getLogger(__name__).warning("[AVISO] np no disponível")
     np = None
 
 # ============================================================================
@@ -94,7 +94,7 @@ def _run_cmd(cmd: List[str], timeout: int = 10) -> Tuple[int, str, str]:
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
         return proc.returncode, proc.stdout or "", proc.stderr or ""
     except FileNotFoundError:
-        logger.debug("Comando não encontrado: %s", cmd[0])
+        logger.debug("Comando no encontrado: %s", cmd[0])
         return 127, "", f"command not found: {cmd[0]}"
     except subprocess.TimeoutExpired:
         logger.warning("Comando timeout: %s", cmd)
@@ -164,7 +164,7 @@ class DetectorHardware:
             if res and res.found:
                 return True, res.mount_path
 
-            # Fallback heurístico
+            # Fallback heurstico
             for base in [Path("/media"), Path("/mnt"), Path("/run/media")]:
                 if base.exists():
                     for p in base.rglob("*"):
@@ -246,7 +246,7 @@ class DetectorHardware:
                         if mp:
                             p = Path(mp)
                             if p.exists():
-                                logger.info("HDD via partição: %s", p)
+                                logger.info("HDD via partio: %s", p)
                                 return HDDCheckResult(True, p, model, size)
             return HDDCheckResult(False, None, None, None)
         except Exception as e:
@@ -342,7 +342,7 @@ class DetectorHardware:
                     info["disk_total_gb"] = round(disk.total / (1024**3), 2)
                     info["disk_used_percent"] = disk.percent
             except Exception:
-                logger.debug("psutil não disponível")
+                logger.debug("psutil no disponível")
 
             try:
                 hostname = socket.gethostname()
@@ -354,13 +354,13 @@ class DetectorHardware:
                 finally:
                     s.close()
             except Exception:
-                info["local_ip"] = "Não disponível"
+                info["local_ip"] = "No disponível"
         except Exception:
             logger.exception("Erro coletando info do sistema")
         return info
 
     def verificar_espaco_hdd(self, caminho: Path) -> Optional[Dict[str, Any]]:
-        """Verifica espaço disponível."""
+        """Verifica espao disponível."""
         try:
             uso = shutil.disk_usage(str(caminho))
             return {
@@ -371,20 +371,20 @@ class DetectorHardware:
                 "percentual_usado": round((uso.used / uso.total) * 100, 2) if uso.total > 0 else 0.0,
             }
         except Exception:
-            logger.exception("Erro ao verificar espaço")
+            logger.exception("Erro ao verificar espao")
             return None
 
     def testar_velocidade_hdd(self, caminho: Path, tamanho_mb: int = 10) -> Optional[Dict[str, Any]]:
         """Testa velocidade de I/O."""
         try:
             if not caminho.exists() or not caminho.is_dir():
-                logger.error("Caminho inválido: %s", caminho)
+                logger.error("Caminho invlido: %s", caminho)
                 return None
 
             try:
                 usage = shutil.disk_usage(str(caminho))
                 if usage.free < (tamanho_mb * 1024 * 1024 * 2):
-                    logger.warning("Espaço insuficiente")
+                    logger.warning("Espao insuficiente")
                     return None
             except Exception:
                 pass
@@ -430,7 +430,7 @@ class DetectorHardware:
 
 
 # ============================================================================
-# 2.SISTEMA DE MEMÓRIA SOBERANA
+# 2.SISTEMA DE memória SOBERANA
 # ============================================================================
 
 class SistemaDeMemoriaSoberana:
@@ -491,7 +491,7 @@ class SistemaDeMemoriaSoberana:
     def _init_chromadb(self) -> None:
         """Inicializa ChromaDB se disponível."""
         if not _CHROMA_AVAILABLE:
-            logger.warning("chromadb não disponível")
+            logger.warning("chromadb no disponível")
             return
         try:
             chroma_dir = Path(self._chroma_path)
@@ -519,7 +519,7 @@ class SistemaDeMemoriaSoberana:
                 raise
 
     def processar_requisicao(self, alma_nome: str, consulta: str, dados_audio: Any = None, dados_video: Any = None) -> str:
-        """Processa requisição multimodal."""
+        """Processa requisio multimodal."""
         # M1: registra
         try:
             with self._lock_escrita:
@@ -542,17 +542,17 @@ class SistemaDeMemoriaSoberana:
             except Exception:
                 logger.exception("Erro na consulta RAG")
 
-        # M-LLM: geração
+        # M-LLM: gerao
         if _LLAMACPP_AVAILABLE and self._llm_model is None:
             try:
                 self._iniciar_llm()
             except Exception:
-                logger.warning("LLM não está disponível")
+                logger.warning("LLM no est disponível")
                 return f"Resposta padrão de {alma_nome} para: {consulta}"
 
         if self._llm_model:
             try:
-                prompt = f"Você é {alma_nome}. Pergunta: {consulta}\nContexto RAG: {ctx_rag}\n"
+                prompt = f"você  {alma_nome}. Pergunta: {consulta}\nContexto RAG: {ctx_rag}\n"
                 resposta = self._llm_model.create_completion(prompt, max_tokens=512, temperature=0.7)
                 if isinstance(resposta, dict) and resposta.get("choices"):
                     return str(resposta["choices"][0].get("text", ""))
@@ -604,7 +604,7 @@ class CacheHDD:
             try:
                 p = Path(path)
                 if not p.exists() or not p.is_dir():
-                    raise ValueError(f"Caminho inválido: {p}")
+                    raise ValueError(f"Caminho invlido: {p}")
                 self.hdd_path = p.resolve()
                 self.cache_dir = self.hdd_path / self.cache_dir_name
                 self.quarantine_dir = self.hdd_path / self.quarantine_dir_name
@@ -644,7 +644,7 @@ class CacheHDD:
                     except Exception:
                         continue
         except Exception:
-            logger.exception("Erro na detecção automática")
+            logger.exception("Erro na deteco automtica")
         return None
 
     def hdd_disponivel(self) -> bool:
@@ -730,7 +730,7 @@ class CacheHDD:
                 return None
 
     def _carregar_arquivo(self, file_path: Path) -> Optional[Dict[str, Any]]:
-        """Carrega e valida arquivo."""
+        """Carrega e válida arquivo."""
         try:
             with open(file_path, "rb") as f:
                 raw = f.read()
@@ -749,7 +749,7 @@ class CacheHDD:
                         pass
                 return None
 
-            # Validar expiração
+            # Validar expirao
             expiracao_str = conhecimento.get("expiracao")
             if expiracao_str:
                 try:
@@ -775,7 +775,7 @@ class CacheHDD:
             return None
 
     def obter_estatisticas(self) -> Dict[str, Any]:
-        """Obtém estatísticas do cache."""
+        """Obtm estatsticas do cache."""
         if not self.hdd_disponivel():
             return {"hdd_disponivel": False}
         with self._lock:
@@ -802,7 +802,7 @@ class CacheHDD:
 
 
 # ============================================================================
-# EXPORTS E FUNÇÕES DE CONVENIÍŠNCIA
+# EXPORTS E funções DE CONVENINCIA
 # ============================================================================
 
 def criar_detector_hitachi() -> DetectorHardware:

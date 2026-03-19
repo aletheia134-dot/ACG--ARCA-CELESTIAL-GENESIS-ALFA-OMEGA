@@ -2,15 +2,15 @@
 # -*- coding: utf-8 -*-
 
 """
-Ferramenta: Webcam â†’ Anime em Tempo Real
-Aplica estilo anime em feed de câmera ao vivo usando AnimeGAN2.
+Ferramenta: Webcam  Anime em Tempo Real
+Aplica estilo anime em feed de cmera ação vivo usando AnimeGAN2.
 
 Modos de execução:
-  python Ferramenta_WebcamAnime.py                        # Interface gráfica
+  python Ferramenta_WebcamAnime.py                        # Interface grfica
   python Ferramenta_WebcamAnime.py --capturar PASTA       # Captura N frames
   python Ferramenta_WebcamAnime.py --frame IMAGEM.jpg     # Processa 1 frame
 
-CORREÇÍO: erro de sintaxe no bloco if __name__ == "__main__"
+CORREO: erro de sintaxe no bloco if __name__ == "__main__"
 """
 
 import sys
@@ -21,10 +21,10 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
 try:
-    from src.utils.utils import InterfaceBase, Utils
+    from src.modulos.utils import InterfaceBase, Utils
     from src.config.config import PASTA_SAIDAS, USAR_GPU
 except ImportError:
-    from src.utils.utils import InterfaceBase, Utils  # mesmo diretório
+    from src.modulos.utils import InterfaceBase, Utils  # mesmo diretório
     PASTA_SAIDAS = Path.home() / "Ferramentas_IA" / "saidas"
     USAR_GPU = False
 
@@ -40,7 +40,7 @@ try:
     TORCH_OK = True
 except ImportError:
     TORCH_OK = False
-    print("âŒ PyTorch não instalado: pip install torch torchvision")
+    print("[ERRO] PyTorch no instalado: pip install torch torchvision")
 
 # Tenta importar AnimeGAN
 _ANIMEGAN_PATH = Path(__file__).parent.parent / "animegan2-pytorch"
@@ -51,10 +51,10 @@ if _ANIMEGAN_PATH.exists() and TORCH_OK:
         from model import Generator
         _ANIMEGAN_OK = True
     except ImportError:
-        print("âš ï¸ animegan2-pytorch não encontrado. Clone o repo em:", _ANIMEGAN_PATH)
+        print("[AVISO] animegan2-pytorch no encontrado. Clone o repo em:", _ANIMEGAN_PATH)
 
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────────────────
 class MotorAnimeGAN:
     """Aplica estilo anime usando AnimeGAN2 ou fallback cartoonize simples."""
 
@@ -68,22 +68,22 @@ class MotorAnimeGAN:
 
     def _carregar_modelo(self):
         if not _ANIMEGAN_OK:
-            print("âš ï¸ Usando modo fallback (cartoon simples)")
+            print("[AVISO] Usando modo fallback (cartoon simples)")
             return
         try:
             import torch
             self.modelo = Generator()
             self.modelo.eval()
             self.modelo = self.modelo.to(self.device)
-            print(f"âœ… AnimeGAN carregado em: {self.device}")
+            print(f"[OK] AnimeGAN carregado em: {self.device}")
         except Exception as e:
-            print(f"âŒ Falha ao carregar AnimeGAN: {e}")
+            print(f"[ERRO] Falha ao carregar AnimeGAN: {e}")
             self.modelo = None
 
     def processar_frame(self, frame_bgr: np.ndarray) -> np.ndarray:
         """
         Recebe frame BGR (OpenCV) e retorna frame processado BGR.
-        Se AnimeGAN não estiver disponível, aplica efeito cartoon como fallback.
+        Se AnimeGAN no estiver disponível, aplica efeito cartoon como fallback.
         """
         if self.modelo is not None:
             return self._processar_com_modelo(frame_bgr)
@@ -94,26 +94,26 @@ class MotorAnimeGAN:
         """Processa com AnimeGAN2"""
         try:
             import torch
-            # BGR â†’ RGB â†’ PIL
+            # BGR  RGB  PIL
             frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
             pil_img = Image.fromarray(frame_rgb)
 
-            # Resize para 512 (modelo espera múltiplos de 32)
+            # Resize para 512 (modelo espera mltiplos de 32)
             h, w = frame_bgr.shape[:2]
             new_w = (w // 32) * 32
             new_h = (h // 32) * 32
             pil_img = pil_img.resize((new_w, new_h), Image.LANCZOS)
 
-            # Normaliza: [0,255] â†’ [-1,1]
+            # Normaliza: [0,255]  [-1,1]
             tensor = torch.from_numpy(np.array(pil_img)).float()
-            tensor = tensor.permute(2, 0, 1).unsqueeze(0)  # HWC â†’ BCHW
+            tensor = tensor.permute(2, 0, 1).unsqueeze(0)  # HWC  BCHW
             tensor = (tensor / 127.5) - 1.0
             tensor = tensor.to(self.device)
 
             with torch.no_grad():
                 saida = self.modelo(tensor)
 
-            # Desnormaliza: [-1,1] â†’ [0,255]
+            # Desnormaliza: [-1,1]  [0,255]
             saida = saida.squeeze(0).permute(1, 2, 0).cpu().numpy()
             saida = ((saida + 1.0) * 127.5).clip(0, 255).astype(np.uint8)
 
@@ -130,7 +130,7 @@ class MotorAnimeGAN:
     def _cartoon_fallback(self, frame_bgr: np.ndarray) -> np.ndarray:
         """
         Efeito cartoon sem modelo de ML.
-        Usa bilateral filter + detecção de bordas.
+        Usa bilateral filter + deteco de bordas.
         """
         # Suaviza preservando bordas
         suave = cv2.bilateralFilter(frame_bgr, d=9, sigmaColor=75, sigmaSpace=75)
@@ -160,12 +160,12 @@ class MotorAnimeGAN:
         self._t_ultimo = agora
 
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────────────────
 class InterfaceWebcamAnime(InterfaceBase):
-    """Interface gráfica para webcam anime em tempo real."""
+    """Interface grfica para webcam anime em tempo real."""
 
     def __init__(self):
-        super().__init__("ðŸŽ¨ Webcam Anime - Tempo Real", "900x700")
+        super().__init__(" Webcam Anime - Tempo Real", "900x700")
         self.motor = MotorAnimeGAN(usar_gpu=USAR_GPU)
         self.cap = None
         self.rodando = False
@@ -175,8 +175,8 @@ class InterfaceWebcamAnime(InterfaceBase):
         self._setup_interface()
 
     def _setup_interface(self):
-        # Título
-        ctk.CTkLabel(self.frame, text="ðŸŽ¨ Webcam â†’ Anime em Tempo Real",
+        # Ttulo
+        ctk.CTkLabel(self.frame, text=" Webcam  Anime em Tempo Real",
                      font=("Segoe UI", 22, "bold")).pack(pady=10)
 
         # Status
@@ -184,8 +184,8 @@ class InterfaceWebcamAnime(InterfaceBase):
         ctk.CTkLabel(self.frame, text=f"Modo: {modo_str}",
                      font=("Segoe UI", 13), text_color="#0078D4").pack()
 
-        # Írea de preview
-        self.lbl_frame = ctk.CTkLabel(self.frame, text="â–¶ Inicie a câmera",
+        # rea de preview
+        self.lbl_frame = ctk.CTkLabel(self.frame, text=" Inicie a cmera",
                                        font=("Segoe UI", 16), width=640, height=480)
         self.lbl_frame.pack(pady=10)
 
@@ -198,42 +198,42 @@ class InterfaceWebcamAnime(InterfaceBase):
         frame_btns = ctk.CTkFrame(self.frame, fg_color="transparent")
         frame_btns.pack(pady=10)
 
-        self.btn_iniciar = ctk.CTkButton(frame_btns, text="â–¶ Iniciar Câmera",
+        self.btn_iniciar = ctk.CTkButton(frame_btns, text=" Iniciar Cmera",
                                           width=160, fg_color="#107C10",
                                           command=self._iniciar_camera)
         self.btn_iniciar.pack(side="left", padx=8)
 
-        self.btn_parar = ctk.CTkButton(frame_btns, text="â¹ Parar",
+        self.btn_parar = ctk.CTkButton(frame_btns, text=" Parar",
                                         width=120, fg_color="#E81123",
                                         state="disabled", command=self._parar_camera)
         self.btn_parar.pack(side="left", padx=8)
 
-        self.btn_capturar = ctk.CTkButton(frame_btns, text="ðŸ“¸ Capturar",
+        self.btn_capturar = ctk.CTkButton(frame_btns, text=" Capturar",
                                            width=130, state="disabled",
                                            command=self._capturar_frame)
         self.btn_capturar.pack(side="left", padx=8)
 
-        self.btn_gravar = ctk.CTkButton(frame_btns, text="âº Gravar",
+        self.btn_gravar = ctk.CTkButton(frame_btns, text=" Gravar",
                                          width=120, state="disabled",
                                          fg_color="#D83B01", command=self._toggle_gravacao)
         self.btn_gravar.pack(side="left", padx=8)
 
-        # Seletor de câmera
+        # Seletor de cmera
         linha_cam = ctk.CTkFrame(self.frame, fg_color="transparent")
         linha_cam.pack()
-        ctk.CTkLabel(linha_cam, text="Câmera:").pack(side="left", padx=5)
+        ctk.CTkLabel(linha_cam, text="Cmera:").pack(side="left", padx=5)
         self.combo_cam = ctk.CTkComboBox(linha_cam, values=["0", "1", "2", "3"], width=80)
         self.combo_cam.set("0")
         self.combo_cam.pack(side="left", padx=5)
 
-        self.atualizar_status("Pronto. Clique em 'Iniciar Câmera'.")
+        self.atualizar_status("Pronto. Clique em 'Iniciar Cmera'.")
 
     def _iniciar_camera(self):
         cam_idx = int(self.combo_cam.get())
         self.cap = cv2.VideoCapture(cam_idx, cv2.CAP_DSHOW if os.name == "nt" else cv2.CAP_ANY)
 
         if not self.cap.isOpened():
-            messagebox.showerror("Erro", f"Câmera {cam_idx} não encontrada.")
+            messagebox.showerror("Erro", f"Cmera {cam_idx} no encontrada.")
             return
 
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
@@ -244,7 +244,7 @@ class InterfaceWebcamAnime(InterfaceBase):
         self.btn_parar.configure(state="normal")
         self.btn_capturar.configure(state="normal")
         self.btn_gravar.configure(state="normal")
-        self.atualizar_status("Câmera ativa", "#107C10")
+        self.atualizar_status("Cmera ativa", "#107C10")
 
         self._atualizar_frame()
 
@@ -254,7 +254,7 @@ class InterfaceWebcamAnime(InterfaceBase):
 
         ok, frame = self.cap.read()
         if not ok:
-            self.atualizar_status("âš ï¸ Falha ao ler câmera", "#FFB900")
+            self.atualizar_status("[AVISO] Falha ao ler cmera", "#FFB900")
             self._frame_id = self.janela.after(50, self._atualizar_frame)
             return
 
@@ -287,12 +287,12 @@ class InterfaceWebcamAnime(InterfaceBase):
             self.cap.release()
             self.cap = None
 
-        self.lbl_frame.configure(image=None, text="â–¶ Inicie a câmera")
+        self.lbl_frame.configure(image=None, text=" Inicie a cmera")
         self.btn_iniciar.configure(state="normal")
         self.btn_parar.configure(state="disabled")
         self.btn_capturar.configure(state="disabled")
         self.btn_gravar.configure(state="disabled")
-        self.atualizar_status("Câmera parada.")
+        self.atualizar_status("Cmera parada.")
 
     def _capturar_frame(self):
         if not self.cap or not self.rodando:
@@ -319,24 +319,24 @@ class InterfaceWebcamAnime(InterfaceBase):
             fourcc = cv2.VideoWriter_fourcc(*"XVID")
             self.writer = cv2.VideoWriter(caminho, fourcc, 20, (640, 480))
             self.gravando = True
-            self.btn_gravar.configure(text="â¹ Parar Gravação", fg_color="#E81123")
+            self.btn_gravar.configure(text=" Parar Gravao", fg_color="#E81123")
             self.atualizar_status(f"Gravando: {nome}", "#E81123")
         else:
             self.gravando = False
             if self.writer:
                 self.writer.release()
                 self.writer = None
-            self.btn_gravar.configure(text="âº Gravar", fg_color="#D83B01")
-            self.atualizar_status("Gravação salva.", "#107C10")
+            self.btn_gravar.configure(text=" Gravar", fg_color="#D83B01")
+            self.atualizar_status("Gravao salva.", "#107C10")
 
     def _ao_fechar(self):
         self._parar_camera()
         super()._ao_fechar()
 
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────────────────
 class ModoIA_WebcamAnime:
-    """Modos CLI: capturar N frames ou processar imagem única."""
+    """Modos CLI: capturar N frames ou processar imagem nica."""
 
     def __init__(self):
         self.motor = MotorAnimeGAN(usar_gpu=USAR_GPU)
@@ -349,7 +349,7 @@ class ModoIA_WebcamAnime:
 
         cap = cv2.VideoCapture(cam_idx)
         if not cap.isOpened():
-            return {"sucesso": False, "erro": f"Câmera {cam_idx} não disponível"}
+            return {"sucesso": False, "erro": f"Cmera {cam_idx} no disponível"}
 
         frames = []
         for i in range(n_frames):
@@ -366,10 +366,10 @@ class ModoIA_WebcamAnime:
         return {"sucesso": True, "pasta": str(saida), "frames": frames}
 
     def processar_imagem(self, caminho_imagem: str) -> dict:
-        """Processa uma imagem estática como se fosse um frame."""
+        """Processa uma imagem esttica como se fosse um frame."""
         img_bgr = cv2.imread(caminho_imagem)
         if img_bgr is None:
-            return {"sucesso": False, "erro": f"Imagem não encontrada: {caminho_imagem}"}
+            return {"sucesso": False, "erro": f"Imagem no encontrada: {caminho_imagem}"}
 
         processado = self.motor.processar_frame(img_bgr)
         nome = self.utils.safe_filename("anime_frame", "png")
@@ -379,7 +379,7 @@ class ModoIA_WebcamAnime:
         return {"sucesso": True, "arquivo": str(destino)}
 
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         comando = sys.argv[1]
@@ -397,7 +397,7 @@ if __name__ == "__main__":
 
         else:
             print("Uso:")
-            print("  python Ferramenta_WebcamAnime.py                          # Interface gráfica")
+            print("  python Ferramenta_WebcamAnime.py                          # Interface grfica")
             print("  python Ferramenta_WebcamAnime.py --capturar PASTA [N]     # Captura N frames")
             print("  python Ferramenta_WebcamAnime.py --frame IMAGEM.jpg       # Processa 1 imagem")
     else:

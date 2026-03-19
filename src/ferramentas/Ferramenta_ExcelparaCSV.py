@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS
 
 import pandas as pd
@@ -28,14 +28,14 @@ class FerramentaExcelparaCSV:
         try:
             self.caminho_excel = caminho
             
-            # Obtém nomes das planilhas
+            # Obtm nomes das planilhas
             xl = pd.ExcelFile(caminho)
             self.planilhas = xl.sheet_names
             
             # Carrega primeira planilha como preview
             self.df = pd.read_excel(caminho, sheet_name=0)
             
-            # Informações
+            # informações
             self.info = {
                 "planilhas": len(self.planilhas),
                 "nomes_planilhas": self.planilhas,
@@ -49,7 +49,7 @@ class FerramentaExcelparaCSV:
             return False, str(e)
     
     def carregar_planilha(self, nome_planilha):
-        """Carrega uma planilha específica"""
+        """Carrega uma planilha especfica"""
         try:
             self.df = pd.read_excel(self.caminho_excel, sheet_name=nome_planilha)
             return True, {
@@ -147,7 +147,7 @@ class FerramentaExcelparaCSV:
 
 class InterfaceExcelparaCSV(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸ“Š Converter Excel para CSV", "800x700")
+        super().__init__(" Converter Excel para CSV", "800x700")
         self.ferramenta = FerramentaExcelparaCSV()
         self.info_excel = None
         self.planilha_atual = 0
@@ -156,18 +156,18 @@ class InterfaceExcelparaCSV(InterfaceBase):
     def setup_interface(self):
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸ“Š Converter Excel para CSV",
+            text=" Converter Excel para CSV",
             font=("Arial", 24, "bold")
         )
         titulo.pack(pady=10)
         
-        # Seleção
+        # Seleo
         self.frame_arquivo = ctk.CTkFrame(self.frame)
         self.frame_arquivo.pack(pady=10, padx=10, fill="x")
         
         self.btn_excel = ctk.CTkButton(
             self.frame_arquivo,
-            text="ðŸ“ Selecionar Excel",
+            text=" Selecionar Excel",
             command=self.selecionar_excel,
             width=150,
             height=40
@@ -180,14 +180,14 @@ class InterfaceExcelparaCSV(InterfaceBase):
         )
         self.lbl_arquivo.pack(side="left", padx=10)
         
-        # Informações
+        # informações
         self.frame_info = ctk.CTkFrame(self.frame)
         self.frame_info.pack(pady=10, padx=10, fill="x")
         
         self.texto_info = ctk.CTkTextbox(self.frame_info, height=80)
         self.texto_info.pack(pady=5, padx=5, fill="x")
         
-        # Seleção de planilha
+        # Seleo de planilha
         self.frame_planilha = ctk.CTkFrame(self.frame)
         self.frame_planilha.pack(pady=5, padx=10, fill="x")
         
@@ -218,7 +218,7 @@ class InterfaceExcelparaCSV(InterfaceBase):
         self.texto_preview = ctk.CTkTextbox(self.frame_preview, height=150)
         self.texto_preview.pack(pady=5, padx=5, fill="both", expand=True)
         
-        # Opções
+        # Opes
         self.frame_opcoes = ctk.CTkFrame(self.frame)
         self.frame_opcoes.pack(pady=10, padx=10, fill="x")
         
@@ -254,7 +254,7 @@ class InterfaceExcelparaCSV(InterfaceBase):
         )
         self.enc_combo.pack(side="left", padx=5)
         
-        # Índice
+        # índice
         self.index_var = ctk.BooleanVar(value=False)
         self.chk_index = ctk.CTkCheckBox(
             self.frame_opcoes,
@@ -263,13 +263,13 @@ class InterfaceExcelparaCSV(InterfaceBase):
         )
         self.chk_index.pack(pady=2)
         
-        # Botões
+        # Botes
         self.frame_botoes = ctk.CTkFrame(self.frame)
         self.frame_botoes.pack(pady=10)
         
         self.btn_converter = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ”„ Converter para CSV",
+            text=" Converter para CSV",
             command=self.converter,
             width=150,
             height=35,
@@ -280,7 +280,7 @@ class InterfaceExcelparaCSV(InterfaceBase):
         
         self.btn_converter_todas = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ”„ Converter Todas",
+            text=" Converter Todas",
             command=self.converter_todas,
             width=150,
             height=35,
@@ -307,7 +307,7 @@ class InterfaceExcelparaCSV(InterfaceBase):
                 self.info_excel = info
                 
                 info_texto = f"Planilhas: {info['planilhas']}\n"
-                info_texto += f"Linhas (1Âª): {info['linhas']}\n"
+                info_texto += f"Linhas (1): {info['linhas']}\n"
                 info_texto += f"Colunas: {info['colunas']}\n"
                 info_texto += f"Tamanho: {info['tamanho_mb']:.2f} MB"
                 
@@ -336,7 +336,7 @@ class InterfaceExcelparaCSV(InterfaceBase):
     
     def converter(self):
         def converter_thread():
-            self.btn_converter.configure(state="disabled", text="â³ Convertendo...")
+            self.btn_converter.configure(state="disabled", text=" Convertendo...")
             self.progress.set(0.3)
             
             separador = self.sep_var.get()
@@ -364,13 +364,13 @@ class InterfaceExcelparaCSV(InterfaceBase):
                 self.utils.mostrar_erro("Erro", msg)
             
             self.progress.set(1)
-            self.btn_converter.configure(state="normal", text="ðŸ”„ Converter para CSV")
+            self.btn_converter.configure(state="normal", text=" Converter para CSV")
         
         threading.Thread(target=converter_thread).start()
     
     def converter_todas(self):
         def converter_thread():
-            self.btn_converter_todas.configure(state="disabled", text="â³ Convertendo...")
+            self.btn_converter_todas.configure(state="disabled", text=" Convertendo...")
             self.progress.set(0.3)
             
             separador = self.sep_var.get()
@@ -387,14 +387,14 @@ class InterfaceExcelparaCSV(InterfaceBase):
             if resultados:
                 texto = f"{len(resultados)} planilhas convertidas:\n"
                 for r in resultados:
-                    texto += f"  • {r['planilha']}: {r['linhas']} linhas\n"
+                    texto += f"   {r['planilha']}: {r['linhas']} linhas\n"
                 
                 self.utils.mostrar_info("Sucesso", texto)
             else:
                 self.utils.mostrar_erro("Erro", msg)
             
             self.progress.set(1)
-            self.btn_converter_todas.configure(state="normal", text="ðŸ”„ Converter Todas")
+            self.btn_converter_todas.configure(state="normal", text=" Converter Todas")
         
         threading.Thread(target=converter_thread).start()
 

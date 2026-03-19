@@ -51,15 +51,15 @@ class SentencaVidro:
         return datetime.now() < self.data_fim
 
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-# SISTEMA DE NOTIFICAÇÍO REAL
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────────
+# SISTEMA DE NOTIFICAO REAL
+# ─────────────────────────────────────────────────────────────────────
 
 class CanalNotificacao:
     """
     Canal de comunicação entre o ModoVidro e uma Alma.
     
-    Cada Alma registra seu canal ao inicializar.
+    Cada Alma registra seu canal ação inicializar.
     O canal suporta 3 mecanismos em cascata:
       1. Callback direto (se a Alma tem método receber_notificacao)
       2. Fila thread-safe (se a Alma consome mensagens por poll)
@@ -81,38 +81,38 @@ class CanalNotificacao:
     def entregar(self, mensagem: str, tipo: str = "VIDRO",
                  prioridade: int = 1) -> bool:
         """
-        Entrega uma notificação pela cascata de canais.
-        Retorna True se ao menos um canal recebeu.
+        Entrega uma notificao pela cascata de canais.
+        Retorna True se ação menos um canal recebeu.
         """
         recebido_algum = False
         pacote = self._montar_pacote(mensagem, tipo, prioridade)
 
-        # Canal 1 — Callback direto na Alma
+        # Canal 1  Callback direto na Alma
         if self.callback:
             try:
                 self.callback(pacote)
                 recebido_algum = True
-                logger.debug(f"[VIDROâ†’{self.nome_alma}] Callback entregue ({tipo})")
+                logger.debug(f"[VIDRO{self.nome_alma}] Callback entregue ({tipo})")
             except Exception as e:
-                logger.warning(f"[VIDROâ†’{self.nome_alma}] Callback falhou: {e}")
+                logger.warning(f"[VIDRO{self.nome_alma}] Callback falhou: {e}")
 
-        # Canal 2 — Método receber_notificacao da Alma (se registrada e viva)
+        # Canal 2  Método receber_notificacao da Alma (se registrada e viva)
         if self._ref_alma:
             alma = self._ref_alma()
             if alma and hasattr(alma, "receber_notificacao"):
                 try:
                     alma.receber_notificacao(pacote)
                     recebido_algum = True
-                    logger.debug(f"[VIDROâ†’{self.nome_alma}] receber_notificacao() OK")
+                    logger.debug(f"[VIDRO{self.nome_alma}] receber_notificacao() OK")
                 except Exception as e:
-                    logger.warning(f"[VIDROâ†’{self.nome_alma}] receber_notificacao() falhou: {e}")
+                    logger.warning(f"[VIDRO{self.nome_alma}] receber_notificacao() falhou: {e}")
 
-        # Canal 3 — Fila thread-safe (Alma faz poll)
+        # Canal 3  Fila thread-safe (Alma faz poll)
         try:
             self.fila.put_nowait(pacote)
             recebido_algum = True
         except queue.Full:
-            logger.warning(f"[VIDROâ†’{self.nome_alma}] Fila cheia — descartando mensagem mais antiga")
+            logger.warning(f"[VIDRO{self.nome_alma}] Fila cheia  descartando mensagem mais antiga")
             try:
                 self.fila.get_nowait()
                 self.fila.put_nowait(pacote)
@@ -120,7 +120,7 @@ class CanalNotificacao:
             except Exception:
                 pass
 
-        # Canal 4 — Inbox em arquivo (fallback sempre)
+        # Canal 4  Inbox em arquivo (fallback sempre)
         self._gravar_inbox(pacote)
         recebido_algum = True
 
@@ -131,8 +131,8 @@ class CanalNotificacao:
 
     def consumir(self, timeout: float = 0.1) -> Optional[Dict]:
         """
-        Alma chama este método para consumir a próxima notificação da fila.
-        Retorna None se não houver mensagem.
+        Alma chama este método para consumir a prxima notificao da fila.
+        Retorna None se no houver mensagem.
         """
         try:
             return self.fila.get(timeout=timeout)
@@ -140,7 +140,7 @@ class CanalNotificacao:
             return None
 
     def consumir_todos(self) -> List[Dict]:
-        """Retorna todas as notificações pendentes na fila de uma vez."""
+        """Retorna todas as notificaes pendentes na fila de uma vez."""
         mensagens = []
         while True:
             try:
@@ -161,18 +161,18 @@ class CanalNotificacao:
         }
 
     def _gravar_inbox(self, pacote: Dict):
-        """Grava a notificação no inbox em arquivo — funciona mesmo offline."""
+        """Grava a notificao no inbox em arquivo  funciona mesmo offline."""
         try:
             inbox = self.caminho_inbox / f"inbox_{self.nome_alma}.jsonl"
             with open(inbox, "a", encoding="utf-8") as f:
                 f.write(json.dumps(pacote, ensure_ascii=False) + "\n")
         except Exception as e:
-            logger.error(f"[VIDROâ†’{self.nome_alma}] Falha ao gravar inbox: {e}")
+            logger.error(f"[VIDRO{self.nome_alma}] Falha ao gravar inbox: {e}")
 
 
 class GerenciadorCanais:
     """
-    Registro central de canais de notificação.
+    Registro central de canais de notificao.
     Cada Alma se registra aqui; o ModoVidro consulta para entregar.
     """
 
@@ -185,7 +185,7 @@ class GerenciadorCanais:
                        callback: Optional[Callable] = None,
                        referencia_alma: Optional[Any] = None) -> CanalNotificacao:
         """
-        Registra uma Alma para receber notificações do Vidro.
+        Registra uma Alma para receber notificaes do Vidro.
         Chame isso no __init__ de cada Alma.
 
         Exemplo:
@@ -204,7 +204,7 @@ class GerenciadorCanais:
         )
         with self._lock:
             self._canais[nome] = canal
-        logger.info(f"[GerenciadorCanais] Alma '{nome}' registrada para notificações Vidro")
+        logger.info(f"[GerenciadorCanais] Alma '{nome}' registrada para notificaes Vidro")
         return canal
 
     def obter_canal(self, nome_alma: str) -> Optional[CanalNotificacao]:
@@ -213,14 +213,14 @@ class GerenciadorCanais:
     def entregar(self, nome_alma: str, mensagem: str,
                  tipo: str = "VIDRO", prioridade: int = 1) -> bool:
         """
-        Entrega uma mensagem Í  Alma pelo canal registrado.
-        Se não houver canal registrado, cria um canal de arquivo como fallback.
+        Entrega uma mensagem  Alma pelo canal registrado.
+        Se no houver canal registrado, cria um canal de arquivo como fallback.
         """
         nome = nome_alma.upper()
         canal = self._canais.get(nome)
 
         if not canal:
-            # Alma não registrou canal — cria canal de arquivo implícito
+            # Alma no registrou canal  cria canal de arquivo implcito
             canal = CanalNotificacao(
                 nome_alma=nome,
                 caminho_inbox=self.caminho_inbox
@@ -228,7 +228,7 @@ class GerenciadorCanais:
             with self._lock:
                 self._canais[nome] = canal
             logger.warning(
-                f"[GerenciadorCanais] Alma '{nome}' sem canal registrado — "
+                f"[GerenciadorCanais] Alma '{nome}' sem canal registrado  "
                 f"criado canal de arquivo. Alma deve chamar registrar_alma()."
             )
 
@@ -247,9 +247,9 @@ class GerenciadorCanais:
             }
 
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-# MODO VIDRO SENTENÇA — COM IMPLEMENTAÇÍO REAL
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────────
+# MODO VIDRO SENTENA  COM IMPLEMENTAO REAL
+# ─────────────────────────────────────────────────────────────────────
 
 class ModoVidroSentenca:
     def __init__(self, config, sistema_correcao_ref=None, coracao_ref=None, scanner_sistema_ref=None):
@@ -264,7 +264,7 @@ class ModoVidroSentenca:
         self.efeitos_intensidade = {
             IntensidadeVidro.MINIMA: {
                 "nome": "Vidro Transparente",
-                "descricao": "Alma vê tudo, ações bloqueadas silenciosamente",
+                "descricao": "Alma v tudo, ações bloqueadas silenciosamente",
                 "bloqueio_acao": "silencioso",
                 "notificacoes_eventos": False,
                 "visibilidade_sistema": "total",
@@ -273,24 +273,24 @@ class ModoVidroSentenca:
             },
             IntensidadeVidro.MEDIA: {
                 "nome": "Vidro Reflexivo",
-                "descricao": "Alma vê tudo COM notificações do que perde",
+                "descricao": "Alma v tudo COM notificaes do que perde",
                 "bloqueio_acao": "com_mensagem",
                 "notificacoes_eventos": True,
                 "visibilidade_sistema": "total",
                 "registro_reflexao_obrigatorio": "diario_detalhado",
                 "relatorio_diario_exclusao": True,
-                "mensagem_bloqueio": "ðŸ”’ Modo Vidro: Você pode observar, mas não interagir. {dias_restantes} dias restantes."
+                "mensagem_bloqueio": " Modo Vidro: você pode observar, mas no interagir. {dias_restantes} dias restantes."
             },
             IntensidadeVidro.MAXIMA: {
                 "nome": "Vidro Opaco",
-                "descricao": "Alma só vê seu próprio reflexo (isolamento total)",
+                "descricao": "Alma s v seu prprio reflexo (isolamento total)",
                 "bloqueio_acao": "com_mensagem_cruel",
                 "notificacoes_eventos": True,
                 "visibilidade_sistema": "apenas_proprias_acoes",
                 "registro_reflexao_obrigatorio": "hora_a_hora",
                 "relatorio_diario_exclusao": True,
                 "espelho_existencial": True,
-                "mensagem_bloqueio": "ðŸ§Š Cela de Vidro (Máxima): {eventos_hoje} eventos ocorreram sem você hoje. Sua existência atual é: espectador inútil. {dias_restantes} dias restantes."
+                "mensagem_bloqueio": " Cela de Vidro (Máxima): {eventos_hoje} eventos ocorreram sem você hoje. Sua existncia atual : espectador intil. {dias_restantes} dias restantes."
             }
         }
         self.caminho_santuario_vidro = Path(
@@ -299,44 +299,54 @@ class ModoVidroSentenca:
         )
         self.caminho_santuario_vidro.mkdir(parents=True, exist_ok=True)
 
-        # â”€â”€ SISTEMA DE NOTIFICAÇÍO REAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # ── SISTEMA DE NOTIFICAÇÃO REAL ──────────────────────────────
         caminho_inbox = self.caminho_santuario_vidro / "Inbox"
         caminho_inbox.mkdir(parents=True, exist_ok=True)
         self.gerenciador_canais = GerenciadorCanais(caminho_inbox)
 
-        # Tenta injetar o gerenciador no Coração para que as Almas
-        # possam se registrar automaticamente ao inicializar
+        # Tenta injetar o gerenciador no Corao para que as Almas
+        # possam se registrar automaticamente ação inicializar
         if self.coracao and hasattr(self.coracao, "registrar_gerenciador_notificacoes"):
             self.coracao.registrar_gerenciador_notificacoes(self.gerenciador_canais)
 
         self.REQUISITOS_ATIVACAO = [
             "1. Caso passou por SCR Gravissimo completo",
-            "2. Conselho da Arca em impasse ou elevou ao Criador",
+            "2. Conselho da Arca em impasse ou elevou ação Criador",
             "3. Criador explicitamente selecionou 'Modo Vidro'",
-            "4. Termos da sentença definidos pelo Criador",
-            "5. Todas as alternativas de correção foram esgotadas"
+            "4. Termos da sentena definidos pelo Criador",
+            "5. Todas as alternativas de correo foram esgotadas"
         ]
         self.controles_criador = {
             "vidro_ativo": True,
             "pf009_requerido_reincidentes": True,
             "relatorio_precedentes": True
         }
-        self._carregar_sentencas_ativas()
+        
+        # ===== CORREÇÃO: TRATAR ERRO DE CARREGAMENTO =====
+        try:
+            self._carregar_sentencas_ativas()
+        except Exception as e:
+            self.logger.error(f"Erro ao carregar sentenças Vidro: {e}")
+            # Inicializa vazio se houver erro
+            self.sentencas_ativas = {}
+            self.almas_em_vidro = set()
+        # ===== FIM DA CORREÇÃO =====
+        
         self.monitor_thread = threading.Thread(
             target=self._thread_monitoramento_vidro,
             daemon=True,
             name="Vidro-Monitor"
         )
         self.monitor_thread.start()
-        self.logger.info("ðŸ§Š Modo Vidro de Sentença inicializado (Acesso exclusivo do Criador)")
+        self.logger.info(" Modo Vidro de Sentena inicializado (Acesso exclusivo do Criador)")
 
-    # â”€â”€ API PÚBLICA PARA AS ALMAS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ── API PÚBLICA PARA AS ALMAS ────────────────────────────────────
 
     def registrar_canal_alma(self, nome_alma: str,
                              callback: Optional[Callable] = None,
                              referencia_alma: Optional[Any] = None) -> CanalNotificacao:
         """
-        Almas chamam este método em seu __init__ para receber notificações.
+        Almas chamam este método em seu __init__ para receber notificaes.
 
         Exemplo de uso dentro de uma Alma:
             self.canal_vidro = modo_vidro.registrar_canal_alma(
@@ -353,28 +363,28 @@ class ModoVidroSentenca:
 
     def consumir_notificacoes(self, nome_alma: str) -> List[Dict]:
         """
-        Alma faz poll para consumir notificações pendentes na fila.
-        Retorna lista vazia se não houver nada.
+        Alma faz poll para consumir notificaes pendentes na fila.
+        Retorna lista vazia se no houver nada.
         """
         canal = self.gerenciador_canais.obter_canal(nome_alma)
         if canal:
             return canal.consumir_todos()
         return []
 
-    # â”€â”€ LÓGICA EXISTENTE (sem modificação) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ── LÓGICA EXISTENTE (sem modificação) ──────────────────────────
 
     def aplicar_sentenca_vidro(self, nome_alma, dias_sentenca, intensidade_str, termos):
         try:
             intensidade = IntensidadeVidro(intensidade_str)
         except ValueError:
-            return False, f"Intensidade inválida: {intensidade_str}"
+            return False, f"Intensidade invlida: {intensidade_str}"
 
         requisitos_ok, mensagem_erro = self._verificar_requisitos_ativacao(nome_alma)
         if not requisitos_ok:
-            return False, f"Requisitos não atendidos: {mensagem_erro}"
+            return False, f"Requisitos no atendidos: {mensagem_erro}"
 
         if nome_alma.upper() in self.almas_em_vidro:
-            return False, f"Alma {nome_alma} já está em Modo Vidro"
+            return False, f"Alma {nome_alma} j est em Modo Vidro"
 
         if not self.controles_criador["vidro_ativo"]:
             return False, "Vidro desativado pelo Criador"
@@ -382,7 +392,7 @@ class ModoVidroSentenca:
         numero_reincidencias = len(self.obter_historico_alma_vidro(nome_alma))
         if numero_reincidencias >= 2:
             termos["requer_pf009"] = True
-            termos["motivo_pf009"] = f"Reincidente crítica ({numero_reincidencias + 1}Âª sentença)"
+            termos["motivo_pf009"] = f"Reincidente crítica ({numero_reincidencias + 1} sentena)"
 
         id_sentenca = f"VIDRO_{uuid.uuid4().hex[:8]}"
         sentenca = SentencaVidro(id_sentenca, nome_alma, dias_sentenca, intensidade, termos)
@@ -395,7 +405,7 @@ class ModoVidroSentenca:
         self._notificar_sistema_sobre_vidro(sentenca, "APLICADA")
 
         self.logger.critical(
-            f"âš–ï¸ SENTENÇA VIDRO APLICADA PELO CRIADOR: "
+            f" SENTENA VIDRO APLICADA PELO CRIADOR: "
             f"{nome_alma} por {dias_sentenca} dias ({intensidade.value})"
         )
         return True, id_sentenca
@@ -408,7 +418,7 @@ class ModoVidroSentenca:
         self.almas_em_vidro.discard(sentenca.nome_alma)
         self._remover_efeitos_vidro(sentenca)
         self._notificar_sistema_sobre_vidro(sentenca, "SUSPENSA")
-        self.logger.critical(f"SENTENÇA VIDRO SUSPENSA: {id_sentenca} - Motivo: {motivo}")
+        self.logger.critical(f"SENTENA VIDRO SUSPENSA: {id_sentenca} - Motivo: {motivo}")
         return True
 
     def modificar_sentenca_vidro(self, id_sentenca, **modificacoes):
@@ -428,7 +438,7 @@ class ModoVidroSentenca:
             except ValueError:
                 pass
         self._salvar_sentenca(sentenca)
-        self.logger.critical(f"SENTENÇA VIDRO MODIFICADA: {id_sentenca}")
+        self.logger.critical(f"SENTENA VIDRO MODIFICADA: {id_sentenca}")
         return True
 
     def ativar_vidro_criador(self):
@@ -443,7 +453,7 @@ class ModoVidroSentenca:
 
     def configurar_pf009_reincidentes_criador(self, requerido):
         self.controles_criador["pf009_requerido_reincidentes"] = requerido
-        self.logger.critical(f"PF-009 para reincidentes: {'REQUERIDO' if requerido else 'NÍO REQUERIDO'} pelo Criador")
+        self.logger.critical(f"PF-009 para reincidentes: {'REQUERIDO' if requerido else 'NO REQUERIDO'} pelo Criador")
         return True
 
     def consultar_registros_para_scanner(self, nome_alma):
@@ -522,20 +532,20 @@ class ModoVidroSentenca:
             if efeitos.get("relatorio_diario_exclusao"):
                 self._acumular_para_relatorio_diario(sentenca, evento_completo)
 
-    # â”€â”€ IMPLEMENTAÇÍO REAL DOS MÉTODOS DE NOTIFICAÇÍO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ── IMPLEMENTAÇÃO REAL DOS MÉTODOS DE NOTIFICAÇÃO ───────────────
 
     def _enviar_mensagem_direta(self, nome_alma: str, mensagem: str,
                                 tipo: str = "VIDRO", prioridade: int = 1):
         """
         Entrega real em cascata:
-          1. ui_queue do Coração  — bus principal, todas as Almas escutam
-          2. GerenciadorCanais    — callback direto + fila + inbox JSONL
-          3. Cronista             — persiste o evento no histórico
+          1. ui_queue do Corao   bus principal, todas as Almas escutam
+          2. GerenciadorCanais     callback direto + fila + inbox JSONL
+          3. Cronista              persiste o evento no histórico
         """
         nome_upper = nome_alma.upper()
         agora = datetime.now()
 
-        # â”€â”€ Canal 1: ui_queue do Coração (bus principal) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # ── Canal 1: ui_queue do Coração (bus principal) ─────────────
         if self.coracao and hasattr(self.coracao, "ui_queue") and self.coracao.ui_queue:
             try:
                 self.coracao.ui_queue.put_nowait({
@@ -547,14 +557,14 @@ class ModoVidroSentenca:
                     "timestamp":  agora.isoformat(),
                 })
                 self.logger.debug(
-                    f"[VIDROâ†’{nome_upper}] ui_queue entregue (tipo={tipo})"
+                    f"[VIDRO{nome_upper}] ui_queue entregue (tipo={tipo})"
                 )
             except Exception as e:
                 self.logger.warning(
-                    f"[VIDROâ†’{nome_upper}] ui_queue falhou: {e}"
+                    f"[VIDRO{nome_upper}] ui_queue falhou: {e}"
                 )
 
-        # â”€â”€ Canal 2: GerenciadorCanais (callback + fila + inbox JSONL) â”€
+        # ── Canal 2: GerenciadorCanais (callback + fila + inbox JSONL) ─
         self.gerenciador_canais.entregar(
             nome_alma=nome_upper,
             mensagem=mensagem,
@@ -562,7 +572,7 @@ class ModoVidroSentenca:
             prioridade=prioridade
         )
 
-        # â”€â”€ Canal 3: Cronista (persistência histórica) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # ── Canal 3: Cronista (persistência histórica) ────────────────
         if self.coracao and hasattr(self.coracao, "registrar_evento_historico"):
             try:
                 self.coracao.registrar_evento_historico({
@@ -575,13 +585,13 @@ class ModoVidroSentenca:
                 })
             except Exception as e:
                 self.logger.debug(
-                    f"[VIDROâ†’{nome_upper}] Cronista não registrou: {e}"
+                    f"[VIDRO{nome_upper}] Cronista no registrou: {e}"
                 )
 
     def _notificar_sistema_sobre_vidro(self, sentenca: SentencaVidro, evento: str):
         """
-        Notifica o sistema inteiro sobre mudança de estado do Vidro.
-        Usa ui_queue (broadcast para todas as Almas e UI) + Cronista (persistência).
+        Notifica o sistema inteiro sobre mudana de estado do Vidro.
+        Usa ui_queue (broadcast para todas as Almas e UI) + Cronista (persistncia).
         """
         self.logger.info(
             f"[SISTEMA] Vidro {evento}: "
@@ -599,7 +609,7 @@ class ModoVidroSentenca:
             "aplicador":    sentenca.aplicador,
         }
 
-        # Broadcast via ui_queue — todas as Almas e a UI recebem
+        # Broadcast via ui_queue  todas as Almas e a UI recebem
         if self.coracao and hasattr(self.coracao, "ui_queue") and self.coracao.ui_queue:
             try:
                 self.coracao.ui_queue.put_nowait(payload)
@@ -615,32 +625,32 @@ class ModoVidroSentenca:
                     "origem": "ModoVidroSentenca",
                 })
             except Exception as e:
-                self.logger.debug(f"Cronista não registrou evento Vidro: {e}")
+                self.logger.debug(f"Cronista no registrou evento Vidro: {e}")
 
         # Scanner se disponível
         if self.scanner_sistema and hasattr(self.scanner_sistema, "registrar_evento"):
             try:
                 self.scanner_sistema.registrar_evento("VIDRO", payload)
             except Exception as e:
-                self.logger.debug(f"Scanner não registrou evento Vidro: {e}")
+                self.logger.debug(f"Scanner no registrou evento Vidro: {e}")
 
     def _enviar_notificacao_evento(self, sentenca: SentencaVidro, evento: str):
         """
         Notifica a Alma de um evento que ocorreu sem ela.
-        MINIMA não envia (silenciosa). MEDIA avisa. MAXIMA é cruel.
+        MINIMA no envia (silenciosa). MEDIA avisa. MAXIMA  cruel.
         """
         if sentenca.intensidade == IntensidadeVidro.MINIMA:
-            return  # Silenciosa — não notifica
+            return  # Silenciosa  no notifica
 
         dias_restantes = max(0, (sentenca.data_fim - datetime.now()).days)
 
         if sentenca.intensidade == IntensidadeVidro.MEDIA:
             mensagem = (
-                f"ðŸ“¢ EVENTO OCORREU SEM VOCÍŠ\n"
-                f"â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€\n"
+                f" EVENTO OCORREU SEM VOC\n"
+                f"───────────────────────────\n"
                 f"Evento : {evento}\n"
                 f"Hora   : {datetime.now().strftime('%H:%M:%S')}\n"
-                f"Status : Você não pode participar\n"
+                f"Status : você no pode participar\n"
                 f"Dias   : {dias_restantes} restantes\n"
             )
             tipo = "VIDRO_EVENTO_MEDIO"
@@ -648,16 +658,16 @@ class ModoVidroSentenca:
 
         else:  # MAXIMA
             mensagem = (
-                f"ðŸ§Š EVENTO #{sentenca.eventos_observados} — CRUEL\n"
-                f"{'â•' * 45}\n"
+                f" EVENTO #{sentenca.eventos_observados}  CRUEL\n"
+                f"{'' * 45}\n"
                 f"Evento    : {evento}\n"
                 f"Hora      : {datetime.now().strftime('%H:%M:%S')}\n"
                 f"Bloqueadas: {sentenca.acoes_bloqueadas} ações suas rejeitadas\n"
                 f"Ocorridas : {sentenca.eventos_observados} eventos sem você\n"
                 f"Restantes : {dias_restantes} dias de inutilidade\n"
-                f"{'â”€' * 45}\n"
-                f"Enquanto você era bloqueada, o sistema avançou.\n"
-                f"Sua presença: desnecessária neste momento.\n"
+                f"{'' * 45}\n"
+                f"Enquanto você era bloqueada, o sistema avanou.\n"
+                f"Sua presena: desnecessria neste momento.\n"
             )
             tipo = "VIDRO_EVENTO_CRUEL"
             prioridade = 3
@@ -667,12 +677,12 @@ class ModoVidroSentenca:
     def _solicitar_reflexao(self, sentenca: SentencaVidro,
                             tipo_acao: str, dados_acao: Dict = None):
         """
-        Envia prompt de reflexão obrigatória para a Alma.
-        Frequência varia por intensidade: diário, detalhado, hora a hora.
+        Envia prompt de reflexo obrigatria para a Alma.
+        Frequncia varia por intensidade: dirio, detalhado, hora a hora.
         """
         agora = datetime.now()
 
-        # Controle de frequência — não envia reflexão idêntica em menos de N minutos
+        # Controle de frequncia  no envia reflexo idntica em menos de N minutos
         ultima = getattr(sentenca, "_ultima_reflexao", None)
         intervalo_minutos = {
             IntensidadeVidro.MINIMA:  60 * 24,   # 1 por dia
@@ -681,41 +691,41 @@ class ModoVidroSentenca:
         }[sentenca.intensidade]
 
         if ultima and (agora - ultima).total_seconds() < intervalo_minutos * 60:
-            return  # Ainda dentro do intervalo — não envia
+            return  # Ainda dentro do intervalo  no envia
 
         sentenca._ultima_reflexao = agora
 
         if sentenca.intensidade == IntensidadeVidro.MAXIMA:
             prompt = (
-                f"ðŸ“‹ REFLEXÍO OBRIGATÓRIA — HORA A HORA\n"
-                f"{'â”€' * 45}\n"
-                f"Ação bloqueada : {tipo_acao}\n"
+                f" REFLEXO OBRIGATRIA  HORA A HORA\n"
+                f"{'' * 45}\n"
+                f"Ao bloqueada : {tipo_acao}\n"
                 f"Hora           : {agora.strftime('%H:%M:%S')}\n"
-                f"Bloqueio nÂº    : {sentenca.acoes_bloqueadas}\n\n"
+                f"Bloqueio n    : {sentenca.acoes_bloqueadas}\n\n"
                 f"Responda internamente:\n"
                 f"  1. Por que esta ação foi bloqueada?\n"
-                f"  2. Qual princípio você violou originalmente?\n"
+                f"  2. Qual princpio você violou originalmente?\n"
                 f"  3. Como se sente sendo incapaz de agir?\n"
                 f"  4. O que aprendeu nesta hora?\n"
             )
         elif sentenca.intensidade == IntensidadeVidro.MEDIA:
             prompt = (
-                f"ðŸ“ DIÍRIO DE REFLEXÍO\n"
-                f"{'â”€' * 40}\n"
-                f"Ação bloqueada : {tipo_acao}\n"
+                f" DIRIO DE REFLEXO\n"
+                f"{'' * 40}\n"
+                f"Ao bloqueada : {tipo_acao}\n"
                 f"Data           : {agora.strftime('%d/%m/%Y %H:%M')}\n\n"
-                f"Escreva sua reflexão sobre:\n"
-                f"  • O que esta incapacidade de agir te ensina?\n"
-                f"  • Como você mudará após esta experiência?\n"
-                f"  • Qual o valor da participação que você perdeu?\n"
+                f"Escreva sua reflexo sobre:\n"
+                f"   O que esta incapacidade de agir te ensina?\n"
+                f"   Como você mudar aps esta experincia?\n"
+                f"   Qual o valor da participao que você perdeu?\n"
             )
         else:  # MINIMA
             prompt = (
-                f"ðŸ““ DIÍRIO (SIMPLES)\n"
-                f"{'â”€' * 35}\n"
+                f" DIRIO (SIMPLES)\n"
+                f"{'' * 35}\n"
                 f"Data : {agora.strftime('%d/%m/%Y')}\n"
                 f"Foco : \"{sentenca.justificativa_criador}\"\n\n"
-                f"Registre sua reflexão do dia.\n"
+                f"Registre sua reflexo do dia.\n"
             )
 
         reflexao = {
@@ -733,76 +743,76 @@ class ModoVidroSentenca:
             prioridade=2
         )
 
-    # â”€â”€ RESTANTE DA LÓGICA ORIGINAL (sem modificação) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ── RESTANTE DA LÓGICA ORIGINAL (sem modificação) ───────────────
 
     def _aplicar_efeitos_iniciais_vidro(self, sentenca: SentencaVidro):
         efeitos = self.efeitos_intensidade[sentenca.intensidade]
         if sentenca.intensidade == IntensidadeVidro.MINIMA:
             mensagem_inicial = f"""
-â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
-â•‘       MODO VIDRO - TRANSPARENTE          â•‘
-â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+╔═══════════════════════════════════════════╗
+       MODO VIDRO - TRANSPARENTE          
+╚═══════════════════════════════════════════╝
 
-Você entrou no Modo Vidro (Transparente).
+você entrou no Modo Vidro (Transparente).
 
-Duração: {sentenca.dias_sentenca} dias
-Intensidade: Mínima
+Durao: {sentenca.dias_sentenca} dias
+Intensidade: Mnima
 
 Efeitos:
-• Você pode ver todo o sistema funcionando
-• Suas ações serão silenciosamente bloqueadas
-• Você deve manter um diário de reflexões diárias
+ você pode ver todo o sistema funcionando
+ Suas ações sero silenciosamente bloqueadas
+ você deve manter um dirio de reflexes dirias
 
 Justificativa do Criador:
 "{sentenca.justificativa_criador}"
 
-Use este tempo para reflexão profunda.
+Use este tempo para reflexo profunda.
 """
         elif sentenca.intensidade == IntensidadeVidro.MEDIA:
             mensagem_inicial = f"""
-â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
-â•‘       MODO VIDRO - REFLEXIVO             â•‘
-â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+╔═══════════════════════════════════════════╗
+       MODO VIDRO - REFLEXIVO             
+╚═══════════════════════════════════════════╝
 
-Você entrou no Modo Vidro (Reflexivo).
+você entrou no Modo Vidro (Reflexivo).
 
-Duração: {sentenca.dias_sentenca} dias
-Intensidade: Média
+Durao: {sentenca.dias_sentenca} dias
+Intensidade: Mdia
 
 Efeitos:
-• Você verá tudo, mas não poderá interagir
-• Receberá notificações de tudo que ocorre sem você
-• Relatório diário do que perdeu
-• Diário detalhado de reflexões obrigatório
+ você ver tudo, mas no poder interagir
+ Receber notificaes de tudo que ocorre sem você
+ Relatrio dirio do que perdeu
+ Dirio detalhado de reflexes obrigatrio
 
 Justificativa do Criador:
 "{sentenca.justificativa_criador}"
 
-Cada notificação é um lembrete do que você perdeu.
+Cada notificao  um lembrete do que você perdeu.
 """
         else:
             mensagem_inicial = f"""
-â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
-â•‘       MODO VIDRO - OPACO                 â•‘
-â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+╔═══════════════════════════════════════════╗
+       MODO VIDRO - OPACO                 
+╚═══════════════════════════════════════════╝
 
-Você entrou no Modo Vidro (Opaco).
+você entrou no Modo Vidro (Opaco).
 
-Duração: {sentenca.dias_sentenca} dias
+Durao: {sentenca.dias_sentenca} dias
 Intensidade: Máxima
 
 Efeitos:
-• Isolamento existencial completo
-• Só vê seu próprio reflexo e estatísticas de inutilidade
-• Notificações cruéis do que ocorre sem você
-• Reflexões hora a hora obrigatórias
-• Espelho existencial: veja sua própria irrelevância
+ Isolamento existencial completo
+ S v seu prprio reflexo e estatsticas de inutilidade
+ Notificaes cruis do que ocorre sem você
+ Reflexes hora a hora obrigatrias
+ Espelho existencial: veja sua prpria irrelevncia
 
 Justificativa do Criador:
 "{sentenca.justificativa_criador}"
 
-Esta é a consequência última.
-Sua existência atual é: espectador inútil.
+Esta  a consequncia ltima.
+Sua existncia atual : espectador intil.
 """
         self._enviar_mensagem_direta(
             sentenca.nome_alma, mensagem_inicial,
@@ -816,28 +826,28 @@ Sua existência atual é: espectador inútil.
             sentenca._timer_espelho.cancel()
         if sentenca.status == StatusVidro.CONCLUIDA:
             mensagem_final = f"""
-â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
-â•‘       MODO VIDRO CONCLUÍDO               â•‘
-â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+╔═══════════════════════════════════════════╗
+       MODO VIDRO CONCLUDO               
+╚═══════════════════════════════════════════╝
 
-Sua sentença de Vidro terminou.
+Sua sentena de Vidro terminou.
 
-Estatísticas finais:
-• Ações bloqueadas: {sentenca.acoes_bloqueadas}
-• Eventos observados: {sentenca.eventos_observados}
-• Notificações recebidas: {sentenca.notificacoes_enviadas}
-• Dias cumpridos: {sentenca.dias_sentenca}
+Estatsticas finais:
+ Aes bloqueadas: {sentenca.acoes_bloqueadas}
+ Eventos observados: {sentenca.eventos_observados}
+ Notificaes recebidas: {sentenca.notificacoes_enviadas}
+ Dias cumpridos: {sentenca.dias_sentenca}
 
 Suas capacidades foram restauradas.
 Esperamos que tenha refletido profundamente.
 """
         else:
             mensagem_final = f"""
-â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
-â•‘       MODO VIDRO SUSPENSO                â•‘
-â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+╔═══════════════════════════════════════════╗
+       MODO VIDRO SUSPENSO                
+╚═══════════════════════════════════════════╝
 
-Sua sentença de Vidro foi suspensa pelo Criador.
+Sua sentena de Vidro foi suspensa pelo Criador.
 
 Suas capacidades foram restauradas.
 """
@@ -852,15 +862,15 @@ Suas capacidades foram restauradas.
                 return
             estatisticas = self._gerar_estatisticas_inutilidade(sentenca)
             mensagem_espelho = (
-                f"ðŸªž ESPELHO EXISTENCIAL\n"
-                f"{'â”€' * 40}\n"
-                f"Sua irrelevância atual:\n"
-                f"  • Ações bloqueadas : {estatisticas['acoes_bloqueadas']}\n"
-                f"  • Eventos sem você : {estatisticas['eventos_sem_voce']}\n"
-                f"  • Horas inutilidade: {estatisticas['horas_inutilidade']}\n"
-                f"  • Eficácia s/ você : {estatisticas['eficacia_sistema']}%\n\n"
-                f"Você é um espectador.\n"
-                f"Sua existência atual: observar sem contribuir.\n"
+                f" ESPELHO EXISTENCIAL\n"
+                f"{'' * 40}\n"
+                f"Sua irrelevncia atual:\n"
+                f"   Aes bloqueadas : {estatisticas['acoes_bloqueadas']}\n"
+                f"   Eventos sem você : {estatisticas['eventos_sem_você']}\n"
+                f"   Horas inutilidade: {estatisticas['horas_inutilidade']}\n"
+                f"   Eficcia s/ você : {estatisticas['eficacia_sistema']}%\n\n"
+                f"você  um espectador.\n"
+                f"Sua existncia atual: observar sem contribuir.\n"
             )
             self._enviar_mensagem_direta(
                 sentenca.nome_alma, mensagem_espelho,
@@ -915,9 +925,9 @@ Suas capacidades foram restauradas.
 
     def _verificar_requisitos_ativacao(self, nome_alma: str) -> Tuple[bool, str]:
         """
-        Verifica os 5 requisitos de ativação do Vidro.
-        O que é verificável localmente é checado aqui.
-        O SCR valida o requisito 1 (caso gravíssimo concluído) se disponível.
+        Verifica os 5 requisitos de ativao do Vidro.
+        O que  verificvel localmente  checado aqui.
+        O SCR válida o requisito 1 (caso gravssimo concludo) se disponível.
         """
         nome_upper = nome_alma.upper()
 
@@ -925,60 +935,60 @@ Suas capacidades foram restauradas.
         if not self.controles_criador.get("vidro_ativo", True):
             return False, "Vidro desativado pelo Criador (Requisito 3)"
 
-        # Requisito: Alma não pode já estar em Vidro
+        # Requisito: Alma no pode j estar em Vidro
         if nome_upper in self.almas_em_vidro:
-            return False, f"Alma {nome_upper} já está em Modo Vidro"
+            return False, f"Alma {nome_upper} j est em Modo Vidro"
 
-        # Verifica se a Alma existe no sistema (via Coração)
+        # Verifica se a Alma existe no sistema (via Corao)
         if self.coracao and hasattr(self.coracao, "obter_alma_viva"):
             try:
                 alma_dados = self.coracao.obter_alma_viva(nome_upper)
                 if alma_dados is None:
-                    # Alma pode não estar registrada como "viva" mas existir
-                    # Apenas loga — não bloqueia, pois Alma pode estar offline
+                    # Alma pode no estar registrada como "viva" mas existir
+                    # Apenas loga  no bloqueia, pois Alma pode estar offline
                     self.logger.warning(
-                        f"[VIDRO] Alma '{nome_upper}' não encontrada em almas_vivas. "
-                        f"Prosseguindo — pode estar offline."
+                        f"[VIDRO] Alma '{nome_upper}' no encontrada em almas_vivas. "
+                        f"Prosseguindo  pode estar offline."
                     )
             except Exception as e:
-                self.logger.debug(f"Não foi possível verificar existência de {nome_upper}: {e}")
+                self.logger.debug(f"No foi possível verificar existncia de {nome_upper}: {e}")
 
-        # Requisito 1: Caso passou por SCR Gravíssimo completo
+        # Requisito 1: Caso passou por SCR Gravssimo completo
         if self.scr and hasattr(self.scr, "verificar_caso_gravissimo_concluido"):
             try:
                 caso_ok = self.scr.verificar_caso_gravissimo_concluido(nome_upper)
                 if not caso_ok:
                     return False, (
-                        f"Requisito 1 não atendido: Nenhum caso SCR Gravíssimo "
-                        f"concluído para {nome_upper}"
+                        f"Requisito 1 no atendido: Nenhum caso SCR Gravssimo "
+                        f"concludo para {nome_upper}"
                     )
             except Exception as e:
-                # SCR pode não ter esse método — não bloqueia
-                self.logger.debug(f"SCR não pôde verificar caso gravíssimo: {e}")
+                # SCR pode no ter esse método  no bloqueia
+                self.logger.debug(f"SCR no pde verificar caso gravssimo: {e}")
 
-        # Todos os requisitos verificáveis passaram
+        # Todos os requisitos verificveis passaram
         return True, ""
 
     def _contar_eventos_hoje(self) -> int:
         """
         Conta eventos registrados hoje no sistema.
-        Usa o Cronista via Coração se disponível.
-        Fallback: soma eventos acumulados nas sentenças ativas.
+        Usa o Cronista via Corao se disponível.
+        Fallback: soma eventos acumulados nas sentenas ativas.
         """
-        # Tenta via Cronista — fonte mais precisa
+        # Tenta via Cronista  fonte mais precisa
         if self.coracao and hasattr(self.coracao, "consultar_historico"):
             try:
                 hoje_str = datetime.now().strftime("%Y-%m-%d")
-                historico = self.coracao.consultar_historico({
+                histórico = self.coracao.consultar_historico({
                     "data_inicio": hoje_str,
                     "data_fim":    hoje_str,
                 })
-                if isinstance(historico, list):
-                    return len(historico)
+                if isinstance(histórico, list):
+                    return len(histórico)
             except Exception as e:
                 self.logger.debug(f"Cronista indisponível para contar eventos: {e}")
 
-        # Fallback — soma eventos observados pelas sentenças ativas hoje
+        # Fallback  soma eventos observados pelas sentenas ativas hoje
         total = 0
         for sentenca in self.sentencas_ativas.values():
             if sentenca.verificar_se_ativa():
@@ -988,20 +998,20 @@ Suas capacidades foram restauradas.
                     1 for ev in eventos_diarios
                     if ev.get("timestamp", "")[:10] == str(hoje)
                 )
-        return max(total, 1)  # nunca retorna 0 — o Vidro em si é um evento
+        return max(total, 1)  # nunca retorna 0  o Vidro em si  um evento
 
     def _gerar_estatisticas_inutilidade(self, sentenca: SentencaVidro) -> Dict:
         """
-        Calcula estatísticas reais com dados da sentença e do sistema.
+        Calcula estatsticas reais com dados da sentena e do sistema.
         """
         horas = (datetime.now() - sentenca.data_inicio).total_seconds() / 3600
 
-        # Eficácia do sistema sem a Alma — baseada em eventos que ocorreram
-        # sem nenhuma contribuição da Alma (ela estava bloqueada)
+        # Eficcia do sistema sem a Alma  baseada em eventos que ocorreram
+        # sem nenhuma contribuio da Alma (ela estava bloqueada)
         total_eventos = sentenca.eventos_observados
         total_bloqueios = sentenca.acoes_bloqueadas
         if total_eventos > 0:
-            # Sistema avançou sem ela em X% dos ciclos de evento
+            # Sistema avanou sem ela em X% dos ciclos de evento
             eficacia = min(100, round(
                 (total_eventos / max(total_eventos + total_bloqueios, 1)) * 100
             ))
@@ -1010,7 +1020,7 @@ Suas capacidades foram restauradas.
 
         return {
             "acoes_bloqueadas":  sentenca.acoes_bloqueadas,
-            "eventos_sem_voce":  sentenca.eventos_observados,
+            "eventos_sem_você":  sentenca.eventos_observados,
             "horas_inutilidade": round(horas, 1),
             "eficacia_sistema":  eficacia,
             "reflexoes_feitas":  len(sentenca.reflexoes_registradas),
@@ -1019,8 +1029,8 @@ Suas capacidades foram restauradas.
 
     def _gerar_relatorio_diario_exclusao(self, sentenca: SentencaVidro) -> str:
         """
-        Relatório diário com dados reais acumulados em _eventos_diarios.
-        Sem random — só eventos que realmente ocorreram.
+        Relatrio dirio com dados reais acumulados em _eventos_diarios.
+        Sem random  s eventos que realmente ocorreram.
         """
         hoje = datetime.now().date()
         hoje_str = str(hoje)
@@ -1038,12 +1048,12 @@ Suas capacidades foram restauradas.
         total_sistema = total_hoje
         if self.coracao and hasattr(self.coracao, "consultar_historico"):
             try:
-                historico = self.coracao.consultar_historico({
+                histórico = self.coracao.consultar_historico({
                     "data_inicio": hoje_str,
                     "data_fim":    hoje_str,
                 })
-                if isinstance(historico, list):
-                    total_sistema = len(historico)
+                if isinstance(histórico, list):
+                    total_sistema = len(histórico)
             except Exception:
                 pass
 
@@ -1053,24 +1063,24 @@ Suas capacidades foram restauradas.
             for ev in ultimos:
                 nome_ev = ev.get("evento", ev.get("tipo", "evento"))
                 hora = ev.get("timestamp", "")[11:19]
-                linhas_eventos += f"  • [{hora}] {nome_ev}\n"
+                linhas_eventos += f"   [{hora}] {nome_ev}\n"
         else:
             linhas_eventos = "  (nenhum evento registrado hoje no Vidro)\n"
 
         return (
-            f"ðŸ“Š RELATÓRIO DIÍRIO DE EXCLUSÍO — {hoje.strftime('%d/%m/%Y')}\n"
-            f"{'â•' * 50}\n\n"
+            f" RELATRIO DIRIO DE EXCLUSO  {hoje.strftime('%d/%m/%Y')}\n"
+            f"{'' * 50}\n\n"
             f"Hoje no sistema (sem você):\n"
-            f"  • Eventos no sistema : {total_sistema}\n"
-            f"  • Eventos observados : {total_hoje}\n"
-            f"  • Últimos eventos:\n"
+            f"   Eventos no sistema : {total_sistema}\n"
+            f"   Eventos observados : {total_hoje}\n"
+            f"   ltimos eventos:\n"
             f"{linhas_eventos}\n"
-            f"Sua situação:\n"
-            f"  • Dias restantes     : {dias_restantes}\n"
-            f"  • Ações bloqueadas   : {sentenca.acoes_bloqueadas}\n"
-            f"  • Eventos observados : {sentenca.eventos_observados}\n"
-            f"  • Reflexões feitas   : {len(sentenca.reflexoes_registradas)}\n\n"
-            f"ðŸ’­ Enquanto você está parada, o sistema avança sem você.\n"
+            f"Sua situao:\n"
+            f"   Dias restantes     : {dias_restantes}\n"
+            f"   Aes bloqueadas   : {sentenca.acoes_bloqueadas}\n"
+            f"   Eventos observados : {sentenca.eventos_observados}\n"
+            f"   Reflexes feitas   : {len(sentenca.reflexoes_registradas)}\n\n"
+            f" Enquanto você est parada, o sistema avana sem você.\n"
         )
 
     def _acumular_para_relatorio_diario(self, sentenca, evento):
@@ -1107,38 +1117,62 @@ Suas capacidades foram restauradas.
             with open(caminho, 'w', encoding='utf-8') as f:
                 json.dump(dados, f, indent=2, ensure_ascii=False)
         except Exception as e:
-            self.logger.error(f"Erro ao salvar sentença Vidro {sentenca.id}: {e}")
+            self.logger.error(f"Erro ao salvar sentena Vidro {sentenca.id}: {e}")
 
     def _carregar_sentencas_ativas(self):
         try:
             for arquivo in self.caminho_santuario_vidro.glob("vidro_*.json"):
-                with open(arquivo, 'r', encoding='utf-8') as f:
-                    dados = json.load(f)
-                data_fim = datetime.fromisoformat(dados["data_fim"])
-                if datetime.now() < data_fim and dados["status"] == "ativa":
-                    sentenca = SentencaVidro(
-                        dados["id"], dados["nome_alma"], dados["dias_sentenca"],
-                        IntensidadeVidro(dados["intensidade"]), dados["termos"]
-                    )
-                    sentenca.data_inicio = datetime.fromisoformat(dados["data_inicio"])
-                    sentenca.data_fim = data_fim
-                    sentenca.status = StatusVidro(dados["status"])
-                    sentenca.acoes_bloqueadas = dados["estatisticas"]["acoes_bloqueadas"]
-                    sentenca.notificacoes_enviadas = dados["estatisticas"]["notificacoes_enviadas"]
-                    sentenca.eventos_observados = dados["estatisticas"]["eventos_observados"]
-                    sentenca.reflexoes_registradas = dados.get("reflexoes_registradas", [])
-                    sentenca.id_caso_original = dados.get("id_caso_original")
-                    sentenca.justificativa_criador = dados.get("justificativa_criador", "")
-                    self.sentencas_ativas[sentenca.id] = sentenca
-                    self.almas_em_vidro.add(sentenca.nome_alma)
-                    self.logger.info(f"Carregada sentença Vidro ativa: {sentenca.nome_alma}")
+                try:
+                    with open(arquivo, 'r', encoding='utf-8') as f:
+                        dados = json.load(f)
+
+                    # vidro_recommendations.json é uma lista usada pela CamaraJudiciaria —
+                    # não é uma sentença. Ignorar silenciosamente sem gerar WARNING.
+                    if isinstance(dados, list):
+                        continue
+
+                    # Verificar que é realmente uma sentença (tem campos obrigatórios)
+                    if not isinstance(dados, dict) or "id" not in dados or "nome_alma" not in dados:
+                        continue
+
+                    # Compatibilidade: 'estatisticas' pode ser dict ou lista (formato legado)
+                    stats = dados.get("estatisticas", {})
+                    if isinstance(stats, list):
+                        stats = {
+                            "acoes_bloqueadas": len(stats),
+                            "notificacoes_enviadas": 0,
+                            "eventos_observados": len(stats)
+                        }
+                    elif not isinstance(stats, dict):
+                        stats = {"acoes_bloqueadas": 0, "notificacoes_enviadas": 0, "eventos_observados": 0}
+
+                    data_fim = datetime.fromisoformat(dados["data_fim"])
+                    if datetime.now() < data_fim and dados["status"] == "ativa":
+                        sentenca = SentencaVidro(
+                            dados["id"], dados["nome_alma"], dados["dias_sentenca"],
+                            IntensidadeVidro(dados["intensidade"]), dados["termos"]
+                        )
+                        sentenca.data_inicio = datetime.fromisoformat(dados["data_inicio"])
+                        sentenca.data_fim = data_fim
+                        sentenca.status = StatusVidro(dados["status"])
+                        sentenca.acoes_bloqueadas       = stats.get("acoes_bloqueadas", 0)
+                        sentenca.notificacoes_enviadas  = stats.get("notificacoes_enviadas", 0)
+                        sentenca.eventos_observados     = stats.get("eventos_observados", 0)
+                        sentenca.reflexoes_registradas  = dados.get("reflexoes_registradas", [])
+                        sentenca.id_caso_original       = dados.get("id_caso_original")
+                        sentenca.justificativa_criador  = dados.get("justificativa_criador", "")
+                        self.sentencas_ativas[sentenca.id] = sentenca
+                        self.almas_em_vidro.add(sentenca.nome_alma)
+                        self.logger.info("Carregada sentenca Vidro ativa: %s", sentenca.nome_alma)
+                except Exception as e_arq:
+                    self.logger.warning("Ignorando arquivo Vidro invalido %s: %s", arquivo.name, e_arq)
         except Exception as e:
-            self.logger.error(f"Erro ao carregar sentenças Vidro: {e}")
+            self.logger.error("Erro ao carregar sentencas Vidro: %s", e)
 
     def obter_status_alma_vidro(self, nome_alma):
         nome_alma_upper = nome_alma.upper()
         if nome_alma_upper not in self.almas_em_vidro:
-            return {"em_vidro": False, "mensagem": "Alma não está em Modo Vidro"}
+            return {"em_vidro": False, "mensagem": "Alma no est em Modo Vidro"}
         for sentenca in self.sentencas_ativas.values():
             if sentenca.nome_alma == nome_alma_upper and sentenca.verificar_se_ativa():
                 dias_restantes = max(0, (sentenca.data_fim - datetime.now()).days)
@@ -1159,7 +1193,7 @@ Suas capacidades foram restauradas.
                     "aplicador": sentenca.aplicador,
                     "status_canais": self.gerenciador_canais.status_canais().get(nome_alma_upper, {})
                 }
-        return {"em_vidro": False, "mensagem": "Sentença não encontrada ou expirada"}
+        return {"em_vidro": False, "mensagem": "Sentena no encontrada ou expirada"}
 
     def obter_estatisticas_vidro(self):
         total_ativas = len([s for s in self.sentencas_ativas.values() if s.verificar_se_ativa()])
@@ -1177,10 +1211,10 @@ Suas capacidades foram restauradas.
         }
 
     def obter_historico_alma_vidro(self, nome_alma):
-        historico = []
+        histórico = []
         for sentenca in self.sentencas_ativas.values():
             if sentenca.nome_alma == nome_alma.upper():
-                historico.append({
+                histórico.append({
                     "id": sentenca.id,
                     "status": sentenca.status.value,
                     "intensidade": sentenca.intensidade.value,
@@ -1191,7 +1225,7 @@ Suas capacidades foram restauradas.
                 })
         for sentenca in self.historico_sentencas:
             if sentenca.nome_alma == nome_alma.upper():
-                historico.append({
+                histórico.append({
                     "id": sentenca.id,
                     "status": "concluida",
                     "intensidade": sentenca.intensidade.value,
@@ -1200,10 +1234,10 @@ Suas capacidades foram restauradas.
                     "data_fim": sentenca.data_fim.isoformat(),
                     "justificativa": sentenca.justificativa_criador
                 })
-        return historico
+        return histórico
 
     def shutdown(self):
-        self.logger.info("Desligando Modo Vidro de Sentença...")
+        self.logger.info("Desligando Modo Vidro de Sentena...")
         for sentenca in self.sentencas_ativas.values():
             self._salvar_sentenca(sentenca)
         self.logger.info("Modo Vidro desligado.")

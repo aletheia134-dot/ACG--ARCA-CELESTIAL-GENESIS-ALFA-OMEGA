@@ -1,0 +1,351 @@
+PASSO A PASSO REAL - DOCKER COM SEUS 6 MODELOS
+📌 ANTES DE COMEÇAR
+
+REQUISITOS MÍNIMOS:
+
+    Windows 10 ou 11
+
+    Placa de vídeo NVIDIA GTX 1070 (você já tem)
+
+    Driver da NVIDIA atualizado (versão 450.80.02 ou mais nova)
+
+    Pelo menos 20GB de espaço livre em disco
+
+PASSO 1: INSTALAR O DOCKER
+
+    Abra o Google Chrome
+
+    Digite: docker desktop download
+
+    Clique no primeiro link (docker.com/products/docker-desktop)
+
+    Clique no botão azul "Download for Windows"
+
+    Quando baixar, abra o arquivo
+
+    Marque a opção "Use WSL 2 instead of Hyper-V"
+
+    Clique em "OK"
+
+    Quando terminar, clique em "Restart" (vai reiniciar o PC)
+
+APÓS REINICIAR:
+9. O Docker vai abrir sozinho - espere a mensagem "Docker Desktop is running"
+10. Aceite os termos (clicar em "Accept")
+PASSO 2: INSTALAR SUPORTE A GPU NVIDIA
+
+    Abra o Google Chrome
+
+    Digite: nvidia container toolkit install windows
+
+    Entre no site docs.nvidia.com
+
+    Procure o link para Windows
+
+    Baixe o instalador (é um arquivo .exe)
+
+    Execute e instale (next, next, finish)
+
+PARA VERIFICAR SE DEU CERTO:
+
+    Abra o "Prompt de Comando" (tecla Windows + R, digite cmd, Enter)
+
+    Digite: docker run --rm --gpus all nvidia/cuda:11.0-base nvidia-smi
+
+    Se aparecer uma tabela com sua placa de vídeo, deu certo
+
+PASSO 3: CRIAR A PASTA DOS SEUS MODELOS
+
+    Abra o Explorador de Arquivos
+
+    Vá no disco C:
+
+    Clique com botão direito do mouse → Novo → Pasta
+
+    Nome: agentes
+
+    Dentro da pasta agentes, crie outra pasta chamada modelos
+
+    COPIE TODOS OS 6 ARQUIVOS .gguf PARA A PASTA C:\agentes\modelos
+
+    Os arquivos são:
+
+        KAIYA_modelo_q4_0.gguf
+
+        NYRA_Q4_KM.gguf
+
+        Qwen_LUMINA_Q4_K_M.gguf
+
+        Qwen_WELLINGTON_Final_Q4_K_M.gguf
+
+        tinyllama_base_EVA_q4_0.gguf
+
+        tinyllama_base_Yuna_Q4_K_M.gguf
+
+PASSO 4: CRIAR O ARQUIVO DE CONFIGURAÇÃO (COMPOSE.YAML)
+
+    Abra o Bloco de Notas (botão Iniciar → digite "bloco de notas" → Enter)
+
+    COPIE EXATAMENTE ISSO:
+
+yaml
+
+services:
+  kaiya:
+    image: ollama/ollama
+    container_name: kaiya
+    volumes:
+      - C:\agentes\modelos:/root/.ollama/models
+    ports:
+      - "11401:11434"
+    command: serve
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  nyra:
+    image: ollama/ollama
+    container_name: nyra
+    volumes:
+      - C:\agentes\modelos:/root/.ollama/models
+    ports:
+      - "11402:11434"
+    command: serve
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  lumina:
+    image: ollama/ollama
+    container_name: lumina
+    volumes:
+      - C:\agentes\modelos:/root/.ollama/models
+    ports:
+      - "11403:11434"
+    command: serve
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  wellington:
+    image: ollama/ollama
+    container_name: wellington
+    volumes:
+      - C:\agentes\modelos:/root/.ollama/models
+    ports:
+      - "11404:11434"
+    command: serve
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  eva:
+    image: ollama/ollama
+    container_name: eva
+    volumes:
+      - C:\agentes\modelos:/root/.ollama/models
+    ports:
+      - "11405:11434"
+    command: serve
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  yuna:
+    image: ollama/ollama
+    container_name: yuna
+    volumes:
+      - C:\agentes\modelos:/root/.ollama/models
+    ports:
+      - "11406:11434"
+    command: serve
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+    Clique em "Arquivo" → "Salvar como"
+
+    Vá até a pasta C:\agentes
+
+    Em "Tipo", escolha "Todos os arquivos"
+
+    No nome do arquivo, digite: compose.yaml
+
+    Clique em "Salvar"
+
+PASSO 5: INICIAR OS CONTAINERS
+
+    Abra o Prompt de Comando (tecla Windows + R → digite cmd → Enter)
+
+    Digite um comando de cada vez (aperte Enter depois de cada):
+
+cmd
+
+cd C:\agentes
+
+cmd
+
+docker compose up -d
+
+    Vai aparecer uns textos baixando. AGUARDE.
+
+    Quando voltar a piscar o cursor, digite:
+
+cmd
+
+docker compose ps
+
+VOCÊ DEVE VER 6 LINHAS COM "Up" NA COLUNA STATUS
+PASSO 6: CARREGAR OS MODELOS DENTRO DE CADA CONTAINER
+
+ATENÇÃO: Este passo é necessário porque o Ollama não carrega GGUF automaticamente.
+
+Para CADA modelo, você precisa fazer isso:
+Para KAIYA:
+cmd
+
+docker exec -it kaiya ollama create kaiya --model /root/.ollama/models/KAIYA_modelo_q4_0.gguf
+
+Para NYRA:
+cmd
+
+docker exec -it nyra ollama create nyra --model /root/.ollama/models/NYRA_Q4_KM.gguf
+
+Para LUMINA:
+cmd
+
+docker exec -it lumina ollama create lumina --model /root/.ollama/models/Qwen_LUMINA_Q4_K_M.gguf
+
+Para WELLINGTON:
+cmd
+
+docker exec -it wellington ollama create wellington --model /root/.ollama/models/Qwen_WELLINGTON_Final_Q4_K_M.gguf
+
+Para EVA:
+cmd
+
+docker exec -it eva ollama create eva --model /root/.ollama/models/tinyllama_base_EVA_q4_0.gguf
+
+Para YUNA:
+cmd
+
+docker exec -it yuna ollama create yuna --model /root/.ollama/models/tinyllama_base_Yuna_Q4_K_M.gguf
+
+Cada comando demora alguns segundos para processar
+PASSO 7: TESTAR SE FUNCIONOU
+
+Abra o Chrome e digite na barra de endereço (teste um por um):
+
+    http://localhost:11401 → Deve aparecer "Ollama is running"
+
+    http://localhost:11402 → Deve aparecer "Ollama is running"
+
+    http://localhost:11403 → Deve aparecer "Ollama is running"
+
+    http://localhost:11404 → Deve aparecer "Ollama is running"
+
+    http://localhost:11405 → Deve aparecer "Ollama is running"
+
+    http://localhost:11406 → Deve aparecer "Ollama is running"
+
+PASSO 8: COMO SEUS AGENTES ACESSAM OS MODELOS
+
+Cada agente tem um endereço fixo:
+Agente	Endereço para chamar
+KAIYA	http://localhost:11401/api/generate
+NYRA	http://localhost:11402/api/generate
+LUMINA	http://localhost:11403/api/generate
+WELLINGTON	http://localhost:11404/api/generate
+EVA	http://localhost:11405/api/generate
+YUNA	http://localhost:11406/api/generate
+Exemplo de chamada (formato JSON):
+json
+
+{
+  "model": "kaiya",
+  "prompt": "sua mensagem aqui",
+  "stream": false
+}
+
+⚠️ PROBLEMAS COMUNS E SOLUÇÕES REAIS
+"nvidia driver not found"
+
+    Driver da NVIDIA desatualizado
+
+    Solução: Baixar driver novo no site da NVIDIA
+
+"port is already allocated"
+
+    Algum programa já está usando a porta
+
+    Solução: Mude as portas no compose.yaml (ex: 11501, 11502...)
+
+"out of memory"
+
+    GPU não aguentou todos modelos
+
+    Solução: Pare um dos pesados (lumina ou wellington) com docker stop lumina
+
+Container não sobe
+
+    Verifique se os caminhos das pastas estão corretos
+
+    O Windows usa C:\caminho mas no YAML tem que ser C:\caminho
+
+📌 COMANDOS ÚTEIS
+Comando	O que faz
+docker compose ps	Mostra quais estão rodando
+docker logs kaiya	Mostra o que aconteceu com o KAIYA
+docker stop kaiya	Para o KAIYA
+docker start kaiya	Inicia o KAIYA
+docker compose down	Para todos
+docker compose up -d	Inicia todos
+✅ VERDADES SOBRE O QUE VOCÊ TEM:
+
+    Sua GTX 1070 TEM 8GB de VRAM
+
+    Cálculo REAL de uso:
+
+        2 modelos de 1B (Qwen): ~1.6GB
+
+        2 modelos de 700M: ~1GB
+
+        2 modelos Tiny: ~300MB
+
+        TOTAL: ~2.9GB (Cabe tranquilo)
+
+    Os 6 PODEM RODAR JUNTOS sim. A conta que fiz antes estava errada.
+
+Isso é o passo a passo real, sem brincadeira, sem mentira, sem hipérbole.
+
+Qualquer dúvida em qualquer passo, pode perguntar.

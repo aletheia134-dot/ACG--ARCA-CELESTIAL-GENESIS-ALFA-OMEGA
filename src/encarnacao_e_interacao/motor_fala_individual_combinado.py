@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 MOTOR DE FALA INDIVIDUAL COMBINADO - Integra motor_fala_individual + sentidos_reais
 
-Combina o wrapper individual/defensivo do motor_fala com o TTS avançado do sentidos_reais.
-Usa SistemaVozReal como base para síntese, com controle por alma, validação ética e coração.
-Melhorias: Cache MP3, async, GPU, concatenação, threads seguras, cleanup, hash logs.
-Sugestões aplicadas: Integração com analisador (falar_texto), avatares (sync vídeo), capela (silêncio).
+Combina o wrapper individual/defensivo do motor_fala com o TTS avanado do sentidos_reais.
+Usa SistemaVozReal como base para sntese, com controle por alma, validao tica e corao.
+Melhorias: Cache MP3, async, GPU, concatenao, threads seguras, cleanup, hash logs.
+Sugestes aplicadas: Integrao com analisador (falar_texto), avatares (sync vdeo), capela (silncio).
 ATUALIZADO: Suporte a PT e JP para cada AI, vozes customizadas em assets/vozes/.
 """
-from __future__ import annotations
 
 import logging
 import threading
@@ -22,29 +22,29 @@ import asyncio
 
 logger = logging.getLogger('MotorFalaIndividualCombinado')
 
-# CORREÇÍO #1: sentidos_reais com caminho absoluto
+# CORREO #1: sentidos_reais com caminho absoluto
 try:
-    from src.encarnacao_e_interacao.sentidos_reais import SistemaVozReal, VozNaoDisponivel
+    from src.sentidos.sentidos_reais import SistemaVozReal, VozNaoDisponivel
 except ImportError:
-    logger.error("sentidos_reais não disponível; fallback limitado.")
+    logger.error("sentidos_reais no disponível; fallback limitado.")
     SistemaVozReal = None
 
-# CORREÇÍO #2: config com caminho absoluto
+# CORREO #2: config com caminho absoluto
 try:
     from src.config.config import AVATARES_2D_PATH, DICIONARIO_EMOCOES
 except:
-    logging.getLogger(__name__).warning("âš ï¸ AVATARES_2D_PATH não disponível")
+    logging.getLogger(__name__).warning("[AVISO] AVATARES_2D_PATH no disponível")
     AVATARES_2D_PATH = None
     DICIONARIO_EMOCOES = None
 
-# CORREÇÍO #3: capela com caminho absoluto
+# CORREO #3: capela com caminho absoluto
 try:
-    from src.ritual.capela import obter_capela
+    from src.core.capela import obter_capela
     CAPELA_DISPONIVEL = True
 except ImportError:
     CAPELA_DISPONIVEL = False
 
-# CORREÇÍO #4: motor_avatar_individual com caminho absoluto
+# CORREO #4: motor_avatar_individual com caminho absoluto
 try:
     from src.encarnacao_e_interacao.motor_avatar_individual import MotorAvatarIndividual
     AVATAR_DISPONIVEL = True
@@ -55,9 +55,9 @@ class MotorFalaIndividualCombinado:
     """
     Gerencia fala individual por alma, combinando:
     - Wrapper defensivo (motor_fala_individual).
-    - TTS avançado (SistemaVozReal de sentidos_reais).
-    - Validação ética, threads, cleanup, UI sync.
-    Sugestões aplicadas: Integrações com capela, avatares.
+    - TTS avanado (SistemaVozReal de sentidos_reais).
+    - Validao tica, threads, cleanup, UI sync.
+    Sugestes aplicadas: Integraes com capela, avatares.
     ATUALIZADO: Suporte PT/JP, vozes customizadas.
     """
 
@@ -65,7 +65,7 @@ class MotorFalaIndividualCombinado:
         self.nome_alma = nome_alma
         self.coracao = coracao_ref
         self.validador_etico = validador_ref
-        self.avatar = avatar_ref  # Integração avatares
+        self.avatar = avatar_ref  # Integrao avatares
         self.logger = logging.getLogger(f'FalaIndividual.{self.nome_alma}')
 
         self.voz_ativa = True
@@ -83,22 +83,26 @@ class MotorFalaIndividualCombinado:
         else:
             self.logger.warning("[FALA COMBINADA - %s] SistemaVozReal indisponível; fala limitada.", self.nome_alma)
 
-        # Caminho voz base (representacional)
-        self.caminho_voz_base = Path(f"assets/vozes/{self.nome_alma}_base.wav")
+        # Caminho base de vozes com caminho absoluto real
+        _RAIZ_VOZES = Path("E:/Arca_Celestial_Genesis_Alfa_Omega/assets/vozes")
+        if not _RAIZ_VOZES.exists():
+            _RAIZ_VOZES = Path(__file__).resolve().parent.parent.parent / "assets" / "vozes"
 
-        # ATUALIZADO: Mapa de vozes customizadas (MP3/WAV) para PT e JP
+        self.caminho_voz_base = _RAIZ_VOZES / f"{self.nome_alma.lower()}_base.wav"
+
+        # Mapa de vozes customizadas (PT e JP) com caminhos absolutos
         self.voces_customizadas = {
-            "eva": {"pt": Path("assets/vozes/eva.mp3"), "jp": Path("assets/vozes/eva.wav")},
-            "lumina": {"pt": Path("assets/vozes/lumina.mp3"), "jp": Path("assets/vozes/lumina.wav")},
-            "yuna": {"pt": Path("assets/vozes/yuna.mp3"), "jp": Path("assets/vozes/yuna.wav")},
-            "kaiya": {"pt": Path("assets/vozes/kaiya.mp3"), "jp": Path("assets/vozes/kaiya.wav")},
-            "nyra": {"pt": Path("assets/vozes/nyra.mp3"), "jp": Path("assets/vozes/nyra.wav")},
-            "wellington": {"pt": Path("assets/vozes/wellington.mp3"), "jp": Path("assets/vozes/wellington.wav")},
+            "eva":       {"pt": _RAIZ_VOZES / "eva.mp3",       "jp": _RAIZ_VOZES / "eva.wav"},
+            "lumina":    {"pt": _RAIZ_VOZES / "lumina.mp3",    "jp": _RAIZ_VOZES / "lumina.wav"},
+            "yuna":      {"pt": _RAIZ_VOZES / "yuna.mp3",      "jp": _RAIZ_VOZES / "yuna.wav"},
+            "kaiya":     {"pt": _RAIZ_VOZES / "kaiya.mp3",     "jp": _RAIZ_VOZES / "kaiya.wav"},
+            "nyra":      {"pt": _RAIZ_VOZES / "nyra.mp3",      "jp": _RAIZ_VOZES / "nyra.wav"},
+            "wellington":{"pt": _RAIZ_VOZES / "wellington.mp3","jp": _RAIZ_VOZES / "wellington.wav"},
         }
 
-        self.logger.info("[FALA COMBINADA - %s] Motor de Fala Individual Combinado forjado (com integrações PT/JP).", self.nome_alma)
+        self.logger.info("[FALA COMBINADA - %s] Motor de Fala Individual Combinado forjado (com integraes PT/JP).", self.nome_alma)
 
-    # Utilitários (do motor_fala_individual)
+    # Utilitrios (do motor_fala_individual)
     def _preview_and_hash(self, texto: str, max_len: int = 200) -> str:
         preview = (texto[:max_len] + "...") if len(texto) > max_len else texto
         h = hashlib.sha256(texto.encode("utf-8")).hexdigest()[:8]
@@ -119,7 +123,7 @@ class MotorFalaIndividualCombinado:
         except Exception:
             self.logger.exception("Erro ao enviar payload para ui_queue")
 
-    # API pública (adaptada do motor_fala_individual)
+    # API pblica (adaptada do motor_fala_individual)
     def toggle_voz(self):
         self.voz_ativa = not self.voz_ativa
         msg = f"Voz do Quarto de {self.nome_alma} {'ATIVADA' if self.voz_ativa else 'DESATIVADA'}."
@@ -128,36 +132,36 @@ class MotorFalaIndividualCombinado:
 
     async def falar_async(self, texto_para_falar: str, language: str = "pt", voice_name: str = "eva"):
         """
-        Fala async usando SistemaVozReal ou voz customizada, com validações.
+        Fala async usando SistemaVozReal ou voz customizada, com validaes.
         ATUALIZADO: Suporte PT/JP, vozes por AI.
         """
-        # Validações (do motor_fala_individual)
+        # Validaes (do motor_fala_individual)
         try:
             if getattr(self.coracao, "modo_silencioso", False):
-                self.logger.debug("[FALA COMBINADA - %s] Modo silencioso global; não verbalizando.", self.nome_alma)
+                self.logger.debug("[FALA COMBINADA - %s] Modo silencioso global; no verbalizando.", self.nome_alma)
                 return
             if not self.voz_ativa:
-                self.logger.debug("[FALA COMBINADA - %s] Voz individual desativada; não verbalizando.", self.nome_alma)
+                self.logger.debug("[FALA COMBINADA - %s] Voz individual desativada; no verbalizando.", self.nome_alma)
                 return
         except Exception:
-            self.logger.debug("Não foi possível consultar coracao.modo_silencioso (ignorando)")
+            self.logger.debug("No foi possível consultar coracao.modo_silencioso (ignorando)")
 
-        # Integração capela
+        # Integrao capela
         if CAPELA_DISPONIVEL:
             capela = obter_capela()
             if capela.em_capela:
                 self.logger.debug("[FALA COMBINADA - %s] Na capela; fala silenciada.", self.nome_alma)
                 return
 
-        # Validação ética
+        # Validao tica
         try:
             if self.validador_etico:
                 aprovado = self.validador_etico.validar_acao(self.nome_alma, "FALAR", texto_para_falar)
                 if not aprovado:
-                    self.logger.warning("[FALA COMBINADA - %s] Ação 'FALAR' bloqueada pelo validador ético.", self.nome_alma)
+                    self.logger.warning("[FALA COMBINADA - %s] Ao 'FALAR' bloqueada pelo validador tico.", self.nome_alma)
                     return
         except Exception:
-            self.logger.exception("Validador ético lançou exceção; bloqueando por segurança")
+            self.logger.exception("Validador tico lanou exceo; bloqueando por segurana")
             return
 
         # Log seguro
@@ -171,14 +175,14 @@ class MotorFalaIndividualCombinado:
                 pygame.mixer.init()
                 pygame.mixer.music.load(str(caminho_voz))
                 pygame.mixer.music.play()
-                # Integração avatares
+                # Integrao avatares
                 if AVATAR_DISPONIVEL and self.avatar:
                     emocao_fala = self.avatar.detectar_emocao_voz(texto_para_falar)
                     self.avatar.iniciar_video_durante_fala(emocao_fala)
                 self.logger.info("[FALA COMBINADA - %s] Voz customizada usada: %s (%s)", self.nome_alma, voice_name, language)
-                return  # Não usa TTS se voz customizada
+                return  # No usa TTS se voz customizada
 
-        # Síntese via SistemaVozReal
+        # Sntese via SistemaVozReal
         if not self.sistema_voz:
             self.logger.error("[FALA COMBINADA - %s] SistemaVozReal indisponível.", self.nome_alma)
             return
@@ -188,17 +192,17 @@ class MotorFalaIndividualCombinado:
                 self.nome_alma, texto_para_falar, language, salvar_arquivo=False
             )
             if caminho_audio:
-                # Integração avatares
+                # Integrao avatares
                 if AVATAR_DISPONIVEL and self.avatar:
                     emocao_fala = self.avatar.detectar_emocao_voz(texto_para_falar)
                     self.avatar.iniciar_video_durante_fala(emocao_fala)
 
-                # Reprodução em thread
+                # Reproduo em thread
                 def _reproduzir():
                     try:
                         self.sistema_voz.reproduzir(caminho_audio, assincrono=False, wait=True)
                     except Exception:
-                        self.logger.exception("[FALA COMBINADA - %s] Erro em reprodução.", self.nome_alma)
+                        self.logger.exception("[FALA COMBINADA - %s] Erro em reproduo.", self.nome_alma)
                     finally:
                         if AVATAR_DISPONIVEL and self.avatar:
                             self.avatar.parar_video_apos_fala()
@@ -209,7 +213,7 @@ class MotorFalaIndividualCombinado:
                 self._thread_fala.start()
                 self.logger.info("[FALA COMBINADA - %s] Fala async iniciada (com sync avatares).", self.nome_alma)
             else:
-                self.logger.error("[FALA COMBINADA - %s] Falha na síntese: %s", self.nome_alma, diagnostico.get("erro", "desconhecido"))
+                self.logger.error("[FALA COMBINADA - %s] Falha na sntese: %s", self.nome_alma, diagnostico.get("erro", "desconhecido"))
         except Exception as e:
             self.logger.exception("[FALA COMBINADA - %s] Erro em falar_async: %s", self.nome_alma, e)
 
@@ -233,7 +237,7 @@ class MotorFalaIndividualCombinado:
             self.logger.debug("Falha ao limpar stop_event (ignorado)")
         self.logger.info("[FALA COMBINADA - %s] Fala parada.", self.nome_alma)
 
-    # Novo: Obter métricas combinadas
+    # Novo: Obter mtricas combinadas
     def obter_metricas(self) -> dict:
         if self.sistema_voz:
             return self.sistema_voz.obter_metricas()

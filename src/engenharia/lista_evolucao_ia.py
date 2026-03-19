@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 lista_evolucao_ia.py - Lista de Oportunidades para IAs Escolherem
 
@@ -7,10 +8,9 @@ Gerencia a lista de compras do sistema:
 - Apresenta 10 oportunidades
 - IAs aceitam/recusam
 - Atualiza semanalmente
-- Rastreia aceitações
-- Máx 10 propostas por IA
+- Rastreia aceitaes
+- Mx 10 propostas por IA
 """
-from __future__ import annotations
 
 
 import datetime
@@ -33,8 +33,8 @@ class ListaEvolucaoIA:
     def __init__(self, coracao_ref: Any, gerenciador_propostas_ref: Any):
         """
         Args:
-            coracao_ref: Ref ao Coração
-            gerenciador_propostas_ref: Ref ao GerenciadorPropostas
+            coracao_ref: Ref ação Corao
+            gerenciador_propostas_ref: Ref ação GerenciadorPropostas
         """
         self.coracao = coracao_ref
         self.gerenciador_propostas = gerenciador_propostas_ref
@@ -43,14 +43,14 @@ class ListaEvolucaoIA:
         # Oportunidades atuais
         self.oportunidades_atuais: List[Dict[str, Any]] = []
         
-        # Rastreamento de aceitações/recusas
+        # Rastreamento de aceitaes/recusas
         self.historico_interacoes: Dict[str, List[Dict[str, Any]]] = {}  # ia_name -> [interacoes]
         
         self._lock = threading.RLock()
 
     def atualizar_lista(self, novas_oportunidades: List[Dict[str, Any]]) -> Tuple[bool, str]:
         """
-        Atualiza lista com novas oportunidades (chamado após scan).
+        Atualiza lista com novas oportunidades (chamado aps scan).
         
         Args:
             novas_oportunidades: Lista do scanner
@@ -59,9 +59,9 @@ class ListaEvolucaoIA:
             (sucesso, mensagem)
         """
         with self._lock:
-            self.oportunidades_atuais = novas_oportunidades[:10]  # Máx 10
+            self.oportunidades_atuais = novas_oportunidades[:10]  # Mx 10
         
-        msg = f"âœ… Lista atualizada: {len(self.oportunidades_atuais)} oportunidades"
+        msg = f"[OK] Lista atualizada: {len(self.oportunidades_atuais)} oportunidades"
         self.logger.info(msg)
         
         # Notificar
@@ -75,7 +75,7 @@ class ListaEvolucaoIA:
             return list(self.oportunidades_atuais)
 
     def obter_oportunidade(self, oportunidade_id: str) -> Optional[Dict[str, Any]]:
-        """Obtém detalhes de uma oportunidade."""
+        """Obtm detalhes de uma oportunidade."""
         with self._lock:
             for op in self.oportunidades_atuais:
                 if op.get("id") == oportunidade_id:
@@ -94,12 +94,12 @@ class ListaEvolucaoIA:
         # Verificar limite de 10 propostas por IA
         ias_propostas = self._contar_propostas_ia(ia_nome)
         if ias_propostas >= 10:
-            return False, f"âŒ {ia_nome} já tem 10 propostas pendentes", None
+            return False, f"[ERRO] {ia_nome} j tem 10 propostas pendentes", None
         
         # Obter oportunidade
         op = self.obter_oportunidade(oportunidade_id)
         if not op:
-            return False, "âŒ Oportunidade não encontrada", None
+            return False, "[ERRO] Oportunidade no encontrada", None
         
         # Criar proposta
         sucesso, msg, proposta_id = self.gerenciador_propostas.criar_proposta(
@@ -110,14 +110,14 @@ class ListaEvolucaoIA:
             intencao_uso=op.get("intencao_uso"),
             categoria=op.get("categoria"),
             tipo_ferramenta=op.get("tipo_ferramenta"),
-            codigo_ou_comando=""  # IA preencherá depois
+            codigo_ou_comando=""  # IA preencher depois
         )
         
         if sucesso:
-            # Registrar aceitação
+            # Registrar aceitao
             self._registrar_interacao(ia_nome, oportunidade_id, "ACEITA", proposta_id)
             
-            msg_final = f"âœ… {ia_nome} aceitou: {op.get('nome')} (Proposta: {proposta_id})"
+            msg_final = f"[OK] {ia_nome} aceitou: {op.get('nome')} (Proposta: {proposta_id})"
             self.logger.info(msg_final)
             
             return True, msg_final, proposta_id
@@ -135,12 +135,12 @@ class ListaEvolucaoIA:
         """
         op = self.obter_oportunidade(oportunidade_id)
         if not op:
-            return False, "âŒ Oportunidade não encontrada"
+            return False, "[ERRO] Oportunidade no encontrada"
         
         # Registrar recusa
         self._registrar_interacao(ia_nome, oportunidade_id, "RECUSA", None, motivo)
         
-        msg = f"â­ï¸ {ia_nome} recusou: {op.get('nome')}"
+        msg = f" {ia_nome} recusou: {op.get('nome')}"
         self.logger.info(msg)
         
         return True, msg
@@ -154,7 +154,7 @@ class ListaEvolucaoIA:
             count = 0
             for prop in self.gerenciador_propostas.propostas_cache.values():
                 if prop.get("ia_solicitante") == ia_nome:
-                    if prop.get("status") in ["PENDENTE_ANALISE", "EM_ANALISE", "APROVADO_CONSTRUÇÍO", "EM_CONSTRUCAO"]:
+                    if prop.get("status") in ["PENDENTE_ANALISE", "EM_ANALISE", "APROVADO_CONSTRUO", "EM_CONSTRUCAO"]:
                         count += 1
             
             return count
@@ -169,7 +169,7 @@ class ListaEvolucaoIA:
         proposta_id: Optional[str] = None,
         motivo: str = ""
     ) -> None:
-        """Registra interação da IA com oportunidade."""
+        """Registra interao da IA com oportunidade."""
         with self._lock:
             if ia_nome not in self.historico_interacoes:
                 self.historico_interacoes[ia_nome] = []
@@ -188,7 +188,7 @@ class ListaEvolucaoIA:
             return self.historico_interacoes.get(ia_nome, [])
 
     def _notificar_ia_nova_lista(self) -> None:
-        """Notifica IAs que há nova lista disponível."""
+        """Notifica IAs que h nova lista disponível."""
         try:
             if hasattr(self.coracao, "ui_queue"):
                 self.coracao.ui_queue.put_nowait({
@@ -213,9 +213,9 @@ class ListaEvolucaoIA:
 
     def shutdown(self) -> None:
         """Desliga."""
-        self.logger.info("ðŸ›‘ Desligando ListaEvolucaoIA...")
+        self.logger.info(" Desligando ListaEvolucaoIA...")
         with self._lock:
             self.oportunidades_atuais.clear()
-        self.logger.info("âœ… ListaEvolucaoIA desligado")
+        self.logger.info("[OK] ListaEvolucaoIA desligado")
 
 

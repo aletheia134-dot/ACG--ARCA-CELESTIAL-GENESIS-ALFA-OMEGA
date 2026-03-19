@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
-integracao_evolucao_coração.py - Integra Sistema de Evolução no Coração v7
+integracao_evolucao_corao.py - Integra Sistema de Evoluo no Corao v7
 
 Adiciona ao Coração:
 - Scanner de Sistema (subsistema 27)
-- Lista de Evolução IA (subsistema 28)
+- Lista de Evoluo IA (subsistema 28)
 - Gestor de Ciclos (subsistema 29)
 
-Métodos públicos para IAs e humanos
+Métodos pblicos para IAs e humanos
 """
-from __future__ import annotations
 
 
 import logging
@@ -21,16 +21,16 @@ logger = logging.getLogger(__name__)
 
 class IntegracaoEvolucaoIA:
     """
-    Mixin para adicionar evolução auto-adaptativa ao Coração.
+    Mixin para adicionar evoluo auto-adaptativa ação Corao.
     """
 
     def _inicializar_sistema_evolucao(self) -> None:
         """
-        Inicializa sistema de evolução.Chamado no __init__ do Coração APÓS inicializar propostas.
+        Inicializa sistema de evoluo.Chamado no __init__ do Corao APS inicializar propostas.
         """
-        from src.diagnostico.scanner_sistema import ScannerSistema
+        from src.engenharia.scanner_sistema import ScannerSistema
         from .lista_evolucao_ia import ListaEvolucaoIA
-        from src.modulos.gestor_ciclo_evolucao import GestorCicloEvolucao
+        from src.engenharia.gestor_ciclo_evolucao import GestorCicloEvolucao
         
         try:
             # 1.Scanner de Sistema
@@ -40,15 +40,15 @@ class IntegracaoEvolucaoIA:
             )
             self.scanner_sistema.iniciar_monitoramento()
             self.modulos["scanner_sistema"] = self.scanner_sistema
-            self.logger.info("âœ… Subsistema 27: ScannerSistema")
+            self.logger.info("[OK] Subsistema 27: ScannerSistema")
             
-            # 2.Lista de Evolução
+            # 2.Lista de Evoluo
             self.lista_evolucao_ia = ListaEvolucaoIA(
                 coracao_ref=self,
                 gerenciador_propostas_ref=self.gerenciador_propostas if hasattr(self, "gerenciador_propostas") else None
             )
             self.modulos["lista_evolucao_ia"] = self.lista_evolucao_ia
-            self.logger.info("âœ… Subsistema 28: ListaEvolucaoIA")
+            self.logger.info("[OK] Subsistema 28: ListaEvolucaoIA")
             
             # 3.Gestor de Ciclos
             self.gestor_ciclo_evolucao = GestorCicloEvolucao(
@@ -57,21 +57,21 @@ class IntegracaoEvolucaoIA:
                 lista_evolucao_ref=self.lista_evolucao_ia
             )
             self.modulos["gestor_ciclo_evolucao"] = self.gestor_ciclo_evolucao
-            self.logger.info("âœ… Subsistema 29: GestorCicloEvolucao")
+            self.logger.info("[OK] Subsistema 29: GestorCicloEvolucao")
             
             # Iniciar ciclos
             self.gestor_ciclo_evolucao.iniciar()
             
         except Exception as e:
-            self.logger.exception("Erro ao inicializar sistema de evolução: %s", e)
+            self.logger.exception("Erro ao inicializar sistema de evoluo: %s", e)
 
     # =========================================================================
-    # API PÚBLICA - PARA IAs
+    # API PBLICA - PARA IAs
     # =========================================================================
 
     def obter_lista_evolucao(self) -> Dict[str, Any]:
         """
-        IA obtém lista atual de oportunidades de melhoria.Returns:
+        IA obtm lista atual de oportunidades de melhoria.Returns:
             {
                 "total": 10,
                 "oportunidades": [...]
@@ -102,7 +102,7 @@ class IntegracaoEvolucaoIA:
         if not hasattr(self, "lista_evolucao_ia"):
             return {
                 "sucesso": False,
-                "mensagem": "Sistema de evolução não disponível"
+                "mensagem": "Sistema de evoluo no disponível"
             }
         
         sucesso, msg, proposta_id = self.lista_evolucao_ia.ia_aceitar_oportunidade(
@@ -128,7 +128,7 @@ class IntegracaoEvolucaoIA:
         if not hasattr(self, "lista_evolucao_ia"):
             return {
                 "sucesso": False,
-                "mensagem": "Sistema de evolução não disponível"
+                "mensagem": "Sistema de evoluo no disponível"
             }
         
         sucesso, msg = self.lista_evolucao_ia.ia_recusar_oportunidade(
@@ -143,23 +143,23 @@ class IntegracaoEvolucaoIA:
         }
 
     def obter_historico_ia(self, ia_nome: str) -> Dict[str, Any]:
-        """Obtém histórico de interações da IA com lista."""
+        """Obtm histórico de interações da IA com lista."""
         if not hasattr(self, "lista_evolucao_ia"):
-            return {"historico": []}
+            return {"histórico": []}
         
-        historico = self.lista_evolucao_ia.obter_historico_ia(ia_nome)
+        histórico = self.lista_evolucao_ia.obter_historico_ia(ia_nome)
         return {
             "ia_nome": ia_nome,
-            "total_interacoes": len(historico),
-            "historico": historico
+            "total_interacoes": len(histórico),
+            "histórico": histórico
         }
 
     # =========================================================================
-    # API PÚBLICA - PARA MONITORAMENTO
+    # API PBLICA - PARA MONITORAMENTO
     # =========================================================================
 
     def obter_status_evolucao(self) -> Dict[str, Any]:
-        """Retorna status completo do sistema de evolução."""
+        """Retorna status completo do sistema de evoluo."""
         if not hasattr(self, "gestor_ciclo_evolucao"):
             return {}
         
@@ -179,7 +179,7 @@ class IntegracaoEvolucaoIA:
     # =========================================================================
 
     def _shutdown_evolucao(self) -> None:
-        """Desliga sistema de evolução."""
+        """Desliga sistema de evoluo."""
         if hasattr(self, "gestor_ciclo_evolucao"):
             self.gestor_ciclo_evolucao.shutdown()
         if hasattr(self, "lista_evolucao_ia"):

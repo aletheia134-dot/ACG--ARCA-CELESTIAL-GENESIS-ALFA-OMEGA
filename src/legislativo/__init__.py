@@ -1,4 +1,5 @@
-﻿from .validador_etico import ValidadorEtico 
-Validador = ValidadorEtico 
+"""Sistema legislativo e ético"""
 
-
+try:
+    from src.legislativo.validador_etico import ValidadorEtico
+except Exception: pass

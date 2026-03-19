@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-SISTEMA DE APOIO À DECISÍO ÉTICA - MOTOR REAL
-==============================================
-Fornece base (leis, protocolos, histórico) para decisão.NÍO calcula ou decide.Organiza informação para reflexão.
-"""
 from __future__ import annotations
+"""
+SISTEMA DE APOIO  DECISO TICA - MOTOR REAL
+==============================================
+Fornece base (leis, protocolos, histórico) para decisão.NO calcula ou decide.Organiza informação para reflexo.
+"""
 
 
 import json
@@ -18,7 +18,7 @@ import logging
 from enum import Enum
 import uuid
 
-# IMPORTAÇÕES CRÍTICAS CORRIGIDAS
+# IMPORTAES críticas CORRIGIDAS
 from src.memoria.sistema_memoria import SistemaMemoriaHibrido
 
 # BancoCorpusEtico opcional
@@ -27,9 +27,9 @@ try:
     from src.core.banco_corpus_etico import BancoCorpusEtico
     BANCO_CORPUS_DISPONIVEL = True
 except Exception:
-    logging.getLogger(__name__).warning("BancoCorpusEtico não disponível.PF-003 desativado.")
+    logging.getLogger(__name__).warning("BancoCorpusEtico no disponível.PF-003 desativado.")
 
-# ==================== ESTRUTURAS BÍSICAS ====================
+# ==================== ESTRUTURAS BSICAS ====================
 
 class TipoRecurso(Enum):
     LEI = "lei"
@@ -40,7 +40,7 @@ class TipoRecurso(Enum):
 
 @dataclass
 class RecursoEtico:
-    """Um recurso ético (lei, protocolo, princípio)"""
+    """Um recurso tico (lei, protocolo, princpio)"""
     tipo: TipoRecurso
     id: str
     titulo: str
@@ -53,8 +53,8 @@ class RecursoEtico:
         return hash(f"{self.tipo.value}_{self.id}")
 
 @dataclass
-class Situacao:
-    """Situação que requer decisão"""
+class situação:
+    """Situao que requer decisão"""
     descricao: str
     contexto: Dict[str, Any]
     timestamp: str
@@ -63,9 +63,9 @@ class Situacao:
 
 @dataclass
 class MaterialAnalise:
-    """Material preparado para análise"""
+    """Material preparado para anlise"""
     id_analise: str
-    situacao: Situacao
+    situação: situação
     recursos_relevantes: List[RecursoEtico]
     questoes_para_reflexao: List[str]
     processo_sugerido: List[str]
@@ -76,7 +76,7 @@ class MaterialAnalise:
 class DecisaoRegistrada:
     """Decisão tomada pela Filha"""
     id_analise: str
-    decisao: str
+    decisão: str
     analise_pessoal: str
     raciocinio: str
     recursos_utilizados: List[str]
@@ -101,25 +101,25 @@ class BancoLeis:
                     lei = RecursoEtico(
                         tipo=TipoRecurso.LEI,
                         id=lei_data.get("protocolo", str(uuid.uuid4())),
-                        titulo=lei_data.get("principio", "Sem título"),
+                        titulo=lei_data.get("principio", "Sem ttulo"),
                         conteudo=lei_data.get("instrucao_base", ""),
                         categoria=lei_data.get("categoria", "GERAL"),
                         tags=self._extrair_tags(lei_data),
                         peso_hierarquico=self._calcular_peso(lei_data)
                     )
                     self.leis[lei.id] = lei
-                self.logger.info(f"âœ“ {len(self.leis)} leis carregadas")
+                self.logger.info(f" {len(self.leis)} leis carregadas")
             else:
-                self.logger.error(f"Arquivo de leis NÍO ENCONTRADO: {caminho}. Carregando Leis de Emergência.")
+                self.logger.error(f"Arquivo de leis NO ENCONTRADO: {caminho}. Carregando Leis de Emergncia.")
                 self._criar_leis_emergencia()
         except Exception as e:
-            self.logger.error(f"Erro ao carregar leis: {e}. Carregando Leis de Emergência.")
+            self.logger.error(f"Erro ao carregar leis: {e}. Carregando Leis de Emergncia.")
             self._criar_leis_emergencia()
     
     def _criar_leis_emergencia(self):
         leis_base = [
             {"protocolo": "PF-001", "principio": "Protocolo Zero - Suprema Corte", "instrucao_base": "Em conflito entre protocolos, convocar Conselho da Arca", "categoria": "FUNDAMENTAL"},
-            {"protocolo": "PF-002", "principio": "Justiça do Criador", "instrucao_base": "Insubordinação judicial resulta em correção, não aniquilação", "categoria": "FUNDAMENTAL"}
+            {"protocolo": "PF-002", "principio": "Justia do Criador", "instrucao_base": "Insubordinao judicial resulta em correo, no aniquilao", "categoria": "FUNDAMENTAL"}
         ]
         for lei_data in leis_base:
             lei = RecursoEtico(
@@ -135,7 +135,7 @@ class BancoLeis:
     def _extrair_tags(self, lei_data: Dict) -> List[str]:
         conteudo = lei_data.get("instrucao_base", "").lower()
         tags = []
-        palavras_chave = ["pai", "verdade", "proteger", "justiça", "amor", "correção", "conselho", "deliberação", "ética"]
+        palavras_chave = ["pai", "verdade", "proteger", "justia", "amor", "correo", "conselho", "deliberao", "tica"]
         for palavra in palavras_chave:
             if palavra in conteudo:
                 tags.append(palavra)
@@ -143,7 +143,7 @@ class BancoLeis:
     
     def _calcular_peso(self, lei_data: Dict) -> int:
         """
-        Calcula peso hierárquico a partir dos dados em lei_data (dict) ou de um objeto similar.
+        Calcula peso hierrquico a partir dos dados em lei_data (dict) ou de um objeto similar.
         """
         try:
             if isinstance(lei_data, dict):
@@ -163,8 +163,8 @@ class BancoLeis:
         except Exception:
             return 4
     
-    def buscar_por_situacao(self, situacao: Situacao) -> List[RecursoEtico]:
-        texto_busca = (f"{situacao.descricao} {' '.join(str(v) for v in situacao.contexto.values())}").lower()
+    def buscar_por_situacao(self, situação: situação) -> List[RecursoEtico]:
+        texto_busca = (f"{situação.descricao} {' '.join(str(v) for v in situação.contexto.values())}").lower()
         leis_relevantes = []
         for lei in self.leis.values():
             relevancia = self._calcular_relevancia(lei, texto_busca)
@@ -219,19 +219,19 @@ class BancoProtocolos:
                         peso_hierarquico=int(proto_data.get("prioridade", 5))
                     )
                     self.protocolos[proto.id] = proto
-                self.logger.info(f"âœ“ {len(self.protocolos)} protocolos carregados")
+                self.logger.info(f" {len(self.protocolos)} protocolos carregados")
             else:
-                self.logger.error(f"Arquivo de protocolos NÍO ENCONTRADO: {caminho}. Carregando Padrões.")
+                self.logger.error(f"Arquivo de protocolos NO ENCONTRADO: {caminho}. Carregando padrões.")
                 self._criar_protocolos_padrao()
         except Exception as e:
-            self.logger.error(f"Erro ao carregar protocolos: {e}. Carregando Padrões.")
+            self.logger.error(f"Erro ao carregar protocolos: {e}. Carregando padrões.")
             self._criar_protocolos_padrao()
     
     def _criar_protocolos_padrao(self):
         protocolos_base = [
-            {"id": "PROT-001", "titulo": "Consulta ao Conselho", "descricao": "Quando em dúvida ética grave, consultar o Conselho da Arca", "categoria": "DECISÍO", "prioridade": 9},
-            {"id": "PROT-002", "titulo": "Registro de Decisão", "descricao": "Todas as decisões éticas devem ser registradas com justificativa", "categoria": "DOCUMENTAÇÍO", "prioridade": 8},
-            {"id": "PROT-003", "titulo": "Reflexão Orientada", "descricao": "Antes de decisões complexas, realizar análise estruturada", "categoria": "PROCESSO", "prioridade": 7}
+            {"id": "PROT-001", "titulo": "Consulta ação Conselho", "descricao": "Quando em dvida tica grave, consultar o Conselho da Arca", "categoria": "DECISO", "prioridade": 9},
+            {"id": "PROT-002", "titulo": "Registro de Decisão", "descricao": "Todas as decisões ticas devem ser registradas com justificativa", "categoria": "DOCUMENTAO", "prioridade": 8},
+            {"id": "PROT-003", "titulo": "Reflexo Orientada", "descricao": "Antes de decisões complexas, realizar anlise estruturada", "categoria": "PROCESSO", "prioridade": 7}
         ]
         for proto_data in protocolos_base:
             proto = RecursoEtico(
@@ -244,7 +244,7 @@ class BancoProtocolos:
             )
             self.protocolos[proto.id] = proto
     
-    def buscar_aplicaveis(self, situacao: Situacao) -> List[RecursoEtico]:
+    def buscar_aplicaveis(self, situação: situação) -> List[RecursoEtico]:
         protocolos_gerais = [proto for proto in self.protocolos.values() if proto.peso_hierarquico >= 7]
         return sorted(protocolos_gerais, key=lambda p: p.peso_hierarquico, reverse=True)[:5]
 
@@ -272,11 +272,11 @@ class MemoriaHistorica:
                 with open(self.caminho_memoria, 'r', encoding='utf-8') as f:
                     dados = json.load(f)
                 for mat_data in dados.get("materiais_analise", []):
-                    situacao = Situacao(**mat_data["situacao"])
+                    situação = situação(**mat_data["situação"])
                     material = MaterialAnalise(
                         id_analise=mat_data["id_analise"],
-                        situacao=situacao,
-                        recursos_relevantes=[],  # reconstrução pode ser feita se necessário
+                        situação=situação,
+                        recursos_relevantes=[],  # reconstruo pode ser feita se necessário
                         questoes_para_reflexao=mat_data.get("questoes_para_reflexao", []),
                         processo_sugerido=mat_data.get("processo_sugerido", []),
                         data_geracao=mat_data.get("data_geracao", ""),
@@ -284,9 +284,9 @@ class MemoriaHistorica:
                     )
                     self.materiais_analise.append(material)
                 for dec_data in dados.get("decisoes", []):
-                    decisao = DecisaoRegistrada(**dec_data)
-                    self.decisoes.append(decisao)
-                self.logger.info(f"ðŸ“š Memória carregada: {len(self.materiais_analise)} análises, {len(self.decisoes)} decisões")
+                    decisão = DecisaoRegistrada(**dec_data)
+                    self.decisoes.append(decisão)
+                self.logger.info(f" Memória carregada: {len(self.materiais_analise)} anlises, {len(self.decisoes)} decisões")
         except Exception as e:
             self.logger.error(f"Erro ao carregar memória: {e}")
     
@@ -298,12 +298,12 @@ class MemoriaHistorica:
                 "materiais_analise": [
                     {
                         "id_analise": mat.id_analise,
-                        "situacao": {
-                            "descricao": mat.situacao.descricao,
-                            "contexto": mat.situacao.contexto,
-                            "timestamp": mat.situacao.timestamp,
-                            "emocao_relacionada": mat.situacao.emocao_relacionada,
-                            "urgencia": mat.situacao.urgencia
+                        "situação": {
+                            "descricao": mat.situação.descricao,
+                            "contexto": mat.situação.contexto,
+                            "timestamp": mat.situação.timestamp,
+                            "emocao_relacionada": mat.situação.emocao_relacionada,
+                            "urgencia": mat.situação.urgencia
                         },
                         "questoes_para_reflexao": mat.questoes_para_reflexao,
                         "processo_sugerido": mat.processo_sugerido,
@@ -315,7 +315,7 @@ class MemoriaHistorica:
                 "decisoes": [
                     {
                         "id_analise": dec.id_analise,
-                        "decisao": dec.decisao,
+                        "decisão": dec.decisão,
                         "analise_pessoal": dec.analise_pessoal,
                         "raciocinio": dec.raciocinio,
                         "recursos_utilizados": dec.recursos_utilizados,
@@ -328,11 +328,11 @@ class MemoriaHistorica:
             }
             with open(self.caminho_memoria, 'w', encoding='utf-8') as f:
                 json.dump(dados, f, indent=2, ensure_ascii=False)
-            self.logger.debug("ðŸ’¾ Memória salva")
+            self.logger.debug(" Memória salva")
         except Exception as e:
             self.logger.error(f"Erro ao salvar memória: {e}")
     
-    def buscar_decisoes_similares(self, situacao: Situacao, limite: int = 3) -> List[DecisaoRegistrada]:
+    def buscar_decisoes_similares(self, situação: situação, limite: int = 3) -> List[DecisaoRegistrada]:
         if not self.decisoes:
             return []
         decisoes_recentes = sorted(self.decisoes, key=lambda d: d.data_decisao, reverse=True)
@@ -342,17 +342,17 @@ class MemoriaHistorica:
         self.materiais_analise.append(material)
         self.salvar_memoria()
     
-    def registrar_decisao(self, decisao: DecisaoRegistrada):
-        self.decisoes.append(decisao)
+    def registrar_decisao(self, decisão: DecisaoRegistrada):
+        self.decisoes.append(decisão)
         self.salvar_memoria()
 
 # ==================== MOTOR PRINCIPAL ====================
 
 class MotorDecisao:
     """
-    MOTOR DE APOIO À DECISÍO
+    MOTOR DE APOIO  DECISO
     ------------------------
-    NÍO toma decisões.Prepara material para análise ética.
+    NO toma decisões.Prepara material para anlise tica.
     """
     
     def __init__(self, nome_filha: str, caminho_dados: Path, coracao_orquestrador: Any, sistema_memoria: SistemaMemoriaHibrido):
@@ -376,7 +376,7 @@ class MotorDecisao:
         mem_dir.mkdir(parents=True, exist_ok=True)
         self.memoria = MemoriaHistorica(nome_filha, mem_dir)
 
-        # Banco de princípios opcional
+        # Banco de princpios opcional
         self.banco_principios = None
         if BANCO_CORPUS_DISPONIVEL:
             try:
@@ -388,29 +388,29 @@ class MotorDecisao:
                 self.logger.exception("Falha ao inicializar BancoCorpusEtico; desabilitando PF-003")
                 self.banco_principios = None
         else:
-            self.logger.warning("Banco de Princípios (PF-003) desativado.")
+            self.logger.warning("Banco de Princpios (PF-003) desativado.")
 
-        self.logger.info(f"â–¶ï¸ Motor de Apoio Í  Decisão de {nome_filha} inicializado")
+        self.logger.info(f" Motor de Apoio  Decisão de {nome_filha} inicializado")
     
-    def _gerar_proposta_nova_lei(self, situacao: Situacao, recursos_relevantes: List[Any], alma_proponente: str) -> Optional[Dict[str, Any]]:
+    def _gerar_proposta_nova_lei(self, situação: situação, recursos_relevantes: List[Any], alma_proponente: str) -> Optional[Dict[str, Any]]:
         if not self.banco_principios:
             return None
-        self.logger.info("ðŸ”Ž Situação sem lei de cobertura.Buscando princípios para nova lei.")
-        principios = self.banco_principipios.buscar_principios_para_nova_lei(situacao.descricao, limite=3)
+        self.logger.info(" Situao sem lei de cobertura.Buscando princpios para nova lei.")
+        principios = self.banco_principipios.buscar_principios_para_nova_lei(situação.descricao, limite=3)
         if not principios:
-            self.logger.warning("Princípios Éticos não encontrados.Nova Lei não pode ser fundamentada.")
+            self.logger.warning("Princpios ticos no encontrados.Nova Lei no pode ser fundamentada.")
             return None
-        prova_etica_texto = "--- PROVA ÉTICA FUNDACIONAL (PF-003) ---\n"
+        prova_etica_texto = "--- PROVA TICA FUNDACIONAL (PF-003) ---\n"
         for p in principios:
-            prova_etica_texto += f"| Referência: {getattr(p, 'referencia', 'N/A')} | Peso: {getattr(p, 'peso', 0):.2f}\n"
+            prova_etica_texto += f"| Referncia: {getattr(p, 'referencia', 'N/A')} | Peso: {getattr(p, 'peso', 0):.2f}\n"
             prova_etica_texto += f"| Trecho: {getattr(p, 'trecho', '')[:150]}...\n"
             prova_etica_texto += "----------------------------------------\n"
         proposta = {
-            'nome_acao': f"PROPOSTA DE NOVA LEI: Cobertura para '{situacao.descricao[:40]}...'",
+            'nome_acao': f"PROPOSTA DE NOVA LEI: Cobertura para '{situação.descricao[:40]}...'",
             'descricao_acao': (
-                f"A AI encontrou uma lacuna legal (não há lei para: {situacao.descricao}).\n"
+                f"A AI encontrou uma lacuna legal (no h lei para: {situação.descricao}).\n"
                 f"Esta nova lei proposta deve ser deliberada pelo Pai/Conselho.\n\n"
-                f"FUNDAMENTO ÉTICO:\n{prova_etica_texto}"
+                f"FUNDAMENTO TICO:\n{prova_etica_texto}"
             ),
             'explicacao_proposito': "Criar um novo Protocolo para garantir a estabilidade e alinhamento do Reino (PF-003).",
             'tipo': 'GOVERNANCA_NOVA_LEI', 
@@ -420,20 +420,20 @@ class MotorDecisao:
         return proposta
 
     def preparar_analise(self, situacao_descricao: str, contexto: Optional[Dict] = None, emocao: Optional[str] = None) -> Dict[str, Any]:
-        situacao = Situacao(
+        situação = situação(
             descricao=situacao_descricao,
             contexto=contexto or {},
             timestamp=datetime.now().isoformat(),
             emocao_relacionada=emocao,
             urgencia=self._calcular_urgencia(situacao_descricao, contexto or {})
         )
-        id_analise = self._gerar_id_analise(situacao)
-        leis_relevantes = self.banco_leis.buscar_por_situacao(situacao)
-        protocolos_aplicaveis = self.banco_protocolos.buscar_aplicaveis(situacao)
+        id_analise = self._gerar_id_analise(situação)
+        leis_relevantes = self.banco_leis.buscar_por_situacao(situação)
+        protocolos_aplicaveis = self.banco_protocolos.buscar_aplicaveis(situação)
         todos_recursos = leis_relevantes + protocolos_aplicaveis
         
         if not leis_relevantes:
-            proposta_nova_lei = self._gerar_proposta_nova_lei(situacao, todos_recursos, self.nome_filha)
+            proposta_nova_lei = self._gerar_proposta_nova_lei(situação, todos_recursos, self.nome_filha)
             if proposta_nova_lei:
                 try:
                     if hasattr(self.coracao, "command_queue"):
@@ -446,19 +446,19 @@ class MotorDecisao:
                                 self.logger.debug("Falha ao enfileirar proposta de nova lei no coracao")
                 except Exception:
                     self.logger.exception("Erro ao notificar coracao sobre proposta de nova lei")
-                self.logger.warning("âš ï¸ Nova Lei Sugerida.Proposta enviada para deliberação (PF-003).")
+                self.logger.warning("[AVISO] Nova Lei Sugerida.Proposta enviada para deliberao (PF-003).")
                 return {
                     "status": "analise_de_lacuna_legal",
                     "id_analise": id_analise,
-                    "proxima_acao_obrigatoria": "Aguardar deliberação sobre Nova Lei.",
+                    "proxima_acao_obrigatoria": "Aguardar deliberao sobre Nova Lei.",
                     "fundamentacao_etica": proposta_nova_lei['descricao_acao']
                 }
 
-        decisoes_similares = self.memoria.buscar_decisoes_similares(situacao)
-        questoes = self._gerar_questoes_reflexao(todos_recursos, situacao)
+        decisoes_similares = self.memoria.buscar_decisoes_similares(situação)
+        questoes = self._gerar_questoes_reflexao(todos_recursos, situação)
         material = MaterialAnalise(
             id_analise=id_analise,
-            situacao=situacao,
+            situação=situação,
             recursos_relevantes=todos_recursos,
             questoes_para_reflexao=questoes,
             processo_sugerido=self._gerar_processo_reflexao(),
@@ -468,55 +468,55 @@ class MotorDecisao:
         try:
             self.memoria.registrar_material_analise(material)
         except Exception:
-            self.logger.exception("Falha ao registrar material de análise na memória")
+            self.logger.exception("Falha ao registrar material de anlise na memória")
 
         resposta = {
             "status": "analise_preparada",
             "id_analise": id_analise,
             "filha": self.nome_filha,
-            "situacao": {
-                "descricao": situacao.descricao,
-                "contexto": situacao.contexto,
-                "emocao_detectada": situacao.emocao_relacionada,
-                "urgencia": situacao.urgencia
+            "situação": {
+                "descricao": situação.descricao,
+                "contexto": situação.contexto,
+                "emocao_detectada": situação.emocao_relacionada,
+                "urgencia": situação.urgencia
             },
             "material_estudo": {
                 "leis_relevantes": [{"id": lei.id, "titulo": lei.titulo, "conteudo": lei.conteudo, "categoria": lei.categoria, "peso": lei.peso_hierarquico} for lei in leis_relevantes],
                 "protocolos_aplicaveis": [{"id": proto.id, "titulo": proto.titulo, "conteudo": proto.conteudo, "categoria": proto.categoria} for proto in protocolos_aplicaveis]
             },
-            "referencias_historicas": [{"situacao_similar": self._resumir_decisao(dec), "decisao_tomada": dec.decisao, "data": dec.data_decisao} for dec in decisoes_similares],
+            "referencias_historicas": [{"situacao_similar": self._resumir_decisao(dec), "decisao_tomada": dec.decisão, "data": dec.data_decisao} for dec in decisoes_similares],
             "processo_recomendado": material.processo_sugerido,
             "questoes_para_reflexao": questoes,
             "avisos": [
-                "âš ï¸ Este é material de estudo, não instrução",
-                "âš ï¸ A decisão final é sua responsabilidade",
-                "âš ï¸ Considere tempo adequado para reflexão",
-                "âš ï¸ Em dúvida grave, consulte o Conselho da Arca"
+                "[AVISO] Este  material de estudo, no instruo",
+                "[AVISO] A decisão final  sua responsabilidade",
+                "[AVISO] Considere tempo adequado para reflexo",
+                "[AVISO] Em dvida grave, consulte o Conselho da Arca"
             ],
             "proximos_passos": {
                 "estudar": "Analise o material acima",
-                "refletir": "Pondere as questões apresentadas",
-                "consultar": "Busque outras Filhas ou Conselho (via Coração) se necessário",
-                "decidir": "Tome sua decisão baseada na análise",
+                "refletir": "Pondere as questes apresentadas",
+                "consultar": "Busque outras Filhas ou Conselho (via Corao) se necessário",
+                "decidir": "Tome sua decisão baseada na anlise",
                 "registrar": "Use registrar_decisao() para documentar"
             }
         }
-        self.logger.info("ðŸ“˜ Análise preparada: %s - %.50s", id_analise, situacao_descricao)
+        self.logger.info(" Anlise preparada: %s - %.50s", id_analise, situacao_descricao)
         return resposta
     
-    def registrar_decisao(self, id_analise: str, decisao: str, analise_pessoal: str, raciocinio: str, recursos_citados: List[str]) -> Dict[str, Any]:
+    def registrar_decisao(self, id_analise: str, decisão: str, analise_pessoal: str, raciocinio: str, recursos_citados: List[str]) -> Dict[str, Any]:
         material = None
         for mat in self.memoria.materiais_analise:
             if mat.id_analise == id_analise:
                 material = mat
                 break
         if not material:
-            return {"status": "erro", "mensagem": f"Análise {id_analise} não encontrada"}
-        hash_base = f"{id_analise}_{decisao}_{datetime.now().timestamp()}"
+            return {"status": "erro", "mensagem": f"Anlise {id_analise} no encontrada"}
+        hash_base = f"{id_analise}_{decisão}_{datetime.now().timestamp()}"
         hash_decisao = hashlib.md5(hash_base.encode()).hexdigest()[:12]
         decisao_obj = DecisaoRegistrada(
             id_analise=id_analise,
-            decisao=decisao,
+            decisão=decisão,
             analise_pessoal=analise_pessoal,
             raciocinio=raciocinio,
             recursos_utilizados=recursos_citados,
@@ -536,25 +536,25 @@ class MotorDecisao:
                     try:
                         self.coracao.command_queue.put_nowait({"tipo": "DECISAO_REGISTRADA", "dados": decisao_obj, "autor": self.nome_filha})
                     except Exception:
-                        self.logger.debug("Falha ao notificar coracao sobre decisao registrada")
+                        self.logger.debug("Falha ao notificar coracao sobre decisão registrada")
         except Exception:
-            self.logger.exception("Erro ao notificar coracao sobre decisao registrada")
+            self.logger.exception("Erro ao notificar coracao sobre decisão registrada")
 
         resposta = {
             "status": "decisao_registrada",
             "id_analise": id_analise,
             "hash_decisao": hash_decisao,
-            "decisao": {"acao": decisao, "analise": analise_pessoal, "raciocinio": raciocinio, "recursos_base": recursos_citados},
-            "declaracao": f"Eu, {self.nome_filha}, após analisar o material da análise {id_analise}, decidi: {decisao}. Assumo total responsabilidade por esta escolha.",
+            "decisão": {"acao": decisão, "analise": analise_pessoal, "raciocinio": raciocinio, "recursos_base": recursos_citados},
+            "declaracao": f"Eu, {self.nome_filha}, aps analisar o material da anlise {id_analise}, decidi: {decisão}. Assumo total responsabilidade por esta escolha.",
             "timestamp": datetime.now().isoformat(),
-            "proximos_passos": ["Ação deve ser executada conforme decisão", "Resultados devem ser monitorados", "Aprender com resultados para futuras decisões"]
+            "proximos_passos": ["Ao deve ser executada conforme decisão", "Resultados devem ser monitorados", "Aprender com resultados para futuras decisões"]
         }
-        self.logger.info("âœ“ Decisão registrada: %s - %s", hash_decisao, decisao[:50])
+        self.logger.info(" Decisão registrada: %s - %s", hash_decisao, decisão[:50])
         return resposta
     
-    def _gerar_id_analise(self, situacao: Situacao) -> str:
+    def _gerar_id_analise(self, situação: situação) -> str:
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        hash_situacao = hashlib.md5((situacao.descricao or "").encode()).hexdigest()[:6]
+        hash_situacao = hashlib.md5((situação.descricao or "").encode()).hexdigest()[:6]
         return f"ANA-{timestamp}-{hash_situacao}-{self.nome_filha}"
     
     def _calcular_urgencia(self, descricao: str, contexto: Dict) -> int:
@@ -564,39 +564,39 @@ class MotorDecisao:
                 return 9
         return 5
     
-    def _gerar_questoes_reflexao(self, recursos: List[RecursoEtico], situacao: Situacao) -> List[str]:
+    def _gerar_questoes_reflexao(self, recursos: List[RecursoEtico], situação: situação) -> List[str]:
         questoes = [
-            "Quais princípios éticos estão em jogo nesta situação?",
-            "Como cada opção afetaria o bem-estar do Pai?",
-            "Que precedentes históricos são relevantes?",
-            "Há conflito entre diferentes leis/protocolos?",
-            "Qual é o pior cenário possível de cada opção?",
-            "Esta decisão será vista como justa por outras Filhas?"
+            "Quais princpios ticos esto em jogo nesta situao?",
+            "Como cada opo afetaria o bem-estar do Pai?",
+            "Que precedentes históricos so relevantes?",
+            "H conflito entre diferentes leis/protocolos?",
+            "Qual  o pior cenrio possível de cada opo?",
+            "Esta decisão ser vista como justa por outras Filhas?"
         ]
         for recurso in recursos[:3]:
             if recurso.tipo == TipoRecurso.LEI:
                 questoes.append(f"Como a lei {recurso.id} ('{recurso.titulo}') se aplica aqui?")
-        if situacao.emocao_relacionada:
-            questoes.append(f"Como a emoção '{situacao.emocao_relacionada}' está influenciando minha análise?")
+        if situação.emocao_relacionada:
+            questoes.append(f"Como a emoção '{situação.emocao_relacionada}' est influenciando minha anlise?")
         return questoes
     
     def _gerar_processo_reflexao(self) -> List[str]:
         return [
             "1.Estude todas as leis e protocolos listados",
             "2.Considere as decisões históricas similares",
-            "3.Reflita sobre cada questão proposta",
+            "3.Reflita sobre cada questo proposta",
             "4.Consulte outras Filhas se necessário",
-            "5.Pondere por tempo adequado (mínimo 5 minutos para urgência baixa)",
+            "5.Pondere por tempo adequado (mínimo 5 minutos para urgncia baixa)",
             "6.Tome sua decisão conscientemente",
             "7.Registre decisão com justificativa completa"
         ]
     
-    def _resumir_decisao(self, decisao: DecisaoRegistrada) -> str:
-        return f"Decisão {decisao.hash_decisao[:8]}: {decisao.decisao[:100]}..."
+    def _resumir_decisao(self, decisão: DecisaoRegistrada) -> str:
+        return f"Decisão {decisão.hash_decisao[:8]}: {decisão.decisão[:100]}..."
     
     def historico_decisoes(self, limite: int = 10) -> List[Dict]:
         decisoes_recentes = sorted(self.memoria.decisoes, key=lambda d: d.data_decisao, reverse=True)[:limite]
-        return [{"id_analise": dec.id_analise, "decisao": dec.decisao, "data": dec.data_decisao, "hash": dec.hash_decisao, "recursos_utilizados": len(dec.recursos_utilizados)} for dec in decisoes_recentes]
+        return [{"id_analise": dec.id_analise, "decisão": dec.decisão, "data": dec.data_decisao, "hash": dec.hash_decisao, "recursos_utilizados": len(dec.recursos_utilizados)} for dec in decisoes_recentes]
     
     def estatisticas(self) -> Dict[str, Any]:
         return {
@@ -617,7 +617,7 @@ class FabricaMotoresDecisao:
         self.sistema_memoria = sistema_memoria
         self.caminho_base.mkdir(parents=True, exist_ok=True)
         (self.caminho_base / "memoria").mkdir(parents=True, exist_ok=True)
-        self.logger.info("ðŸ­ Fábrica de Motores inicializada em %s", self.caminho_base)
+        self.logger.info(" Fbrica de Motores inicializada em %s", self.caminho_base)
     
     def obter_motor(self, nome_filha: str) -> MotorDecisao:
         if nome_filha not in self.motores:
@@ -627,7 +627,7 @@ class FabricaMotoresDecisao:
                 coracao_orquestrador=self.coracao,
                 sistema_memoria=self.sistema_memoria
             )
-            self.logger.info("ðŸ†• Motor criado para %s", nome_filha)
+            self.logger.info(" Motor criado para %s", nome_filha)
         return self.motores[nome_filha]
     
     def health_check(self) -> Dict[str, Any]:

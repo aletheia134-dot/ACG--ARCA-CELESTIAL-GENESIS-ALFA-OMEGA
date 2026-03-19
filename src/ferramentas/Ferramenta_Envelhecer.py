@@ -1,16 +1,16 @@
-# Ferramenta: Envelhecer Rostos (Foto â†’ Idoso)
-# Modo 1: Manual (interface gráfica)
+# Ferramenta: Envelhecer Rostos (Foto  Idoso)
+# Modo 1: Manual (interface grfica)
 # Modo 2: IA explorando (testar efeitos)
-# Modo 3: IA a serviço (pedido do usuário)
+# Modo 3: IA a servio (pedido do usurio)
 
 import sys
 import os
 import json
 from pathlib import Path
 
-# Adiciona core ao path
+# Adiciona core ação path
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS, PASTA_MODELOS, USAR_GPU
 
 import torch
@@ -29,7 +29,7 @@ warnings.filterwarnings('ignore')
 class ModeloEnvelhecer:
     """
     Modelo para envelhecer rostos usando:
-    1. Detecção facial (dlib)
+    1. Deteco facial (dlib)
     2. Filtros de envelhecimento (rugas, cabelos grisalhos)
     3. Textura de pele envelhecida
     """
@@ -41,9 +41,9 @@ class ModeloEnvelhecer:
         self.carregar_modelos()
         
     def carregar_modelos(self):
-        """Carrega modelos de detecção facial"""
+        """Carrega modelos de deteco facial"""
         try:
-            # Baixa modelos do dlib se não existirem
+            # Baixa modelos do dlib se no existirem
             self.baixar_modelos_dlib()
             
             # Carrega detector de faces (HOG + SVM) - 0.5GB VRAM
@@ -53,13 +53,13 @@ class ModeloEnvelhecer:
             predictor_path = PASTA_MODELOS / "shape_predictor_68_face_landmarks.dat"
             if predictor_path.exists():
                 self.predictor = dlib.shape_predictor(str(predictor_path))
-                print(f"âœ… Modelos faciais carregados (CPU)")
+                print(f"[OK] Modelos faciais carregados (CPU)")
             else:
-                print("âŒ Predictor não encontrado")
+                print("[ERRO] Predictor no encontrado")
                 self.predictor = None
                 
         except Exception as e:
-            print(f"âŒ Erro ao carregar modelos: {e}")
+            print(f"[ERRO] Erro ao carregar modelos: {e}")
             self.detector_facial = None
             self.predictor = None
     
@@ -68,7 +68,7 @@ class ModeloEnvelhecer:
         arquivo_predictor = PASTA_MODELOS / "shape_predictor_68_face_landmarks.dat"
         
         if not arquivo_predictor.exists():
-            print("ðŸ“¥ Baixando modelo de landmarks faciais (90MB)...")
+            print(" Baixando modelo de landmarks faciais (90MB)...")
             url = "http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2"
             
             # Baixa arquivo
@@ -87,7 +87,7 @@ class ModeloEnvelhecer:
             
             # Remove compactado
             bz2_path.unlink()
-            print("âœ… Modelo baixado e extraído")
+            print("[OK] Modelo baixado e extrado")
     
     def detectar_rosto(self, imagem):
         """Detecta o rosto na imagem"""
@@ -107,7 +107,7 @@ class ModeloEnvelhecer:
         return faces[0]
     
     def get_landmarks(self, imagem, rosto):
-        """Obtém pontos faciais"""
+        """Obtm pontos faciais"""
         if self.predictor is None:
             return None
         
@@ -131,7 +131,7 @@ class ModeloEnvelhecer:
         # Gera textura de rugas procedural
         altura, largura = img_array.shape[:2]
         
-        # Cria máscara de rugas (linhas horizontais suaves)
+        # Cria mscara de rugas (linhas horizontais suaves)
         rugas = np.zeros((altura, largura), dtype=np.float32)
         
         # Rugas na testa
@@ -139,7 +139,7 @@ class ModeloEnvelhecer:
             y = altura // 4 + i * 10
             cv2.line(rugas, (0, y), (largura, y), 0.3, 2)
         
-        # Rugas ao redor dos olhos (pés de galinha)
+        # Rugas ação redor dos olhos (ps de galinha)
         centro_olhos = (largura // 2, altura // 3)
         for angulo in range(0, 360, 45):
             x1 = int(centro_olhos[0] + 30 * np.cos(np.radians(angulo)))
@@ -173,7 +173,7 @@ class ModeloEnvelhecer:
         # Converte para array
         img_array = np.array(imagem)
         
-        # Detecta região do cabelo (parte superior da imagem)
+        # Detecta regio do cabelo (parte superior da imagem)
         altura, largura = img_array.shape[:2]
         regiao_cabelo = img_array[:altura//3, :]
         
@@ -194,14 +194,14 @@ class ModeloEnvelhecer:
         img_array = np.array(imagem)
         altura, largura = img_array.shape[:2]
         
-        # Cria máscara de manchas aleatórias
+        # Cria mscara de manchas aleatrias
         manchas = np.random.rand(altura, largura) * 0.3
         manchas = cv2.GaussianBlur(manchas, (25, 25), 0)
         
         # Manchas mais escuras/marrons
         img_array = img_array.astype(np.float32)
         
-        # Regiões das maçãs do rosto e mãos
+        # Regies das mas do rosto e mos
         for i in range(3):
             x_centro = np.random.randint(largura//4, 3*largura//4)
             y_centro = np.random.randint(altura//3, 2*altura//3)
@@ -235,7 +235,7 @@ class ModeloEnvelhecer:
                 olho_esquerdo = pontos[36:42]
                 olho_direito = pontos[42:48]
                 
-                # Calcula região abaixo dos olhos
+                # Calcula regio abaixo dos olhos
                 for olho in [olho_esquerdo, olho_direito]:
                     x_centro = sum(p[0] for p in olho) // len(olho)
                     y_centro = (sum(p[1] for p in olho) // len(olho)) + 15
@@ -257,7 +257,7 @@ class ModeloEnvelhecer:
         Args:
             caminho_imagem: caminho da imagem
             idade_alvo: idade desejada (40-90)
-            intensidade: força do efeito (0.1-1.0)
+            intensidade: fora do efeito (0.1-1.0)
         """
         try:
             # Abre imagem
@@ -272,7 +272,7 @@ class ModeloEnvelhecer:
             fator_idade = min(1.0, (idade_alvo - idade_base) / 60)
             intensidade_ajustada = intensidade * fator_idade
             
-            # Aplica efeitos em sequência
+            # Aplica efeitos em sequncia
             img = self.aplicar_rugas(img, intensidade_ajustada * 0.8)
             img = self.aplicar_manchas_pele(img, intensidade_ajustada * 0.5)
             img = self.aplicar_olheiras(img, intensidade_ajustada * 0.6)
@@ -281,7 +281,7 @@ class ModeloEnvelhecer:
             # Suaviza levemente
             img = img.filter(ImageFilter.SMOOTH_MORE)
             
-            # Reduz saturação (pele mais pálida)
+            # Reduz saturao (pele mais plida)
             enhancer = ImageEnhance.Color(img)
             img = enhancer.enhance(1.0 - intensidade_ajustada * 0.3)
             
@@ -291,9 +291,9 @@ class ModeloEnvelhecer:
             return None, str(e)
 
 class InterfaceEnvelhecer(InterfaceBase):
-    """Interface gráfica (MODO 1 - Manual)"""
+    """Interface grfica (MODO 1 - Manual)"""
     def __init__(self):
-        super().__init__("ðŸ‘´ Envelhecer Fotos", "750x650")
+        super().__init__(" Envelhecer Fotos", "750x650")
         self.ferramenta = ModeloEnvelhecer(usar_gpu=USAR_GPU)
         self.caminho_imagem = None
         self.imagem_original = None
@@ -302,16 +302,16 @@ class InterfaceEnvelhecer(InterfaceBase):
     
     def setup_interface(self):
         """Cria os elementos da interface"""
-        # Título
+        # Ttulo
         titulo = ctk.CTkLabel(
             self.frame, 
-            text="ðŸ‘´ Transformar Foto: Versão Idoso",
+            text=" Transformar Foto: Verso Idoso",
             font=("Arial", 22, "bold")
         )
         titulo.pack(pady=10)
         
         # Status
-        status = "âœ… GTX 1070 ativa" if self.ferramenta.usar_gpu else "âš ï¸ CPU (mais lento)"
+        status = "[OK] GTX 1070 ativa" if self.ferramenta.usar_gpu else "[AVISO] CPU (mais lento)"
         self.lbl_status = ctk.CTkLabel(self.frame, text=status)
         self.lbl_status.pack(pady=5)
         
@@ -328,10 +328,10 @@ class InterfaceEnvelhecer(InterfaceBase):
         self.frame_preview.pack(side="right", padx=10, fill="both", expand=True)
         
         # ===== CONTROLES =====
-        # Botão selecionar imagem
+        # Boto selecionar imagem
         self.btn_imagem = ctk.CTkButton(
             self.frame_controles,
-            text="ðŸ“ Selecionar Foto",
+            text=" Selecionar Foto",
             command=self.selecionar_imagem,
             width=200,
             height=40
@@ -380,10 +380,10 @@ class InterfaceEnvelhecer(InterfaceBase):
         self.slider_intensidade.set(0.7)
         self.slider_intensidade.pack(pady=5, padx=10, fill="x")
         
-        # Botão processar
+        # Boto processar
         self.btn_processar = ctk.CTkButton(
             self.frame_controles,
-            text="âœ¨ Envelhecer Foto",
+            text=" Envelhecer Foto",
             command=self.processar,
             width=200,
             height=45,
@@ -393,20 +393,20 @@ class InterfaceEnvelhecer(InterfaceBase):
         )
         self.btn_processar.pack(pady=30)
         
-        # Botão salvar
+        # Boto salvar
         self.btn_salvar = ctk.CTkButton(
             self.frame_controles,
-            text="ðŸ’¾ Salvar Resultado",
+            text=" Salvar Resultado",
             command=self.salvar_imagem,
             width=200,
             state="disabled"
         )
         self.btn_salvar.pack(pady=5)
         
-        # Botão comparar
+        # Boto comparar
         self.btn_comparar = ctk.CTkButton(
             self.frame_controles,
-            text="ðŸ”„ Ver Original",
+            text=" Ver Original",
             command=self.alternar_preview,
             width=200,
             state="disabled"
@@ -416,7 +416,7 @@ class InterfaceEnvelhecer(InterfaceBase):
         # ===== PREVIEW =====
         self.lbl_preview = ctk.CTkLabel(
             self.frame_preview,
-            text="Pré-visualização\n\nSelecione uma foto para começar",
+            text="Pr-visualizao\n\nSelecione uma foto para comear",
             font=("Arial", 14)
         )
         self.lbl_preview.pack(expand=True)
@@ -450,7 +450,7 @@ class InterfaceEnvelhecer(InterfaceBase):
     
     def mostrar_preview(self, imagem):
         """Mostra imagem no preview"""
-        # Salva temporário
+        # Salva temporrio
         temp_path = Path("C:/Ferramentas_IA/temp/preview.jpg")
         imagem.save(temp_path)
         
@@ -458,13 +458,13 @@ class InterfaceEnvelhecer(InterfaceBase):
         from PIL import ImageTk
         img_tk = ImageTk.PhotoImage(imagem)
         self.lbl_preview.configure(image=img_tk, text="")
-        self.lbl_preview.image = img_tk  # mantém referência
+        self.lbl_preview.image = img_tk  # mantm referncia
     
     def processar(self):
         if not self.caminho_imagem:
             return
         
-        self.btn_processar.configure(text="â³ Processando...", state="disabled")
+        self.btn_processar.configure(text=" Processando...", state="disabled")
         self.frame.update()
         
         # Processa
@@ -487,16 +487,16 @@ class InterfaceEnvelhecer(InterfaceBase):
         else:
             self.utils.mostrar_erro("Erro", f"Falha ao processar: {msg}")
         
-        self.btn_processar.configure(text="âœ¨ Envelhecer Foto", state="normal")
+        self.btn_processar.configure(text=" Envelhecer Foto", state="normal")
     
     def alternar_preview(self):
         """Alterna entre original e processado"""
         if self.mostrando_original:
             self.mostrar_preview(self.imagem_processada)
-            self.btn_comparar.configure(text="ðŸ”„ Ver Original")
+            self.btn_comparar.configure(text=" Ver Original")
         else:
             self.mostrar_preview(self.imagem_original)
-            self.btn_comparar.configure(text="ðŸ”„ Ver Processado")
+            self.btn_comparar.configure(text=" Ver Processado")
         
         self.mostrando_original = not self.mostrando_original
     
@@ -556,7 +556,7 @@ class ModoIA:
         return resultados
     
     def processar_para_ia(self, caminho_imagem, idade=70, intensidade=0.7):
-        """MODO 3: IA a serviço - processa e retorna caminho"""
+        """MODO 3: IA a servio - processa e retorna caminho"""
         img_saida, msg = self.ferramenta.processar(
             caminho_imagem,
             idade_alvo=idade,
@@ -594,7 +594,7 @@ if __name__ == "__main__":
             print(json.dumps(resultados, indent=2, ensure_ascii=False))
         
         elif comando == "--processar" and len(sys.argv) > 2:
-            # IA a serviço
+            # IA a servio
             imagem = sys.argv[2]
             idade = int(sys.argv[3]) if len(sys.argv) > 3 else 70
             resultado = ia.processar_para_ia(imagem, idade=idade)
@@ -604,8 +604,8 @@ if __name__ == "__main__":
             print("Uso:")
             print("  python Ferramenta_Envelhecer.py                          # Modo manual")
             print("  python Ferramenta_Envelhecer.py --descobrir PASTA       # IA explorando")
-            print("  python Ferramenta_Envelhecer.py --processar IMAGEM [IDADE] # IA serviço")
+            print("  python Ferramenta_Envelhecer.py --processar IMAGEM [IDADE] # IA servio")
     else:
-        # MODO 1: Manual (interface gráfica)
+        # MODO 1: Manual (interface grfica)
         app = InterfaceEnvelhecer()
         app.rodar()

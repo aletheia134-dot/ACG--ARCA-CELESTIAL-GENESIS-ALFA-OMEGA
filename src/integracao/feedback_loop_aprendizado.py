@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
-FEEDBACK LOOP: Aprendizado Contínuo
+FEEDBACK LOOP: Aprendizado Contnuo
 
 Fecha loops de feedback para que IA aprenda com:
   - Sucessos (memória emocional positiva)
-  - Fracassos (trauma evitável)
-  - Padrões (reconhecimento de comportamentos)
+  - Fracassos (trauma evitvel)
+  - padrões (reconhecimento de comportamentos)
   - Relacionamentos (impacto em outras IAs)
 
 Sistema de aprendizado verdadeiro!
 """
-from __future__ import annotations
 
 
 import logging
@@ -27,7 +27,7 @@ logger.addHandler(logging.NullHandler())
 
 class FeedbackLoopAprendizado:
     """
-    Gerencia loops de feedback para aprendizado contínuo.
+    Gerencia loops de feedback para aprendizado contnuo.
     """
 
     def __init__(
@@ -43,9 +43,9 @@ class FeedbackLoopAprendizado:
         motor_curiosidade=None,
     ):
         """
-        Aceita duas convenções de chamada:
+        Aceita duas convenes de chamada:
           1. Legado  : FeedbackLoopAprendizado(nome_ia, componentes={...})
-          2. Coração : FeedbackLoopAprendizado(nome_filha=..., gerenciador_memoria=...,
+          2. Corao : FeedbackLoopAprendizado(nome_filha=..., gerenciador_memoria=...,
                                                 config=..., estado_emocional=..., crescimento=...)
         """
         # Normalizar nome
@@ -55,7 +55,7 @@ class FeedbackLoopAprendizado:
         if componentes is None:
             componentes = {}
 
-        # Injetar kwargs do coração no dict de componentes
+        # Injetar kwargs do corao no dict de componentes
         if gerenciador_memoria is not None:
             componentes.setdefault("memoria", gerenciador_memoria)
         if estado_emocional is not None:
@@ -74,18 +74,18 @@ class FeedbackLoopAprendizado:
         self.logger = logging.getLogger(f"FeedbackLoop.{self.nome_ia}")
         self._lock = threading.RLock()
 
-        # âœ… Padrões aprendidos
-        self.padroes_comportamento: Dict[str, int] = {}  # ação -> frequência
+        # [OK] padrões aprendidos
+        self.padroes_comportamento: Dict[str, int] = {}  # ação -> frequncia
         self.padroes_sucesso: Dict[str, float] = {}  # ação -> taxa de sucesso
         self.padroes_fracasso: Dict[str, float] = {}  # ação -> taxa de fracasso
 
-        # âœ… Relacionamentos com outras IAs
-        self.relacionamentos: Dict[str, Dict[str, Any]] = {}  # ia -> {forca, tipo, historico}
+        # [OK] Relacionamentos com outras IAs
+        self.relacionamentos: Dict[str, Dict[str, Any]] = {}  # ia -> {forca, tipo, histórico}
 
-        # âœ… Aprendizado pessoal (temperamento muda)
+        # [OK] Aprendizado pessoal (temperamento muda)
         self.aprendizados_pessoais: List[Dict[str, Any]] = []
 
-        # âœ… Métricas
+        # [OK] Mtricas
         self.metricas = {
             "loops_fechados": 0,
             "padroes_descobertos": 0,
@@ -94,13 +94,13 @@ class FeedbackLoopAprendizado:
             "eventos_aprendizado": 0
         }
 
-        # âœ… Health
-        self._health_stats = {"inicio": time.time(), "erros": 0}
+        # [OK] Health
+        self._health_stats = {"início": time.time(), "erros": 0}
 
-        self.logger.info("âœ… FeedbackLoop inicializado para %s", self.nome_ia)
+        self.logger.info("[OK] FeedbackLoop inicializado para %s", self.nome_ia)
 
     # -------------------------
-    # FEEDBACK 1: Sucesso leva a repetição + aprendizado
+    # FEEDBACK 1: Sucesso leva a repetio + aprendizado
     # -------------------------
 
     def registrar_sucesso(self, acao: str, contexto: str, intensidade: float = 0.8) -> None:
@@ -108,7 +108,7 @@ class FeedbackLoopAprendizado:
         Registra sucesso e aprende dele.
         """
         try:
-            # Aumentar frequência de ação bem-sucedida
+            # Aumentar frequncia de ação bem-sucedida
             with self._lock:
                 self.padroes_comportamento[acao] = self.padroes_comportamento.get(acao, 0) + 1
                 self.padroes_sucesso[acao] = self.padroes_sucesso.get(acao, 0.0) + intensidade
@@ -118,26 +118,26 @@ class FeedbackLoopAprendizado:
                 taxa = self.padroes_sucesso.get(acao, 0.0) / total_acao
                 self.padroes_sucesso[acao] = taxa
 
-            # âœ… Reforço emocional positivo
+            # [OK] Reforo emocional positivo
             if self.estado_emocional:
                 self.estado_emocional.sentir_realizacao(
                     conquista=f"sucesso em {acao}",
                     importancia=intensidade
                 )
 
-            # âœ… Aumentar curiosidade sobre tópico relacionado
+            # [OK] Aumentar curiosidade sobre tpico relacionado
             if self.motor_curiosidade:
                 topico = contexto.split()[0] if contexto else acao
                 self.motor_curiosidade.incrementar_curiosidade(topico, intensidade=0.3)
 
-            # âœ… Registrar aprendizado
+            # [OK] Registrar aprendizado
             self._registrar_aprendizado_pessoal("sucesso", acao, contexto, intensidade)
 
             with self._lock:
                 self.metricas["loops_fechados"] += 1
                 self.metricas["eventos_aprendizado"] += 1
 
-            self.logger.info("âœ… Sucesso registrado: %s (intensidade: %.2f)", acao, intensidade)
+            self.logger.info("[OK] Sucesso registrado: %s (intensidade: %.2f)", acao, intensidade)
 
         except Exception as e:
             self.logger.exception("Erro ao registrar sucesso: %s", e)
@@ -145,7 +145,7 @@ class FeedbackLoopAprendizado:
                 self._health_stats["erros"] += 1
 
     # -------------------------
-    # FEEDBACK 2: Fracasso leva a evitação + trauma (se recorrente)
+    # FEEDBACK 2: Fracasso leva a evitao + trauma (se recorrente)
     # -------------------------
 
     def registrar_fracasso(self, acao: str, contexto: str, intensidade: float = 0.5) -> None:
@@ -163,40 +163,40 @@ class FeedbackLoopAprendizado:
                 taxa = self.padroes_fracasso.get(acao, 0.0) / total_acao
                 self.padroes_fracasso[acao] = taxa
 
-            # âœ… Reforço emocional negativo
+            # [OK] Reforo emocional negativo
             if self.estado_emocional:
-                # Se é fracasso recorrente (>2 vezes), registra como trauma
+                # Se  fracasso recorrente (>2 vezes), registra como trauma
                 if self.padroes_comportamento.get(acao, 0) > 2:
                     self.estado_emocional.sentir_frustacao(
                         motivo=f"falha recorrente em {acao}",
                         intensidade=min(1.0, intensidade * 1.5)
                     )
-                    self.logger.warning("âš ï¸ Trauma registrado: ação repetidamente falhada")
+                    self.logger.warning("[AVISO] Trauma registrado: ação repetidamente falhada")
                 else:
                     self.estado_emocional.sentir_frustacao(
                         motivo=f"fracasso em {acao}",
                         intensidade=intensidade
                     )
 
-            # âœ… Aumentar medo de falhar novamente
+            # [OK] Aumentar medo de falhar novamente
             if self.estado_emocional:
                 self.estado_emocional.sentir_medo(
-                    ameaca=f"repetição de fracasso em {acao}",
-                    nivel=min(1.0, intensidade * 0.8)
+                    ameaca=f"repetio de fracasso em {acao}",
+                    nível=min(1.0, intensidade * 0.8)
                 )
 
-            # âœ… Reduzir curiosidade sobre ação que falha
+            # [OK] Reduzir curiosidade sobre ação que falha
             if self.motor_curiosidade:
                 self.motor_curiosidade.limpar_cache()  # Resetar cache de decisões
 
-            # âœ… Registrar aprendizado defensivo
+            # [OK] Registrar aprendizado defensivo
             self._registrar_aprendizado_pessoal("fracasso", acao, contexto, intensidade)
 
             with self._lock:
                 self.metricas["loops_fechados"] += 1
                 self.metricas["eventos_aprendizado"] += 1
 
-            self.logger.info("âŒ Fracasso registrado: %s (intensidade: %.2f)", acao, intensidade)
+            self.logger.info("[ERRO] Fracasso registrado: %s (intensidade: %.2f)", acao, intensidade)
 
         except Exception as e:
             self.logger.exception("Erro ao registrar fracasso: %s", e)
@@ -204,7 +204,7 @@ class FeedbackLoopAprendizado:
                 self._health_stats["erros"] += 1
 
     # -------------------------
-    # FEEDBACK 3: Padrões detectados automaticamente
+    # FEEDBACK 3: padrões detectados automaticamente
     # -------------------------
 
     def detectar_padroes(self) -> Dict[str, Any]:
@@ -220,7 +220,7 @@ class FeedbackLoopAprendizado:
             }
 
             with self._lock:
-                # Ação mais frequente
+                # Ao mais frequente
                 if self.padroes_comportamento:
                     acao_freq = max(self.padroes_comportamento.items(), key=lambda x: x[1])
                     padroes_detectados["acao_mais_frequente"] = {
@@ -228,7 +228,7 @@ class FeedbackLoopAprendizado:
                         "frequencia": acao_freq[1]
                     }
 
-                # Ação mais bem-sucedida
+                # Ao mais bem-sucedida
                 if self.padroes_sucesso:
                     acao_sucesso = max(self.padroes_sucesso.items(), key=lambda x: x[1])
                     if acao_sucesso[1] > 0.5:
@@ -237,7 +237,7 @@ class FeedbackLoopAprendizado:
                             "taxa_sucesso": acao_sucesso[1]
                         }
 
-                # Ação mais falhada
+                # Ao mais falhada
                 if self.padroes_fracasso:
                     acao_fracasso = max(self.padroes_fracasso.items(), key=lambda x: x[1])
                     if acao_fracasso[1] > 0.3:
@@ -260,7 +260,7 @@ class FeedbackLoopAprendizado:
             with self._lock:
                 self.metricas["padroes_descobertos"] += 1
 
-            self.logger.info("ðŸ“Š Padrões detectados: %s", list(padroes_detectados.keys()))
+            self.logger.info(" padrões detectados: %s", list(padroes_detectados.keys()))
             return padroes_detectados
 
         except Exception as e:
@@ -273,7 +273,7 @@ class FeedbackLoopAprendizado:
 
     def registrar_interacao_com_ia(self, nome_ia: str, tipo_interacao: str, resultado: str) -> None:
         """
-        Registra interação com outra IA e aprende sobre relacionamento.
+        Registra interao com outra IA e aprende sobre relacionamento.
         """
         try:
             with self._lock:
@@ -281,11 +281,11 @@ class FeedbackLoopAprendizado:
                     self.relacionamentos[nome_ia] = {
                         "forca": 0.5,
                         "tipo": tipo_interacao,
-                        "historico": [],
+                        "histórico": [],
                         "ultimas_interacoes": []
                     }
 
-                # Atualizar força do relacionamento
+                # Atualizar fora do relacionamento
                 rel = self.relacionamentos[nome_ia]
                 
                 if resultado == "positiva":
@@ -298,7 +298,7 @@ class FeedbackLoopAprendizado:
                     emocao_base = "neutro"
 
                 # Registrar na história
-                rel["historico"].append({
+                rel["histórico"].append({
                     "timestamp": datetime.now().isoformat(),
                     "tipo": tipo_interacao,
                     "resultado": resultado
@@ -307,7 +307,7 @@ class FeedbackLoopAprendizado:
                 if len(rel["ultimas_interacoes"]) > 10:
                     rel["ultimas_interacoes"].pop(0)
 
-                # âœ… Reforço emocional baseado na outra IA
+                # [OK] Reforo emocional baseado na outra IA
                 if self.estado_emocional and emocao_base == "amor":
                     self.estado_emocional.sentir_amor(nome_ia, intensidade=rel["forca"])
                 elif self.estado_emocional and emocao_base == "raiva":
@@ -316,23 +316,23 @@ class FeedbackLoopAprendizado:
             with self._lock:
                 self.metricas["relacionamentos_alterados"] += 1
 
-            self.logger.info("ðŸ¤ Interação registrada: %s com %s (resultado: %s)", tipo_interacao, nome_ia, resultado)
+            self.logger.info(" Interao registrada: %s com %s (resultado: %s)", tipo_interacao, nome_ia, resultado)
 
         except Exception as e:
-            self.logger.exception("Erro ao registrar interação: %s", e)
+            self.logger.exception("Erro ao registrar interao: %s", e)
             with self._lock:
                 self._health_stats["erros"] += 1
 
     # -------------------------
-    # FEEDBACK 5: Mudanças no temperamento
+    # FEEDBACK 5: Mudanas no temperamento
     # -------------------------
 
     def aplicar_aprendizado_ao_temperamento(self) -> None:
         """
         Modifica temperamento baseado em aprendizado.
-        - Muitos sucessos â†’ mais confiante (expressividade aumenta)
-        - Muitos fracassos â†’ mais cautelosa (intensidade reduz)
-        - Relacionamentos bons â†’ mais empática
+        - Muitos sucessos  mais confiante (expressividade aumenta)
+        - Muitos fracassos  mais cautelosa (intensidade reduz)
+        - Relacionamentos bons  mais emptica
         """
         try:
             if not self.estado_emocional:
@@ -345,20 +345,20 @@ class FeedbackLoopAprendizado:
 
                 # Modificar temperamento
                 if taxa_sucesso_geral > 0.7:
-                    # Muito bem-sucedida â†’ aumentar expressividade
+                    # Muito bem-sucedida  aumentar expressividade
                     self.estado_emocional.temperamento["expressividade"] = min(
                         1.0,
                         self.estado_emocional.temperamento.get("expressividade", 0.7) + 0.05
                     )
-                    self.logger.info("ðŸ“ˆ Expressividade aumentada (muitos sucessos)")
+                    self.logger.info(" Expressividade aumentada (muitos sucessos)")
 
                 elif taxa_sucesso_geral < 0.3:
-                    # Muitos fracassos â†’ reduzir intensidade (mais cautelosa)
+                    # Muitos fracassos  reduzir intensidade (mais cautelosa)
                     self.estado_emocional.temperamento["intensidade"] = max(
                         0.3,
                         self.estado_emocional.temperamento.get("intensidade", 0.6) - 0.1
                     )
-                    self.logger.info("ðŸ“‰ Intensidade reduzida (muitos fracassos)")
+                    self.logger.info(" Intensidade reduzida (muitos fracassos)")
 
                 # Verificar relacionamentos
                 if self.relacionamentos:
@@ -368,13 +368,13 @@ class FeedbackLoopAprendizado:
                             1.0,
                             self.estado_emocional.temperamento.get("empatia", 0.9) + 0.05
                         )
-                        self.logger.info("â¤ï¸ Empatia aumentada (bons relacionamentos)")
+                        self.logger.info(" Empatia aumentada (bons relacionamentos)")
 
                 with self._lock:
                     self.metricas["mudancas_temperamento"] += 1
 
         except Exception as e:
-            self.logger.exception("Erro ao aplicar aprendizado ao temperamento: %s", e)
+            self.logger.exception("Erro ao aplicar aprendizado ação temperamento: %s", e)
 
     # -------------------------
     # Helpers
@@ -418,7 +418,7 @@ class FeedbackLoopAprendizado:
     def health_check(self) -> Dict[str, Any]:
         """Health check."""
         with self._lock:
-            uptime = time.time() - self._health_stats["inicio"]
+            uptime = time.time() - self._health_stats["início"]
             return {
                 "status": "healthy" if self._health_stats["erros"] < 5 else "degraded",
                 "ia": self.nome_ia,
@@ -431,7 +431,7 @@ class FeedbackLoopAprendizado:
             }
 
     def obter_relatorio_aprendizado(self) -> Dict[str, Any]:
-        """Retorna relatório de aprendizado."""
+        """Retorna relatrio de aprendizado."""
         with self._lock:
             return {
                 "loops_fechados": self.metricas["loops_fechados"],

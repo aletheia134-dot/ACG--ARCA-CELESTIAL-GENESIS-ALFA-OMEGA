@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 sistema_propostas_ferramentas.py - Gerenciador de Propostas de Ferramentas
 
-Integrado com Coração v7 para:
+Integrado com Corao v7 para:
 - Criar propostas
 - Verificar duplicatas
 - Aprovar/Rejeitar/Analisar
@@ -12,18 +13,17 @@ Integrado com Coração v7 para:
 
 Responsabilidades:
 - CRUD de propostas
-- Verificação de duplicatas
-- Histórico de status
-- Integração com Coração (response_queue, ui_queue)
-- Permissões por IA
+- Verificao de duplicatas
+- histórico de status
+- Integrao com Corao (response_queue, ui_queue)
+- Permisses por IA
 
-MUDANÇAS v2:
-âœ… Código agora é opcional na criação
-âœ… Adicionado método atualizar_codigo_proposta()
-âœ… Validação de similaridade melhorada
-âœ… Imports corrigidos
+MUDANAS v2:
+[OK] Cdigo agora  opcional na criao
+[OK] Adicionado método atualizar_codigo_proposta()
+[OK] Validao de similaridade melhorada
+[OK] Imports corrigidos
 """
-from __future__ import annotations
 
 
 import datetime
@@ -46,22 +46,22 @@ class GerenciadorPropostas:
     Gerencia ciclo de vida completo de propostas de ferramentas.Estados:
     - PENDENTE_ANALISE: Aguardando decisão do humano
     - EM_ANALISE: Humano marcou para analisar depois
-    - APROVADO_CONSTRUÇÍO: Aprovado, pode construir
+    - APROVADO_CONSTRUO: Aprovado, pode construir
     - EM_CONSTRUCAO: Construindo
     - PRONTO_TESTES: Testes completados
-    - PRONTO_SEGURANCA: Aguardando análise de segurança
+    - PRONTO_SEGURANCA: Aguardando anlise de segurana
     - EM_ANALISE_SEGURANCA: Bot analisando
-    - PRONTO_APROVACAO_FINAL: Aguardando aprovação final
+    - PRONTO_APROVACAO_FINAL: Aguardando aprovao final
     - APROVADO_DEPLOY: Aprovado para deploy
-    - EM_PRODUCAO: Ativo em produção
-    - REJEITADO: Rejeitado (não pode duplicar)
-    - FALHA_CONSTRUCAO: Construção falhou
+    - EM_PRODUCAO: Ativo em produo
+    - REJEITADO: Rejeitado (no pode duplicar)
+    - FALHA_CONSTRUCAO: Construo falhou
     """
 
     def __init__(self, coracao_ref: Any, db_path: str = "data/propostas_ferramentas.db"):
         """
         Inicializa gerenciador.Args:
-            coracao_ref: Referência ao Coração Orquestrador
+            coracao_ref: Referncia ação Corao Orquestrador
             db_path: Caminho do banco de dados
         """
         self.coracao = coracao_ref
@@ -82,14 +82,14 @@ class GerenciadorPropostas:
         # Carregar do banco para cache
         self._carregar_propostas_do_banco()
         
-        self.logger.info("âœ… GerenciadorPropostas inicializado com %d propostas no banco", len(self.propostas_cache))
+        self.logger.info("[OK] GerenciadorPropostas inicializado com %d propostas no banco", len(self.propostas_cache))
 
     # =====================================================================
     # DATABASE
     # =====================================================================
 
     def _inicializar_banco(self) -> None:
-        """Cria tabelas se não existirem."""
+        """Cria tabelas se no existirem."""
         with self._lock_db:
             conn = sqlite3.connect(str(self.db_path), check_same_thread=False)
             conn.row_factory = sqlite3.Row
@@ -119,7 +119,7 @@ class GerenciadorPropostas:
                 )
             """)
             
-            # Histórico de status
+            # histórico de status
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS propostas_historico_status (
                     id TEXT PRIMARY KEY,
@@ -145,14 +145,14 @@ class GerenciadorPropostas:
                 )
             """)
             
-            # Índices para performance
+            # índices para performance
             cur.execute("CREATE INDEX IF NOT EXISTS idx_status ON propostas(status)")
             cur.execute("CREATE INDEX IF NOT EXISTS idx_ia ON propostas(ia_solicitante)")
             cur.execute("CREATE INDEX IF NOT EXISTS idx_timestamp ON propostas(timestamp_criacao)")
             
             conn.commit()
             conn.close()
-            self.logger.debug("âœ… Banco de dados inicializado")
+            self.logger.debug("[OK] Banco de dados inicializado")
 
     def _carregar_propostas_do_banco(self) -> None:
         """Carrega todas as propostas do banco para cache."""
@@ -235,7 +235,7 @@ class GerenciadorPropostas:
 
     def _registrar_mudanca_status(self, proposta_id: str, status_anterior: str, status_novo: str, 
                                    por_humano: str = None, motivo: str = None) -> bool:
-        """Registra mudança de status no histórico."""
+        """Registra mudana de status no histórico."""
         with self._lock_db:
             try:
                 conn = sqlite3.connect(str(self.db_path), check_same_thread=False)
@@ -260,7 +260,7 @@ class GerenciadorPropostas:
                 conn.close()
                 return True
             except Exception as e:
-                self.logger.exception("Erro ao registrar mudança de status: %s", e)
+                self.logger.exception("Erro ao registrar mudana de status: %s", e)
                 return False
 
     # =====================================================================
@@ -276,17 +276,17 @@ class GerenciadorPropostas:
         intencao_uso: str,
         categoria: str,
         tipo_ferramenta: str,
-        codigo_ou_comando: str = ""  # âœ… AGORA OPCIONAL
+        codigo_ou_comando: str = ""  # [OK] AGORA OPCIONAL
     ) -> Tuple[bool, str, Optional[str]]:
         """
         IA cria proposta de nova ferramenta.Returns:
             (sucesso, mensagem, proposta_id)
         """
-        # âœ… FIX: Validar campos obrigatórios (SEM codigo_ou_comando)
+        # [OK] FIX: Validar campos obrigatrios (SEM codigo_ou_comando)
         if not all([ia_solicitante, nome_ferramenta, motivo, intencao_uso, tipo_ferramenta]):
-            return False, "Campos obrigatórios ausentes", None
+            return False, "Campos obrigatrios ausentes", None
         
-        # Gerar hash do conteúdo (se houver código)
+        # Gerar hash do contedo (se houver cdigo)
         if codigo_ou_comando:
             conteudo_hash = hashlib.sha256(
                 f"{nome_ferramenta}:{codigo_ou_comando}".encode()
@@ -299,7 +299,7 @@ class GerenciadorPropostas:
         # Verificar duplicatas exatas
         duplicata_exata = self._verificar_duplicata_exata(conteudo_hash)
         if duplicata_exata:
-            return False, f"Proposta similar já existe: {duplicata_exata}", None
+            return False, f"Proposta similar j existe: {duplicata_exata}", None
         
         proposta_id = str(uuid.uuid4())
         now = datetime.datetime.utcnow().isoformat()
@@ -332,10 +332,10 @@ class GerenciadorPropostas:
         self._salvar_proposta_no_banco(proposta_id)
         self._registrar_mudanca_status(proposta_id, None, "PENDENTE_ANALISE")
         
-        msg = f"âœ… Proposta '{nome_ferramenta}' criada com ID {proposta_id}"
+        msg = f"[OK] Proposta '{nome_ferramenta}' criada com ID {proposta_id}"
         self.logger.info(msg)
         
-        # Notificar Coração
+        # Notificar Corao
         self._notificar_coacao("PROPOSTA_FERRAMENTA_CRIADA", {
             "proposta_id": proposta_id,
             "nome_ferramenta": nome_ferramenta,
@@ -346,27 +346,27 @@ class GerenciadorPropostas:
         return True, msg, proposta_id
 
     # =====================================================================
-    # âœ… NOVO: ATUALIZAR CÓDIGO (IA envia código após aprovação)
+    # [OK] NOVO: ATUALIZAR CDIGO (IA envia cdigo aps aprovao)
     # =====================================================================
 
     def atualizar_codigo_proposta(self, proposta_id: str, ia_solicitante: str, codigo: str) -> Tuple[bool, str]:
         """
-        IA envia código para proposta já criada.Pode ser chamado após aprovação, antes de construir.
+        IA envia cdigo para proposta j criada.Pode ser chamado aps aprovao, antes de construir.
         """
         with self._lock:
             proposta = self.propostas_cache.get(proposta_id)
         
         if not proposta:
-            return False, "âŒ Proposta não encontrada"
+            return False, "[ERRO] Proposta no encontrada"
         
         if proposta.get("ia_solicitante") != ia_solicitante:
-            return False, "âŒ Apenas a IA solicitante pode atualizar"
+            return False, "[ERRO] Apenas a IA solicitante pode atualizar"
         
-        if proposta.get("status") not in ["APROVADO_CONSTRUÇÍO"]:
-            return False, f"âŒ Proposta não está em construção (status: {proposta.get('status')})"
+        if proposta.get("status") not in ["APROVADO_CONSTRUO"]:
+            return False, f"[ERRO] Proposta no est em construo (status: {proposta.get('status')})"
         
         if not codigo or not codigo.strip():
-            return False, "âŒ Código não pode ser vazio"
+            return False, "[ERRO] Cdigo no pode ser vazio"
         
         with self._lock:
             proposta["codigo_ou_comando"] = codigo
@@ -374,7 +374,7 @@ class GerenciadorPropostas:
         
         self._salvar_proposta_no_banco(proposta_id)
         
-        msg = "âœ… Código atualizado com sucesso"
+        msg = "[OK] Cdigo atualizado com sucesso"
         self.logger.info(msg)
         
         # Notificar
@@ -391,7 +391,7 @@ class GerenciadorPropostas:
     # =====================================================================
 
     def _verificar_duplicata_exata(self, hash_conteudo: str) -> Optional[str]:
-        """Verifica se já existe proposta com hash idêntico."""
+        """Verifica se j existe proposta com hash idntico."""
         with self._lock:
             for pid, prop in self.propostas_cache.items():
                 if prop.get("hash_conteudo") == hash_conteudo:
@@ -462,7 +462,7 @@ class GerenciadorPropostas:
             ]
 
     def listar_em_analise(self) -> List[Dict[str, Any]]:
-        """Lista propostas em análise (EM_ANALISE)."""
+        """Lista propostas em anlise (EM_ANALISE)."""
         with self._lock:
             return [
                 p for p in self.propostas_cache.values()
@@ -470,11 +470,11 @@ class GerenciadorPropostas:
             ]
 
     def listar_em_construcao(self) -> List[Dict[str, Any]]:
-        """Lista propostas em construção."""
+        """Lista propostas em construo."""
         with self._lock:
             return [
                 p for p in self.propostas_cache.values()
-                if p.get("status") in ["APROVADO_CONSTRUÇÍO", "EM_CONSTRUCAO"]
+                if p.get("status") in ["APROVADO_CONSTRUO", "EM_CONSTRUCAO"]
             ]
 
     def listar_pronto_deploy(self) -> List[Dict[str, Any]]:
@@ -486,7 +486,7 @@ class GerenciadorPropostas:
             ]
 
     def listar_em_producao(self) -> List[Dict[str, Any]]:
-        """Lista ferramentas em produção."""
+        """Lista ferramentas em produo."""
         with self._lock:
             return [
                 p for p in self.propostas_cache.values()
@@ -494,37 +494,37 @@ class GerenciadorPropostas:
             ]
 
     def obter_proposta(self, proposta_id: str) -> Optional[Dict[str, Any]]:
-        """Obtém dados completos de uma proposta."""
+        """Obtm dados completos de uma proposta."""
         with self._lock:
             return self.propostas_cache.get(proposta_id)
 
     # =====================================================================
-    # APROVAÇÍO / REJEIÇÍO / ANÍLISE
+    # APROVAO / REJEIO / ANLISE
     # =====================================================================
 
     def aprovar_proposta(self, proposta_id: str, por_humano: str, motivo: str = "") -> Tuple[bool, str]:
         """
-        Humano aprova proposta â†’ passa para APROVADO_CONSTRUÇÍO.IA pode começar a construir.
+        Humano aprova proposta  passa para APROVADO_CONSTRUO.IA pode comear a construir.
         """
         with self._lock:
             proposta = self.propostas_cache.get(proposta_id)
         
         if not proposta:
-            return False, "Proposta não encontrada"
+            return False, "Proposta no encontrada"
         
         if proposta.get("status") not in ["PENDENTE_ANALISE", "EM_ANALISE"]:
-            return False, f"Proposta não pode ser aprovada (status: {proposta.get('status')})"
+            return False, f"Proposta no pode ser aprovada (status: {proposta.get('status')})"
         
         # Atualizar
         status_anterior = proposta.get("status")
         with self._lock:
-            proposta["status"] = "APROVADO_CONSTRUÇÍO"
+            proposta["status"] = "APROVADO_CONSTRUO"
             proposta["timestamp_ultima_atualizacao"] = datetime.datetime.utcnow().isoformat()
         
         self._salvar_proposta_no_banco(proposta_id)
-        self._registrar_mudanca_status(proposta_id, status_anterior, "APROVADO_CONSTRUÇÍO", por_humano, motivo)
+        self._registrar_mudanca_status(proposta_id, status_anterior, "APROVADO_CONSTRUO", por_humano, motivo)
         
-        msg = f"âœ… Proposta {proposta_id} aprovada por {por_humano}"
+        msg = f"[OK] Proposta {proposta_id} aprovada por {por_humano}"
         self.logger.info(msg)
         
         # Notificar
@@ -539,13 +539,13 @@ class GerenciadorPropostas:
 
     def rejeitar_proposta(self, proposta_id: str, por_humano: str, motivo_rejeicao: str) -> Tuple[bool, str]:
         """
-        Humano rejeita proposta â†’ passa para REJEITADO.Proposta não pode ser duplicada depois.
+        Humano rejeita proposta  passa para REJEITADO.Proposta no pode ser duplicada depois.
         """
         with self._lock:
             proposta = self.propostas_cache.get(proposta_id)
         
         if not proposta:
-            return False, "Proposta não encontrada"
+            return False, "Proposta no encontrada"
         
         # Atualizar
         status_anterior = proposta.get("status")
@@ -556,7 +556,7 @@ class GerenciadorPropostas:
         self._salvar_proposta_no_banco(proposta_id)
         self._registrar_mudanca_status(proposta_id, status_anterior, "REJEITADO", por_humano, motivo_rejeicao)
         
-        msg = f"âŒ Proposta {proposta_id} rejeitada por {por_humano}: {motivo_rejeicao}"
+        msg = f"[ERRO] Proposta {proposta_id} rejeitada por {por_humano}: {motivo_rejeicao}"
         self.logger.info(msg)
         
         # Notificar
@@ -571,16 +571,16 @@ class GerenciadorPropostas:
 
     def mover_para_analise(self, proposta_id: str, por_humano: str, motivo: str = "") -> Tuple[bool, str]:
         """
-        Humano marca para analisar depois â†’ passa para EM_ANALISE.Não toma decisão agora, apenas estaciona.
+        Humano marca para analisar depois  passa para EM_ANALISE.No toma decisão agora, apenas estaciona.
         """
         with self._lock:
             proposta = self.propostas_cache.get(proposta_id)
         
         if not proposta:
-            return False, "Proposta não encontrada"
+            return False, "Proposta no encontrada"
         
         if proposta.get("status") != "PENDENTE_ANALISE":
-            return False, "Proposta não está pendente"
+            return False, "Proposta no est pendente"
         
         # Atualizar
         with self._lock:
@@ -590,17 +590,17 @@ class GerenciadorPropostas:
         self._salvar_proposta_no_banco(proposta_id)
         self._registrar_mudanca_status(proposta_id, "PENDENTE_ANALISE", "EM_ANALISE", por_humano, motivo)
         
-        msg = f"â¸ï¸ Proposta {proposta_id} movida para análise posterior"
+        msg = f" Proposta {proposta_id} movida para anlise posterior"
         self.logger.info(msg)
         
         return True, msg
 
     # =====================================================================
-    # ATUALIZAR STATUS (durante construção)
+    # ATUALIZAR STATUS (durante construo)
     # =====================================================================
 
     def atualizar_progresso(self, proposta_id: str, percentual: int, etapa: str, log: str = "") -> bool:
-        """Atualiza progresso durante construção."""
+        """Atualiza progresso durante construo."""
         with self._lock:
             proposta = self.propostas_cache.get(proposta_id)
         
@@ -626,7 +626,7 @@ class GerenciadorPropostas:
             proposta = self.propostas_cache.get(proposta_id)
         
         if not proposta:
-            return False, "Proposta não encontrada"
+            return False, "Proposta no encontrada"
         
         status_anterior = proposta.get("status")
         with self._lock:
@@ -670,7 +670,7 @@ class GerenciadorPropostas:
         return True
 
     def registrar_analise_seguranca(self, proposta_id: str, risco: str, score: int, relatorio: str) -> bool:
-        """Registra resultado da análise de segurança."""
+        """Registra resultado da anlise de segurana."""
         with self._lock:
             proposta = self.propostas_cache.get(proposta_id)
         
@@ -679,13 +679,13 @@ class GerenciadorPropostas:
         
         with self._lock:
             proposta["seguranca_json"] = {
-                "risco": risco,  # BAIXO, MÉDIO, ALTO, CRÍTICO
+                "risco": risco,  # BAIXO, MDIO, ALTO, crítico
                 "score": score,  # 0-100
                 "relatorio": relatorio,
                 "timestamp": datetime.datetime.utcnow().isoformat()
             }
             
-            if risco != "CRÍTICO":
+            if risco != "crítico":
                 proposta["status"] = "PRONTO_APROVACAO_FINAL"
             else:
                 proposta["status"] = "REJEITADO"
@@ -694,7 +694,7 @@ class GerenciadorPropostas:
         
         self._salvar_proposta_no_banco(proposta_id)
         
-        if risco != "CRÍTICO":
+        if risco != "crítico":
             self._registrar_mudanca_status(proposta_id, "PRONTO_SEGURANCA", "PRONTO_APROVACAO_FINAL")
         else:
             self._registrar_mudanca_status(proposta_id, "PRONTO_SEGURANCA", "REJEITADO", motivo="Risco crítico detectado")
@@ -702,15 +702,15 @@ class GerenciadorPropostas:
         return True
 
     def aprovar_deploy(self, proposta_id: str, por_humano: str, motivo: str = "") -> Tuple[bool, str]:
-        """Aprovação final â†’ deploy em produção."""
+        """Aprovao final  deploy em produo."""
         with self._lock:
             proposta = self.propostas_cache.get(proposta_id)
         
         if not proposta:
-            return False, "Proposta não encontrada"
+            return False, "Proposta no encontrada"
         
         if proposta.get("status") != "PRONTO_APROVACAO_FINAL":
-            return False, f"Proposta não está pronta para deploy (status: {proposta.get('status')})"
+            return False, f"Proposta no est pronta para deploy (status: {proposta.get('status')})"
         
         status_anterior = proposta.get("status")
         with self._lock:
@@ -727,7 +727,7 @@ class GerenciadorPropostas:
         self._salvar_proposta_no_banco(proposta_id)
         self._registrar_mudanca_status(proposta_id, status_anterior, "EM_PRODUCAO", por_humano, motivo)
         
-        msg = f"âœ… Proposta {proposta_id} em produção!"
+        msg = f"[OK] Proposta {proposta_id} em produo!"
         self.logger.info(msg)
         
         # Notificar
@@ -740,11 +740,11 @@ class GerenciadorPropostas:
         return True, msg
 
     # =====================================================================
-    # HISTÓRICO
+    # histórico
     # =====================================================================
 
     def obter_historico(self, proposta_id: str) -> List[Dict[str, Any]]:
-        """Retorna histórico de mudanças de status."""
+        """Retorna histórico de mudanas de status."""
         with self._lock_db:
             conn = sqlite3.connect(str(self.db_path), check_same_thread=False)
             conn.row_factory = sqlite3.Row
@@ -756,17 +756,17 @@ class GerenciadorPropostas:
                 ORDER BY timestamp ASC
             """, (proposta_id,))
             
-            historico = [dict(row) for row in cur.fetchall()]
+            histórico = [dict(row) for row in cur.fetchall()]
             conn.close()
         
-        return historico
+        return histórico
 
     # =====================================================================
-    # NOTIFICAÇÕES
+    # NOTIFICAES
     # =====================================================================
 
     def _notificar_coacao(self, tipo_evento: str, dados: Dict[str, Any]) -> None:
-        """Notifica Coração sobre eventos importantes."""
+        """Notifica Corao sobre eventos importantes."""
         try:
             if hasattr(self.coracao, "ui_queue"):
                 self.coracao.ui_queue.put_nowait({
@@ -775,7 +775,7 @@ class GerenciadorPropostas:
                     "timestamp": datetime.datetime.utcnow().isoformat()
                 })
         except Exception as e:
-            self.logger.debug("Erro ao notificar Coração: %s", e)
+            self.logger.debug("Erro ao notificar Corao: %s", e)
 
     # =====================================================================
     # SHUTDOWN
@@ -783,8 +783,8 @@ class GerenciadorPropostas:
 
     def shutdown(self) -> None:
         """Desliga gerenciador."""
-        self.logger.info("ðŸ›‘ Desligando GerenciadorPropostas...")
-        # Todas as propostas já foram salvas, nada a fazer
-        self.logger.info("âœ… GerenciadorPropostas desligado")
+        self.logger.info(" Desligando GerenciadorPropostas...")
+        # Todas as propostas j foram salvas, nada a fazer
+        self.logger.info("[OK] GerenciadorPropostas desligado")
 
 

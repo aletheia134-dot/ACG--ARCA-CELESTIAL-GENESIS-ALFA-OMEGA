@@ -69,7 +69,7 @@ class EngenhariaDeFerramentas:
         if not hasattr(self.coracao, "gerenciador_propostas") or not getattr(self.coracao, "gerenciador_propostas"):
             missing.append("gerenciador_propostas")
         if missing:
-            raise RuntimeError(f"Coracao inválido — faltando componentes: {missing}")
+            raise RuntimeError(f"Coracao invlido  faltando componentes: {missing}")
 
     def iniciar_monitoramento(self) -> None:
         if self._monitorando:
@@ -96,10 +96,10 @@ class EngenhariaDeFerramentas:
         while self._monitorando and not self._stop_event.is_set():
             try:
                 motor = getattr(self.coracao, "motor_de_rotina", None)
-                if motor and motor.pc_esta_ocioso(nivel="moderada"):
+                if motor and motor.pc_esta_ocioso(nível="moderada"):
                     self._revisar_ferramentas_existentes()
                 else:
-                    self.logger.debug("PC em uso; pulando revisão de ferramentas")
+                    self.logger.debug("PC em uso; pulando reviso de ferramentas")
                 if self._stop_event.wait(timeout=secrets.SystemRandom().randint(300, 900)):
                     break
             except Exception:
@@ -115,7 +115,7 @@ class EngenhariaDeFerramentas:
             with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
             if not isinstance(data, dict):
-                self.logger.warning("Formato inesperado em ferramentas_instaladas.json — reinicializando")
+                self.logger.warning("Formato inesperado em ferramentas_instaladas.json  reinicializando")
                 return {}
             return data
         except Exception:
@@ -154,12 +154,12 @@ class EngenhariaDeFerramentas:
                 try:
                     observacoes = obs_mgr.obter_observacoes_recentes(limite=3)
                 except Exception:
-                    self.logger.debug("Falha ao obter observações recentes (continuando)")
+                    self.logger.debug("Falha ao obter observaes recentes (continuando)")
 
             prompt_sistema = (
                 f"{getattr(self.coracao, 'validador_etico', {}).credo_da_arca if hasattr(getattr(self.coracao, 'validador_etico', None), 'credo_da_arca') else ''}\n\n"
                 f"Persona: {getattr(self.coracao.almas_vivas[alma_refletora], 'config_personalidade', {}).get('identidade_llm', '')}\n\n"
-                f"Ferramentas instaladas: {list(self.ferramentas_instaladas.keys())}\nObservações recentes: {observacoes}\n\n"
+                f"Ferramentas instaladas: {list(self.ferramentas_instaladas.keys())}\nObservaes recentes: {observacoes}\n\n"
                 "Responda apenas com JSON contendo: nome_acao, descricao_acao, categoria, tipo_ferramenta, comando_ou_codigo, explicacao_proposito."
             )
             if hasattr(self.coracao, "_enviar_para_cerebro") and callable(self.coracao._enviar_para_cerebro):
@@ -178,13 +178,13 @@ class EngenhariaDeFerramentas:
                             explicacao_proposito=proposta["explicacao_proposito"],
                         )
                     else:
-                        self.logger.warning("Proposta inválida do cérebro: %s", resposta)
+                        self.logger.warning("Proposta invlida do crebro: %s", resposta)
                 except Exception:
-                    self.logger.exception("Erro ao processar proposta gerada pelo cérebro")
+                    self.logger.exception("Erro ao processar proposta gerada pelo crebro")
             else:
-                self.logger.debug("_enviar_para_cerebro não disponível; pulando geração automática")
+                self.logger.debug("_enviar_para_cerebro no disponível; pulando gerao automtica")
         except Exception:
-            self.logger.exception("Erro durante revisão automática de ferramentas")
+            self.logger.exception("Erro durante reviso automtica de ferramentas")
 
     def propor_nova_ferramenta(self, nome_ferramenta: str, descricao: str, autor: str, categoria: str, tipo: str, comando_ou_codigo: str, explicacao_proposito: str) -> str:
         gerenciador = getattr(self.coracao, "gerenciador_propostas", None)
@@ -193,7 +193,7 @@ class EngenhariaDeFerramentas:
                 ia_solicitante=autor,
                 nome_ferramenta=nome_ferramenta,
                 descricao=descricao,
-                motivo="Proposta automática via EngenhariaDeFerramentas",
+                motivo="Proposta automtica via EngenhariaDeFerramentas",
                 intencao_uso=explicacao_proposito,
                 categoria=categoria,
                 tipo_ferramenta=tipo,
@@ -205,7 +205,7 @@ class EngenhariaDeFerramentas:
             else:
                 self.logger.warning("Falha ao delegar proposta: %s", msg)
         else:
-            self.logger.error("GerenciadorPropostas não disponível; usando modo legado")
+            self.logger.error("GerenciadorPropostas no disponível; usando modo legado")
             proposta_id = str(uuid.uuid4())
             proposta = {
                 "id": proposta_id,
@@ -225,7 +225,7 @@ class EngenhariaDeFerramentas:
             try:
                 self.coracao.processar_proposta_interna(proposta, alvo_ui="Oficina")
             except Exception:
-                self.logger.exception("Erro ao encaminhar proposta ao coracao")
+                self.logger.exception("Erro ao encaminhar proposta ação coracao")
             self.logger.info("Proposta registrada (modo legado): %s por %s", nome_ferramenta, autor)
             return proposta_id
 
@@ -234,12 +234,12 @@ class EngenhariaDeFerramentas:
         if gerenciador:
             proposta = gerenciador.obter_proposta(proposta_id)
             if not proposta:
-                self.logger.warning("Proposta %s não encontrada no GerenciadorPropostas", proposta_id)
+                self.logger.warning("Proposta %s no encontrada no GerenciadorPropostas", proposta_id)
                 return False
             if proposta.get("status") != "PRONTO_APROVACAO_FINAL":
-                self.logger.warning("Proposta %s não está pronta para deploy (status: %s)", proposta_id, proposta.get("status"))
+                self.logger.warning("Proposta %s no est pronta para deploy (status: %s)", proposta_id, proposta.get("status"))
                 return False
-            sucesso, msg = gerenciador.aprovar_deploy(proposta_id, "Sistema (EngenhariaDeFerramentas)", "Instalação automática")
+            sucesso, msg = gerenciador.aprovar_deploy(proposta_id, "Sistema (EngenhariaDeFerramentas)", "Instalao automtica")
             if not sucesso:
                 self.logger.warning("Falha ao aprovar deploy: %s", msg)
                 return False
@@ -247,7 +247,7 @@ class EngenhariaDeFerramentas:
             with self._lock:
                 proposta = self.propostas_ferramentas_pendentes.pop(proposta_id, None)
             if not proposta:
-                self.logger.warning("Proposta %s não encontrada (modo legado)", proposta_id)
+                self.logger.warning("Proposta %s no encontrada (modo legado)", proposta_id)
                 return False
 
         tipo = proposta.get("tipo_ferramenta")
@@ -264,12 +264,12 @@ class EngenhariaDeFerramentas:
         self.logger.info("Instalando script dinâmico: %s", nome)
 
         if not self._validar_codigo_dinamico(codigo):
-            msg = f"Código bloqueado por políticas de segurança: {nome}"
+            msg = f"Cdigo bloqueado por polticas de segurana: {nome}"
             self.logger.error(msg)
             try:
                 self.coracao.response_queue.put({"tipo_resp": "LOG_REINO", "texto": msg})
             except Exception:
-                self.logger.debug("Não foi possível notificar via response_queue")
+                self.logger.debug("No foi possível notificar via response_queue")
             return False
 
         ferramenta_id = proposta.get("id", str(uuid.uuid4()))
@@ -285,18 +285,18 @@ class EngenhariaDeFerramentas:
         try:
             compile(codigo, f"<{module_name}>", "exec")
         except SyntaxError as e:
-            self.logger.error("Erro de sintaxe no código dinâmico: %s", e)
+            self.logger.error("Erro de sintaxe no cdigo dinâmico: %s", e)
             return False
 
         try:
             exec(codigo, module_globals)
             executar = module_globals.get("executar") or module_globals.get("main")
             if not callable(executar):
-                self.logger.error("Função de entrada 'executar' (ou 'main') não encontrada no código dinâmico")
+                self.logger.error("Funo de entrada 'executar' (ou 'main') no encontrada no cdigo dinâmico")
                 return False
 
             with self._lock:
-                self.ferramentas_dinamicas[nome] = {"id": ferramenta_id, "funcao": executar, "autor": autor}
+                self.ferramentas_dinamicas[nome] = {"id": ferramenta_id, "função": executar, "autor": autor}
                 self.ferramentas_instaladas[nome] = {
                     "id": ferramenta_id,
                     "descricao": proposta.get("descricao_acao", ""),
@@ -310,7 +310,7 @@ class EngenhariaDeFerramentas:
                     "exemplos_uso": []
                 }
             self._salvar_ferramentas_instaladas()
-            msg = f"Ferramenta dinâmica '{nome}' instalada em memória"
+            msg = f"Ferramenta dinmica '{nome}' instalada em memória"
             self.logger.info(msg)
             try:
                 self.coracao.response_queue.put({"tipo_resp": "LOG_REINO", "texto": msg})
@@ -322,7 +322,7 @@ class EngenhariaDeFerramentas:
                 self.logger.debug("Falha ao registrar memória (ignorado)")
             return True
         except Exception:
-            self.logger.exception("Erro ao executar/instalar código dinâmico")
+            self.logger.exception("Erro ao executar/instalar cdigo dinâmico")
             try:
                 self.coracao.response_queue.put({"tipo_resp": "LOG_REINO", "texto": f"[ERRO] Falha ao instalar script '{nome}'"})
             except Exception:
@@ -333,19 +333,19 @@ class EngenhariaDeFerramentas:
         if not isinstance(codigo, str) or not codigo.strip():
             return False
         proibidos_pattern = re.compile(
-            r"\b(import|exec|eval|compile|open|__import__|subprocess|socket|ctypes|mmap|shutil|os\.|sys\.|requests|urllib|pickle|yaml|marshal)\b",
+            r"\b(import|exec|eval|compile|open|__import__|subprocess|socket|ctypes|mmap|shutil|os\\.|sys\\.|requests|urllib|pickle|yaml|marshal)\b",
             flags=re.IGNORECASE,
         )
         if proibidos_pattern.search(codigo):
-            self.logger.warning("Código contém token proibido")
+            self.logger.warning("Cdigo contm token proibido")
             return False
         if len(codigo) > 50_000:
-            self.logger.warning("Código demasiado grande (bloqueado)")
+            self.logger.warning("Cdigo demasiado grande (bloqueado)")
             return False
         try:
             compile(codigo, "<codigo_dinamico>", "exec")
         except Exception as e:
-            self.logger.warning("Código dinâmico não compilou: %s", e)
+            self.logger.warning("Cdigo dinâmico no compilou: %s", e)
             return False
         return True
 
@@ -357,7 +357,7 @@ class EngenhariaDeFerramentas:
         self.logger.info("Instalando comando de sistema: %s", nome)
         comando_sanitizado = self._sanitizar_comando_instalacao(comando)
         if not comando_sanitizado:
-            self.logger.error("Comando de instalação bloqueado por sanitização")
+            self.logger.error("Comando de instalao bloqueado por sanitizao")
             try:
                 self.coracao.response_queue.put({"tipo_resp": "LOG_REINO", "texto": f"[ERRO] Comando bloqueado para '{nome}'"})
             except Exception:
@@ -366,7 +366,7 @@ class EngenhariaDeFerramentas:
 
         pc_ctrl = getattr(self.coracao, "pc_control_manager", None)
         if not pc_ctrl:
-            self.logger.error("PCControlManager ausente; não é possível executar comando de sistema")
+            self.logger.error("PCControlManager ausente; no  possível executar comando de sistema")
             return False
 
         try:
@@ -376,7 +376,7 @@ class EngenhariaDeFerramentas:
                 autor=f"EngenhariaDeFerramentas:{autor}"
             )
         except Exception:
-            self.logger.exception("Erro ao pedir execução ao PCControlManager")
+            self.logger.exception("Erro ao pedir execução ação PCControlManager")
             return False
 
         if resultado.get("sucesso"):
@@ -420,7 +420,7 @@ class EngenhariaDeFerramentas:
             return None
         sanitizado = re.sub(r"[\x00-\x1f\x7f-\x9f]", " ", comando).strip()
         perigosos = [
-            r";", r"\|\|", r"&&", r"\|", r"`", r"\$\(.*\)", r"rm\s+-rf", r"rm\s+-r", r"sudo\s+rm", r"del\s+/s", r"format\s+", r"mkfs", r"chown\s+", r"chmod\s+"
+            r";", r"\\|\\|", r"&&", r"\\|", r"`", r"\\$\(.*\)", r"rm\\s+-rf", r"rm\\s+-r", r"sudo\\s+rm", r"del\\s+/s", r"format\\s+", r"mkfs", r"chown\\s+", r"chmod\\s+"
         ]
         for p in perigosos:
             if re.search(p, sanitizado, flags=re.IGNORECASE):
@@ -432,33 +432,33 @@ class EngenhariaDeFerramentas:
         allowed_prefixes = ["apt ", "apt-get ", "pip ", "python -m pip ", "yum ", "dnf ", "brew "]
         lower = sanitizado.lower()
         if not any(lower.startswith(pref) for pref in allowed_prefixes):
-            self.logger.warning("Comando não começa com prefixo de instalação seguro")
+            self.logger.warning("Comando no comea com prefixo de instalao seguro")
             return None
         return sanitizado
 
     def executar_ferramenta(self, nome_ferramenta: str, parametros: Optional[Dict[str, Any]] = None) -> Tuple[bool, Any]:
         with self._lock:
             if nome_ferramenta not in self.ferramentas_instaladas:
-                return False, "Ferramenta não encontrada"
+                return False, "Ferramenta no encontrada"
 
             meta = self.ferramentas_instaladas[nome_ferramenta]
 
             if meta.get("tipo") == "script_python_dinamico":
                 dyn = self.ferramentas_dinamicas.get(nome_ferramenta)
                 if not dyn:
-                    return False, "Implementação dinâmica não encontrada em memória"
-                func = dyn.get("funcao")
+                    return False, "Implementao dinmica no encontrada em memória"
+                func = dyn.get("função")
                 try:
                     resultado = func(**(parametros or {}))
                     self.registrar_uso(nome_ferramenta)
                     return True, resultado
                 except Exception:
-                    self.logger.exception("Erro ao executar ferramenta dinâmica %s", nome_ferramenta)
-                    return False, "Erro ao executar ferramenta dinâmica"
+                    self.logger.exception("Erro ao executar ferramenta dinmica %s", nome_ferramenta)
+                    return False, "Erro ao executar ferramenta dinmica"
             else:
                 pc = getattr(self.coracao, "pc_control_manager", None)
                 if not pc:
-                    return False, "PCControlManager não disponível"
+                    return False, "PCControlManager no disponível"
                 nome_acao = f"Executar Ferramenta: {nome_ferramenta}"
                 try:
                     resultado = pc.executar_acao_controlada(nome_acao=nome_acao, comando_script=None, autor="EngenhariaDeFerramentas", parametros=parametros or {})
@@ -468,7 +468,7 @@ class EngenhariaDeFerramentas:
                     else:
                         return False, resultado.get("erro", "Erro na execução remota")
                 except Exception:
-                    self.logger.exception("Erro solicitando execução ao PCControlManager")
+                    self.logger.exception("Erro solicitando execução ação PCControlManager")
                     return False, "Erro ao executar via PCControlManager"
 
     def registrar_uso(self, nome_ferramenta: str) -> bool:
@@ -516,6 +516,6 @@ class EngenhariaDeFerramentas:
             return dict(self.ferramentas_instaladas)
 
     def shutdown(self) -> None:
-        self.logger.info("ðŸ›‘ Desligando EngenhariaDeFerramentas...")
+        self.logger.info(" Desligando EngenhariaDeFerramentas...")
         self.parar_monitoramento()
-        self.logger.info("âœ… EngenhariaDeFerramentas desligada")
+        self.logger.info("[OK] EngenhariaDeFerramentas desligada")

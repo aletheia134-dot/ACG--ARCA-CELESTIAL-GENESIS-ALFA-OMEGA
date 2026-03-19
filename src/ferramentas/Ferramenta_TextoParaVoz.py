@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS, USAR_GPU
 
 import customtkinter as ctk
@@ -18,22 +18,22 @@ import numpy as np
 from PIL import Image
 import io
 
-# Opção 1: Coqui TTS (melhor qualidade, precisa de GPU)
+# Opo 1: Coqui TTS (melhor qualidade, precisa de GPU)
 try:
     from TTS.api import TTS
     TTS_AVAILABLE = True
 except:
     TTS_AVAILABLE = False
-    print("âš ï¸ Coqui TTS não instalado. Usando gTTS (leve)")
+    print("[AVISO] Coqui TTS no instalado. Usando gTTS (leve)")
 
-# Opção 2: gTTS (leve, não precisa GPU)
+# Opo 2: gTTS (leve, no precisa GPU)
 try:
     from gtts import gTTS
     import pygame
     GTTS_AVAILABLE = True
 except:
     GTTS_AVAILABLE = False
-    print("âš ï¸ gTTS não instalado")
+    print("[AVISO] gTTS no instalado")
 
 class FerramentaTextoParaVoz:
     def __init__(self, usar_gpu=True, motor="auto"):
@@ -51,29 +51,29 @@ class FerramentaTextoParaVoz:
                 self._carregar_coqui()
             elif GTTS_AVAILABLE:
                 self.motor = "gtts"
-                print("âœ… Usando gTTS (leve, não precisa GPU)")
+                print("[OK] Usando gTTS (leve, no precisa GPU)")
             else:
-                print("âŒ Nenhum motor TTS disponível")
+                print("[ERRO] Nenhum motor TTS disponível")
         
         elif self.motor == "coqui" and TTS_AVAILABLE:
             self._carregar_coqui()
         
         elif self.motor == "gtts" and GTTS_AVAILABLE:
-            print("âœ… Usando gTTS")
+            print("[OK] Usando gTTS")
     
     def _carregar_coqui(self):
         """Carrega Coqui TTS (2GB VRAM)"""
         try:
-            self.tts = TTS("tts_models/pt/cv/vits")  # Português
-            self.vozes_disponiveis = ["feminina", "masculina"]  # Padrão
+            self.tts = TTS("tts_models/pt/cv/vits")  # Portugus
+            self.vozes_disponiveis = ["feminina", "masculina"]  # padrão
             self.motor = "coqui"
-            print(f"âœ… Coqui TTS carregado (GPU: {self.usar_gpu})")
+            print(f"[OK] Coqui TTS carregado (GPU: {self.usar_gpu})")
         except Exception as e:
-            print(f"âŒ Erro Coqui: {e}")
+            print(f"[ERRO] Erro Coqui: {e}")
             self.motor = "gtts" if GTTS_AVAILABLE else None
     
     def processar(self, texto, voz="default", arquivo_saida=None):
-        """Converte texto para áudio"""
+        """Converte texto para udio"""
         if self.motor == "coqui" and self.tts:
             return self._processar_coqui(texto, arquivo_saida)
         elif self.motor == "gtts":
@@ -106,26 +106,26 @@ class FerramentaTextoParaVoz:
 
 class InterfaceTextoParaVoz(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸ”Š Texto para Voz (TTS)", "700x600")
+        super().__init__(" Texto para Voz (TTS)", "700x600")
         self.ferramenta = FerramentaTextoParaVoz(usar_gpu=USAR_GPU)
         self.audio_gerado = None
         self.setup_interface()
         
-        # Inicializa pygame para reprodução
+        # Inicializa pygame para reproduo
         if GTTS_AVAILABLE:
             pygame.mixer.init()
     
     def setup_interface(self):
-        # Título
+        # Ttulo
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸ—£ï¸ Conversor de Texto para Fala",
+            text=" Conversor de Texto para Fala",
             font=("Arial", 22, "bold")
         )
         titulo.pack(pady=10)
         
         # Status motor
-        motor_status = f"âœ… Motor: {self.ferramenta.motor.upper()}"
+        motor_status = f"[OK] Motor: {self.ferramenta.motor.upper()}"
         if self.ferramenta.motor == "coqui":
             motor_status += " (2GB VRAM)"
         elif self.ferramenta.motor == "gtts":
@@ -134,7 +134,7 @@ class InterfaceTextoParaVoz(InterfaceBase):
         self.lbl_motor = ctk.CTkLabel(self.frame, text=motor_status)
         self.lbl_motor.pack(pady=5)
         
-        # Írea de texto
+        # rea de texto
         self.lbl_texto = ctk.CTkLabel(self.frame, text="Digite o texto para converter:")
         self.lbl_texto.pack(pady=(10,0))
         
@@ -144,13 +144,13 @@ class InterfaceTextoParaVoz(InterfaceBase):
         # Exemplo
         self.btn_exemplo = ctk.CTkButton(
             self.frame,
-            text="ðŸ“ Inserir Exemplo",
+            text=" Inserir Exemplo",
             command=self.inserir_exemplo,
             width=150
         )
         self.btn_exemplo.pack(pady=5)
         
-        # Opções
+        # Opes
         self.frame_opcoes = ctk.CTkFrame(self.frame)
         self.frame_opcoes.pack(pady=10, padx=10, fill="x")
         
@@ -190,13 +190,13 @@ class InterfaceTextoParaVoz(InterfaceBase):
         
         self.velocidade_slider.configure(command=atualizar_velocidade)
         
-        # Botões
+        # Botes
         self.frame_botoes = ctk.CTkFrame(self.frame)
         self.frame_botoes.pack(pady=10)
         
         self.btn_gerar = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸŽµ Gerar Íudio",
+            text=" Gerar udio",
             command=self.gerar_audio,
             width=150,
             height=40,
@@ -206,7 +206,7 @@ class InterfaceTextoParaVoz(InterfaceBase):
         
         self.btn_ouvir = ctk.CTkButton(
             self.frame_botoes,
-            text="â–¶ï¸ Ouvir",
+            text=" Ouvir",
             command=self.ouvir_audio,
             width=100,
             height=40,
@@ -216,7 +216,7 @@ class InterfaceTextoParaVoz(InterfaceBase):
         
         self.btn_parar = ctk.CTkButton(
             self.frame_botoes,
-            text="â¹ï¸ Parar",
+            text=" Parar",
             command=self.parar_audio,
             width=100,
             height=40,
@@ -226,7 +226,7 @@ class InterfaceTextoParaVoz(InterfaceBase):
         
         self.btn_salvar = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ’¾ Salvar",
+            text=" Salvar",
             command=self.salvar_audio,
             width=100,
             height=40,
@@ -240,8 +240,8 @@ class InterfaceTextoParaVoz(InterfaceBase):
         self.progress.set(0)
     
     def inserir_exemplo(self):
-        exemplo = """Olá! Esta é uma demonstração da ferramenta de texto para voz.
-Estou feliz em poder falar com você através deste áudio gerado por inteligência artificial.
+        exemplo = """Ol! Esta  uma demonstrao da ferramenta de texto para voz.
+Estou feliz em poder falar com você atravs deste udio gerado por inteligncia artificial.
 Espero que goste do resultado!"""
         self.texto_entry.delete('1.0', 'end')
         self.texto_entry.insert('1.0', exemplo)
@@ -253,7 +253,7 @@ Espero que goste do resultado!"""
             return
         
         def gerar():
-            self.btn_gerar.configure(state="disabled", text="â³ Gerando...")
+            self.btn_gerar.configure(state="disabled", text=" Gerando...")
             self.progress.set(0.3)
             
             caminho, msg = self.ferramenta.processar(
@@ -267,12 +267,12 @@ Espero que goste do resultado!"""
                 self.audio_gerado = caminho
                 self.btn_ouvir.configure(state="normal")
                 self.btn_salvar.configure(state="normal")
-                self.utils.mostrar_info("Sucesso", f"Íudio gerado:\n{caminho}")
+                self.utils.mostrar_info("Sucesso", f"udio gerado:\n{caminho}")
             else:
                 self.utils.mostrar_erro("Erro", msg)
             
             self.progress.set(1)
-            self.btn_gerar.configure(state="normal", text="ðŸŽµ Gerar Íudio")
+            self.btn_gerar.configure(state="normal", text=" Gerar udio")
         
         threading.Thread(target=gerar).start()
     
@@ -294,7 +294,7 @@ Espero que goste do resultado!"""
                 threading.Thread(target=monitorar).start()
                 
             except Exception as e:
-                self.utils.mostrar_erro("Erro", f"Não foi possível reproduzir: {e}")
+                self.utils.mostrar_erro("Erro", f"No foi possível reproduzir: {e}")
     
     def parar_audio(self):
         if GTTS_AVAILABLE:
@@ -312,7 +312,7 @@ Espero que goste do resultado!"""
             if caminho:
                 import shutil
                 shutil.copy(self.audio_gerado, caminho)
-                self.utils.mostrar_info("Sucesso", f"Íudio salvo em:\n{caminho}")
+                self.utils.mostrar_info("Sucesso", f"udio salvo em:\n{caminho}")
 
 if __name__ == "__main__":
     app = InterfaceTextoParaVoz()

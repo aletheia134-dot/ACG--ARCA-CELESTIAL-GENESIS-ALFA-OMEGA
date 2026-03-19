@@ -3,9 +3,9 @@
 # -*- coding: utf-8 -*-
 """
 ARCA CELESTIAL GENESIS - RERANKING INTELIGENTE BIBLIOTECA TEOLÓGICA
-Componente para classificação refinada de resultados de busca.
-Implementação realista e defensiva: normalização de texto, cálculo de score
-multi-critério, e retornos estáveis sem placebos.
+Componente para classificao refinada de resultados de busca.
+Implementao realista e defensiva: normalizao de texto, clculo de score
+multi-critrio, e retornos estveis sem placebos.
 """
 from __future__ import annotations
 import logging
@@ -25,13 +25,13 @@ def _normalize_text(text: Optional[str]) -> str:
 
 class RerankingInteligente:
     """
-    Realiza reranking de resultados de busca com base em múltiplos critérios.
+    Realiza reranking de resultados de busca com base em mltiplos critrios.
     """
 
     def __init__(self, pesos_padrao: Optional[Dict[str, float]] = None):
         """
         Inicializa o reranker.
-        pesos_padrao: dicionário com pesos por critério. Exemplo:
+        pesos_padrao: dicionrio com pesos por critrio. Exemplo:
             {
                 "similaridade": 0.6,
                 "keywords_na_query_no_doc": 0.25,
@@ -45,7 +45,7 @@ class RerankingInteligente:
             "keywords_no_doc_na_query": 0.05,
             "fonte": 0.1,
         }
-        logger.info("⚖️ Reranking Inteligente inicializado. Pesos: %s", self.pesos_padrao)
+        logger.info(" Reranking Inteligente inicializado. Pesos: %s", self.pesos_padrao)
 
     def rerank(
         self,
@@ -55,7 +55,7 @@ class RerankingInteligente:
     ) -> List[Dict[str, Any]]:
         """
         Faz reranking dos resultados_brutos com base na consulta.
-        Retorna nova lista ordenada (cópias dos itens originais).
+        Retorna nova lista ordenada (cpias dos itens originais).
         """
         if not resultados_brutos:
             return []
@@ -93,12 +93,12 @@ class RerankingInteligente:
         pesos: Dict[str, float],
     ) -> float:
         """
-        Calcula pontuação agregada para um único resultado.
-        Critérios:
-         - similaridade (0..1) — normaliza heurísticamente se necessário
+        Calcula pontuao agregada para um único resultado.
+        Critrios:
+         - similaridade (0..1)  normaliza heursticamente se necessário
          - cobertura de keywords da consulta no documento
          - cobertura de keywords do documento na consulta
-         - prioridade por fonte (heurística)
+         - prioridade por fonte (heurstica)
         Retorna score normalizado (aprox. 0..1).
         """
         pontos_totais = 0.0
@@ -111,7 +111,7 @@ class RerankingInteligente:
                 similaridade = 0.0
             else:
                 similaridade = float(similaridade_raw)
-                # heurística: se escala 0..100, converter para 0..1
+                # heurstica: se escala 0..100, converter para 0..1
                 if similaridade > 1.0:
                     similaridade = max(0.0, min(1.0, similaridade / 100.0))
                 else:
@@ -124,7 +124,7 @@ class RerankingInteligente:
         conteudo_doc = _normalize_text(resultado.get("conteudo", "") or "")
         consulta_text = consulta_norm or ""
 
-        # Critério: palavras da consulta presentes no documento (cobertura)
+        # Critrio: palavras da consulta presentes no documento (cobertura)
         cobertura_query_no_doc = 0.0
         if palavras_chave_consulta and conteudo_doc:
             encontrados = 0
@@ -134,7 +134,7 @@ class RerankingInteligente:
             cobertura_query_no_doc = encontrados / len(palavras_chave_consulta)
             pontos_totais += pesos.get("keywords_na_query_no_doc", 0.0) * cobertura_query_no_doc
 
-        # Critério: palavras do documento que aparecem na consulta
+        # Critrio: palavras do documento que aparecem na consulta
         palavras_doc = self._extrair_palavras_chave(conteudo_doc)
         cobertura_doc_na_query = 0.0
         if palavras_doc:
@@ -143,7 +143,7 @@ class RerankingInteligente:
             cobertura_doc_na_query = encontrados_doc_na_query / len(palavras_doc)
             pontos_totais += pesos.get("keywords_no_doc_na_query", 0.0) * cobertura_doc_na_query
 
-        # Critério: fonte preferencial (heurística simples, retornando fator entre 0.0 e 1.0)
+        # Critrio: fonte preferencial (heurstica simples, retornando fator entre 0.0 e 1.0)
         fonte_doc = _normalize_text(str(resultado.get("fonte", "") or ""))
         fator_fonte = 0.5  # default neutral
         if fonte_doc:
@@ -155,7 +155,7 @@ class RerankingInteligente:
                 fator_fonte = 0.5
         pontos_totais += pesos.get("fonte", 0.0) * fator_fonte
 
-        # Normalizar pelo somatório absoluto de pesos para aproximar 0..1
+        # Normalizar pelo somatrio absoluto de pesos para aproximar 0..1
         soma_pesos = sum(abs(v) for v in pesos.values()) if pesos else 1.0
         if soma_pesos <= 0:
             return float(max(0.0, pontos_totais))
@@ -166,7 +166,7 @@ class RerankingInteligente:
 
     def _extrair_palavras_chave(self, texto: str) -> List[str]:
         """
-        Extrai palavras-chave simples removendo stopwords e pontuação.
+        Extrai palavras-chave simples removendo stopwords e pontuao.
         Retorna tokens em lowercase sem duplicatas, preservando ordem.
         """
         if not texto:

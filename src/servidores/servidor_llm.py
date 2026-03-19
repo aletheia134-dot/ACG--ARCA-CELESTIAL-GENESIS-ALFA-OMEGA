@@ -1,5 +1,5 @@
 """
-SERVIDOR LLM - Fine-tuning, Inferência, GPU
+SERVIDOR LLM - Fine-tuning, Inferncia, GPU
 Roda no ambiente LLM (porta 5002)
 """
 
@@ -35,7 +35,7 @@ async def root():
 
 @app.get("/gpu")
 async def gpu_info():
-    """Informações da GPU"""
+    """Informaes da GPU"""
     logger.info("Verificando GPU")
     try:
         if torch.cuda.is_available():
@@ -55,7 +55,7 @@ async def gpu_info():
 @app.post("/treinar")
 async def treinar(request: TreinoRequest):
     """Iniciar fine-tuning de uma alma"""
-    logger.info(f"Requisição para treinar {request.alma}")
+    logger.info(f"Requisio para treinar {request.alma}")
     
     # Aqui você vai chamar seus scripts de treinamento
     # Por enquanto, apenas simula

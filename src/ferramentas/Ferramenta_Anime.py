@@ -1,15 +1,15 @@
-# Ferramenta: Foto â†’ Anime
-# Modo 1: Manual (interface gráfica)
+# Ferramenta: Foto  Anime
+# Modo 1: Manual (interface grfica)
 # Modo 2: IA explorando (linha de comando silencioso)
-# Modo 3: IA a serviço (chamada por outra IA)
+# Modo 3: IA a servio (chamada por outra IA)
 
 import sys
 import os
 from pathlib import Path
 
-# Adiciona core ao path
+# Adiciona core ação path
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS, USAR_GPU
 
 import torch
@@ -41,18 +41,18 @@ class FerramentaAnime:
             self.modelo = generator(pretrained='face_paint_512_v2').to(self.device)
             self.modelo.eval()
             
-            # Função de pintura
+            # Funo de pintura
             self.face2paint = f2p
             
-            print(f"âœ… Modelo AnimeGAN carregado na {self.device}")
+            print(f"[OK] Modelo AnimeGAN carregado na {self.device}")
         except Exception as e:
-            print(f"âŒ Erro ao carregar modelo: {e}")
+            print(f"[ERRO] Erro ao carregar modelo: {e}")
             self.modelo = None
     
     def processar(self, caminho_imagem, tamanho=512):
         """Converte imagem para anime"""
         if self.modelo is None:
-            return None, "Modelo não carregado"
+            return None, "Modelo no carregado"
         
         try:
             # Abre imagem
@@ -67,7 +67,7 @@ class FerramentaAnime:
             return None, str(e)
     
     def processar_lote(self, pasta_entrada, pasta_saida):
-        """Processa várias imagens"""
+        """Processa vrias imagens"""
         resultados = []
         imagens = Path(pasta_entrada).glob("*.jpg")
         imagens = list(imagens) + list(Path(pasta_entrada).glob("*.png"))
@@ -79,39 +79,39 @@ class FerramentaAnime:
             if img_saida:
                 nome_saida = f"anime_{img_path.stem}.png"
                 img_saida.save(Path(pasta_saida) / nome_saida)
-                resultados.append(f"âœ… {img_path.name} -> {nome_saida}")
+                resultados.append(f"[OK] {img_path.name} -> {nome_saida}")
             else:
-                resultados.append(f"âŒ {img_path.name}: {msg}")
+                resultados.append(f"[ERRO] {img_path.name}: {msg}")
         
         return resultados
 
 class InterfaceAnime(InterfaceBase):
-    """Interface gráfica (MODO 1 - Manual)"""
+    """Interface grfica (MODO 1 - Manual)"""
     def __init__(self):
-        super().__init__("ðŸŽ¨ Conversor Foto para Anime", "700x600")
+        super().__init__(" Conversor Foto para Anime", "700x600")
         self.ferramenta = FerramentaAnime(usar_gpu=USAR_GPU)
         self.caminho_imagem = None
         self.setup_interface()
     
     def setup_interface(self):
         """Cria os elementos da interface"""
-        # Título
+        # Ttulo
         titulo = ctk.CTkLabel(
             self.frame, 
-            text="ðŸŽ¨ Transformar Foto em Anime",
+            text=" Transformar Foto em Anime",
             font=("Arial", 20, "bold")
         )
         titulo.pack(pady=10)
         
         # Status GPU
-        gpu_status = "âœ… GPU Ativa (GTX 1070)" if self.ferramenta.usar_gpu else "âš ï¸ CPU (mais lento)"
+        gpu_status = "[OK] GPU Ativa (GTX 1070)" if self.ferramenta.usar_gpu else "[AVISO] CPU (mais lento)"
         self.lbl_gpu = ctk.CTkLabel(self.frame, text=gpu_status)
         self.lbl_gpu.pack(pady=5)
         
-        # Botão selecionar imagem
+        # Boto selecionar imagem
         self.btn_imagem = ctk.CTkButton(
             self.frame,
-            text="ðŸ“ Selecionar Imagem",
+            text=" Selecionar Imagem",
             command=self.selecionar_imagem,
             width=200,
             height=40
@@ -132,15 +132,15 @@ class InterfaceAnime(InterfaceBase):
         
         self.lbl_preview = ctk.CTkLabel(
             self.frame_preview,
-            text="Preview aparecerá aqui",
+            text="Preview aparecer aqui",
             font=("Arial", 12)
         )
         self.lbl_preview.pack(expand=True)
         
-        # Botão processar
+        # Boto processar
         self.btn_processar = ctk.CTkButton(
             self.frame,
-            text="âœ¨ Converter para Anime",
+            text=" Converter para Anime",
             command=self.processar,
             width=250,
             height=45,
@@ -150,7 +150,7 @@ class InterfaceAnime(InterfaceBase):
         )
         self.btn_processar.pack(pady=10)
         
-        # Opções
+        # Opes
         self.frame_opcoes = ctk.CTkFrame(self.frame)
         self.frame_opcoes.pack(pady=5, fill="x")
         
@@ -165,10 +165,10 @@ class InterfaceAnime(InterfaceBase):
         self.tamanho.pack(side="left", padx=5)
         self.tamanho.set("512")
         
-        # Botão salvar
+        # Boto salvar
         self.btn_salvar = ctk.CTkButton(
             self.frame,
-            text="ðŸ’¾ Salvar Imagem",
+            text=" Salvar Imagem",
             command=self.salvar_imagem,
             width=200,
             state="disabled"
@@ -191,7 +191,7 @@ class InterfaceAnime(InterfaceBase):
         if not self.caminho_imagem:
             return
         
-        self.btn_processar.configure(text="â³ Processando...", state="disabled")
+        self.btn_processar.configure(text=" Processando...", state="disabled")
         self.lbl_preview.configure(text="Processando... aguarde (2-3 segundos)")
         self.frame.update()
         
@@ -203,17 +203,17 @@ class InterfaceAnime(InterfaceBase):
         
         if img_saida:
             self.imagem_processada = img_saida
-            self.lbl_preview.configure(text="âœ… Imagem processada com sucesso!")
+            self.lbl_preview.configure(text="[OK] Imagem processada com sucesso!")
             self.btn_salvar.configure(state="normal")
             
-            # Salva temporário para preview
+            # Salva temporrio para preview
             temp_path = Path("C:/Ferramentas_IA/temp/preview_anime.png")
             img_saida.save(temp_path)
         else:
             self.utils.mostrar_erro("Erro", f"Falha ao processar: {msg}")
-            self.lbl_preview.configure(text="âŒ Erro no processamento")
+            self.lbl_preview.configure(text="[ERRO] Erro no processamento")
         
-        self.btn_processar.configure(text="âœ¨ Converter para Anime", state="normal")
+        self.btn_processar.configure(text=" Converter para Anime", state="normal")
     
     def salvar_imagem(self):
         if self.imagem_processada:
@@ -232,11 +232,11 @@ class ModoIA:
         self.utils = Utils()
     
     def descobrir(self, pasta_teste):
-        """MODO 2: IA explorando - testa a ferramenta em várias imagens"""
+        """MODO 2: IA explorando - testa a ferramenta em vrias imagens"""
         resultados = []
         imagens = Path(pasta_teste).glob("*.jpg")
         
-        for img in list(imagens)[:3]:  # Testa só 3 imagens
+        for img in list(imagens)[:3]:  # Testa s 3 imagens
             resultado = self.processar_para_ia(str(img))
             resultados.append({
                 "imagem": img.name,
@@ -246,7 +246,7 @@ class ModoIA:
         return resultados
     
     def processar_para_ia(self, caminho_imagem):
-        """MODO 3: IA a serviço - processa e retorna caminho do arquivo"""
+        """MODO 3: IA a servio - processa e retorna caminho do arquivo"""
         img_saida, msg = self.ferramenta.processar(caminho_imagem)
         
         if img_saida:
@@ -279,7 +279,7 @@ if __name__ == "__main__":
             print(json.dumps(resultados, indent=2))
         
         elif comando == "--processar" and len(sys.argv) > 2:
-            # IA a serviço
+            # IA a servio
             imagem = sys.argv[2]
             resultado = ia.processar_para_ia(imagem)
             print(json.dumps(resultado, indent=2))
@@ -288,8 +288,8 @@ if __name__ == "__main__":
             print("Uso:")
             print("  python Ferramenta_Anime.py                     # Modo manual")
             print("  python Ferramenta_Anime.py --descobrir PASTA  # IA explorando")
-            print("  python Ferramenta_Anime.py --processar IMAGEM # IA a serviço")
+            print("  python Ferramenta_Anime.py --processar IMAGEM # IA a servio")
     else:
-        # MODO 1: Manual (interface gráfica)
+        # MODO 1: Manual (interface grfica)
         app = InterfaceAnime()
         app.rodar()

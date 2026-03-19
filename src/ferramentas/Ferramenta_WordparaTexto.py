@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS
 
 import docx
@@ -29,7 +29,7 @@ class FerramentaWordparaTexto:
             self.documento = docx.Document(caminho)
             self.caminho_docx = caminho
             
-            # Informações básicas
+            # informações bsicas
             self.info = {
                 "paragrafos": len(self.documento.paragraphs),
                 "tabelas": len(self.documento.tables),
@@ -61,12 +61,12 @@ class FerramentaWordparaTexto:
     def extrair_texto(self, incluir_tabelas=True):
         """Extrai todo o texto do documento"""
         if self.documento is None:
-            return None, "Documento não carregado"
+            return None, "Documento no carregado"
         
         try:
             texto_completo = []
             
-            # Parágrafos
+            # Pargrafos
             for i, para in enumerate(self.documento.paragraphs):
                 if para.text.strip():
                     texto_completo.append(para.text)
@@ -86,7 +86,7 @@ class FerramentaWordparaTexto:
     def extrair_por_estilo(self, estilo):
         """Extrai textos com um estilo específico"""
         if self.documento is None:
-            return None, "Documento não carregado"
+            return None, "Documento no carregado"
         
         try:
             textos = []
@@ -99,13 +99,13 @@ class FerramentaWordparaTexto:
             return None, str(e)
     
     def extrair_titulos(self):
-        """Extrai textos que parecem títulos"""
+        """Extrai textos que parecem ttulos"""
         if self.documento is None:
-            return None, "Documento não carregado"
+            return None, "Documento no carregado"
         
         try:
             titulos = []
-            estilos_titulo = ['Title', 'Heading 1', 'Heading 2', 'Heading 3', 'Título', 'Subtítulo']
+            estilos_titulo = ['Title', 'Heading 1', 'Heading 2', 'Heading 3', 'Ttulo', 'Subttulo']
             
             for para in self.documento.paragraphs:
                 if para.style.name in estilos_titulo and para.text.strip():
@@ -121,7 +121,7 @@ class FerramentaWordparaTexto:
     def extrair_tabelas(self):
         """Extrai todas as tabelas em formato estruturado"""
         if self.documento is None:
-            return None, "Documento não carregado"
+            return None, "Documento no carregado"
         
         try:
             tabelas = []
@@ -143,13 +143,45 @@ class FerramentaWordparaTexto:
             return None, str(e)
     
     def extrair_comentarios(self):
-        """Tenta extrair comentários (não suportado nativamente)"""
-        # Placeholder - docx não tem suporte fácil a comentários
-        return [], "Comentários não suportados nesta versão"
+        """Extrai comentários do documento Word via python-docx (namespace ooxml)."""
+        if not self.doc:
+            return [], "Documento não carregado"
+        try:
+            from docx.oxml.ns import qn
+            comentarios = []
+            # Comentários ficam em document.part.comments_part (se existir)
+            try:
+                comments_part = self.doc.part.comments_part
+                if comments_part is None:
+                    return [], "Documento sem comentários"
+                for comment in comments_part._element.findall(qn("w:comment")):
+                    autor = comment.get(qn("w:author"), "Desconhecido")
+                    data  = comment.get(qn("w:date"), "")
+                    texto_partes = [
+                        r.text for r in comment.iter()
+                        if r.tag == qn("w:t") and r.text
+                    ]
+                    texto = " ".join(texto_partes).strip()
+                    comentarios.append({
+                        "autor": autor,
+                        "data": data,
+                        "texto": texto,
+                    })
+            except AttributeError:
+                # Fallback: varrer XML manualmente
+                from lxml import etree
+                ns = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+                body = self.doc.element.body
+                for el in body.iter():
+                    if el.tag == f"{{{ns}}}commentReference":
+                        comentarios.append({"ref": el.get(f"{{{ns}}}id", ""), "texto": "(referência no corpo)"})
+            return comentarios, f"{len(comentarios)} comentário(s) extraído(s)"
+        except Exception as e:
+            return [], f"Erro ao extrair comentários: {e}"
 
 class InterfaceWordparaTexto(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸ“ Extrair Texto de Word", "800x700")
+        super().__init__(" Extrair Texto de Word", "800x700")
         self.ferramenta = FerramentaWordparaTexto()
         self.info_doc = None
         self.texto_extraido = None
@@ -158,18 +190,18 @@ class InterfaceWordparaTexto(InterfaceBase):
     def setup_interface(self):
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸ“ Extrair Texto de Arquivos Word (.docx)",
+            text=" Extrair Texto de Arquivos Word (.docx)",
             font=("Arial", 24, "bold")
         )
         titulo.pack(pady=10)
         
-        # Seleção
+        # Seleo
         self.frame_arquivo = ctk.CTkFrame(self.frame)
         self.frame_arquivo.pack(pady=10, padx=10, fill="x")
         
         self.btn_word = ctk.CTkButton(
             self.frame_arquivo,
-            text="ðŸ“ Selecionar Word",
+            text=" Selecionar Word",
             command=self.selecionar_word,
             width=150,
             height=40
@@ -182,7 +214,7 @@ class InterfaceWordparaTexto(InterfaceBase):
         )
         self.lbl_arquivo.pack(side="left", padx=10)
         
-        # Informações
+        # informações
         self.frame_info = ctk.CTkFrame(self.frame)
         self.frame_info.pack(pady=10, padx=10, fill="x")
         
@@ -197,8 +229,8 @@ class InterfaceWordparaTexto(InterfaceBase):
         self.tab_completo = self.tabview.add("Texto Completo")
         self.setup_tab_completo()
         
-        # Aba: Títulos
-        self.tab_titulos = self.tabview.add("Títulos")
+        # Aba: Ttulos
+        self.tab_titulos = self.tabview.add("Ttulos")
         self.setup_tab_titulos()
         
         # Aba: Tabelas
@@ -228,7 +260,7 @@ class InterfaceWordparaTexto(InterfaceBase):
         
         self.btn_extrair = ctk.CTkButton(
             self.tab_completo,
-            text="ðŸ“ Extrair Texto Completo",
+            text=" Extrair Texto Completo",
             command=self.extrair_completo,
             width=150,
             height=35,
@@ -245,7 +277,7 @@ class InterfaceWordparaTexto(InterfaceBase):
         
         self.btn_copiar = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ“‹ Copiar",
+            text=" Copiar",
             command=self.copiar_texto,
             width=100,
             state="disabled"
@@ -254,7 +286,7 @@ class InterfaceWordparaTexto(InterfaceBase):
         
         self.btn_salvar = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ’¾ Salvar TXT",
+            text=" Salvar TXT",
             command=self.salvar_texto,
             width=100,
             state="disabled"
@@ -264,7 +296,7 @@ class InterfaceWordparaTexto(InterfaceBase):
     def setup_tab_titulos(self):
         self.btn_titulos = ctk.CTkButton(
             self.tab_titulos,
-            text="ðŸ“‘ Extrair Títulos",
+            text=" Extrair Ttulos",
             command=self.extrair_titulos,
             width=150,
             height=35,
@@ -279,7 +311,7 @@ class InterfaceWordparaTexto(InterfaceBase):
     def setup_tab_tabelas(self):
         self.btn_tabelas = ctk.CTkButton(
             self.tab_tabelas,
-            text="ðŸ“Š Extrair Tabelas",
+            text=" Extrair Tabelas",
             command=self.extrair_tabelas,
             width=150,
             height=35,
@@ -307,7 +339,7 @@ class InterfaceWordparaTexto(InterfaceBase):
         
         self.btn_estilo = ctk.CTkButton(
             self.tab_estilo,
-            text="ðŸ” Extrair por Estilo",
+            text=" Extrair por Estilo",
             command=self.extrair_por_estilo,
             width=150,
             height=35,
@@ -331,15 +363,15 @@ class InterfaceWordparaTexto(InterfaceBase):
             if sucesso:
                 self.info_doc = info
                 
-                info_texto = f"Parágrafos: {info.get('paragrafos', 'N/A')}\n"
+                info_texto = f"Pargrafos: {info.get('paragrafos', 'N/A')}\n"
                 info_texto += f"Tabelas: {info.get('tabelas', 'N/A')}\n"
-                info_texto += f"Título: {info.get('titulo', 'N/A')}\n"
+                info_texto += f"Ttulo: {info.get('titulo', 'N/A')}\n"
                 info_texto += f"Autor: {info.get('autor', 'N/A')}"
                 
                 self.texto_info.delete('1.0', 'end')
                 self.texto_info.insert('1.0', info_texto)
                 
-                # Ativa botões
+                # Ativa botes
                 self.btn_extrair.configure(state="normal")
                 self.btn_titulos.configure(state="normal")
                 self.btn_tabelas.configure(state="normal")
@@ -349,7 +381,7 @@ class InterfaceWordparaTexto(InterfaceBase):
     
     def extrair_completo(self):
         def extrair_thread():
-            self.btn_extrair.configure(state="disabled", text="â³ Extraindo...")
+            self.btn_extrair.configure(state="disabled", text=" Extraindo...")
             self.progress.set(0.3)
             
             texto, msg = self.ferramenta.extrair_texto(
@@ -364,18 +396,18 @@ class InterfaceWordparaTexto(InterfaceBase):
                 self.texto_resultado.insert('1.0', texto[:1000] + "...\n\n(Preview)")
                 self.btn_copiar.configure(state="normal")
                 self.btn_salvar.configure(state="normal")
-                self.utils.mostrar_info("Sucesso", "Texto extraído!")
+                self.utils.mostrar_info("Sucesso", "Texto extrado!")
             else:
                 self.utils.mostrar_erro("Erro", msg)
             
             self.progress.set(1)
-            self.btn_extrair.configure(state="normal", text="ðŸ“ Extrair Texto Completo")
+            self.btn_extrair.configure(state="normal", text=" Extrair Texto Completo")
         
         threading.Thread(target=extrair_thread).start()
     
     def extrair_titulos(self):
         def titulos_thread():
-            self.btn_titulos.configure(state="disabled", text="â³ Extraindo...")
+            self.btn_titulos.configure(state="disabled", text=" Extraindo...")
             
             titulos, msg = self.ferramenta.extrair_titulos()
             
@@ -384,15 +416,15 @@ class InterfaceWordparaTexto(InterfaceBase):
                 for titulo in titulos:
                     self.texto_titulos.insert('end', f"[{titulo['estilo']}] {titulo['texto']}\n")
             else:
-                self.texto_titulos.insert('end', "Nenhum título encontrado")
+                self.texto_titulos.insert('end', "Nenhum ttulo encontrado")
             
-            self.btn_titulos.configure(state="normal", text="ðŸ“‘ Extrair Títulos")
+            self.btn_titulos.configure(state="normal", text=" Extrair Ttulos")
         
         threading.Thread(target=titulos_thread).start()
     
     def extrair_tabelas(self):
         def tabelas_thread():
-            self.btn_tabelas.configure(state="disabled", text="â³ Extraindo...")
+            self.btn_tabelas.configure(state="disabled", text=" Extraindo...")
             
             tabelas, msg = self.ferramenta.extrair_tabelas()
             
@@ -406,18 +438,18 @@ class InterfaceWordparaTexto(InterfaceBase):
             else:
                 self.texto_tabelas.insert('end', "Nenhuma tabela encontrada")
             
-            self.btn_tabelas.configure(state="normal", text="ðŸ“Š Extrair Tabelas")
+            self.btn_tabelas.configure(state="normal", text=" Extrair Tabelas")
         
         threading.Thread(target=tabelas_thread).start()
     
     def extrair_por_estilo(self):
         def estilo_thread():
-            self.btn_estilo.configure(state="disabled", text="â³ Extraindo...")
+            self.btn_estilo.configure(state="disabled", text=" Extraindo...")
             
             estilo = self.entry_estilo.get().strip()
             if not estilo:
                 self.utils.mostrar_erro("Erro", "Digite um estilo")
-                self.btn_estilo.configure(state="normal", text="ðŸ” Extrair por Estilo")
+                self.btn_estilo.configure(state="normal", text=" Extrair por Estilo")
                 return
             
             textos, msg = self.ferramenta.extrair_por_estilo(estilo)
@@ -429,7 +461,7 @@ class InterfaceWordparaTexto(InterfaceBase):
             else:
                 self.texto_estilo.insert('end', f"Nenhum texto encontrado com estilo '{estilo}'")
             
-            self.btn_estilo.configure(state="normal", text="ðŸ” Extrair por Estilo")
+            self.btn_estilo.configure(state="normal", text=" Extrair por Estilo")
         
         threading.Thread(target=estilo_thread).start()
     

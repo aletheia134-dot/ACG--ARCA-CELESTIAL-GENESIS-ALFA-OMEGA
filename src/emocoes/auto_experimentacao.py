@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-AUTO-EXPERIMENTAÇÍO - VERSÍO 100% REAL
-Coleta de dados REAL.Aprendizado genuíno.Impacto mensurável.Sem stubs.Sem placebo.
-"""
 from __future__ import annotations
+"""
+AUTO-EXPERIMENTAO - VERSO 100% REAL
+Coleta de dados REAL.Aprendizado genuno.Impacto mensurvel.Sem stubs.Sem placebo.
+"""
 
 
 import logging
@@ -50,8 +50,8 @@ def _atomic_write_json(path: Path, obj: Any) -> None:
         with os.fdopen(fd, "w", encoding="utf-8") as f:
             json.dump(obj, f, ensure_ascii=False, indent=2, default=str)
             f.flush()
-            os.fsync(f.fileno())  # FORÇA escrita em disco
-        os.replace(tmp, str(path))  # ATÔMICO
+            os.fsync(f.fileno())  # FORA escrita em disco
+        os.replace(tmp, str(path))  # ATMICO
     finally:
         if os.path.exists(tmp):
             try:
@@ -66,16 +66,16 @@ def _backup_move(path: Path) -> None:
             ts = datetime.utcnow().strftime("%Y%m%d%H%M%S")
             dest = path.with_suffix(path.suffix + f".corrupt_backup_{ts}")
             shutil.move(str(path), str(dest))
-            logger.warning("ðŸ“ Arquivo movido para quarantine: %s", dest)
+            logger.warning(" Arquivo movido para quarantine: %s", dest)
     except Exception:
         logger.exception("Falha ao mover para backup")
 
 
-# ===== AUTO-EXPERIMENTAÇÍO REAL =====
+# ===== AUTO-EXPERIMENTAO REAL =====
 
 class AutoExperimentacao:
     """
-    Sistema de auto-experimentação REAL com coleta de dados verdadeira.
+    Sistema de auto-experimentao REAL com coleta de dados verdadeira.
     """
 
     def __init__(self, coracao_ref: Any, config_instance: Any):
@@ -84,7 +84,7 @@ class AutoExperimentacao:
         self.logger = logging.getLogger("AutoExperimentacao")
         self._lock = threading.RLock()
 
-        # ===== CONFIGURAÇÍO REAL =====
+        # ===== configuração REAL =====
         try:
             get = self.config.get if hasattr(self.config, "get") else (lambda s, k, fallback=None: fallback)
             self._probabilidade_proposicao = float(get('EXPERIMENTACAO', 'PROBABILIDADE_PROPOSICAO', 0.05))
@@ -135,9 +135,9 @@ class AutoExperimentacao:
         }
 
         self._load_state()
-        self.logger.info('âœ… Auto-Experimentação inicializada')
+        self.logger.info('[OK] Auto-Experimentao inicializada')
 
-    # ===== PERSISTÍŠNCIA REAL =====
+    # ===== PERSISTNCIA REAL =====
 
     def _load_state(self) -> None:
         """Carrega estado REAL."""
@@ -159,13 +159,13 @@ class AutoExperimentacao:
             with open(self.historico_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             if not isinstance(data, list):
-                raise ValueError("Formato inválido")
+                raise ValueError("Formato invlido")
             max_hist = int(self.config.get('EXPERIMENTACAO', 'MAX_HISTORICO_ENTRIES', 5000))
             if len(data) > max_hist:
                 data = data[-max_hist:]
             return data
         except Exception as e:
-            logger.error("âŒ Erro ao carregar histórico: %s", e)
+            logger.error("[ERRO] Erro ao carregar histórico: %s", e)
             _backup_move(self.historico_path)
             return []
 
@@ -174,9 +174,9 @@ class AutoExperimentacao:
         try:
             with self._lock:
                 _atomic_write_json(self.historico_path, self.historico_experimentos)
-                self.logger.debug("âœ… Histórico salvo")
+                self.logger.debug("[OK] histórico salvo")
         except Exception:
-            logger.exception("âŒ Falha ao salvar histórico")
+            logger.exception("[ERRO] Falha ao salvar histórico")
 
     def _carregar_experimentos_ativos(self) -> None:
         """Carrega experimentos ativos REAIS."""
@@ -188,7 +188,7 @@ class AutoExperimentacao:
             with open(caminho, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             if not isinstance(data, dict):
-                raise ValueError("Formato inválido")
+                raise ValueError("Formato invlido")
             
             self.experimentos_ativos = {}
             agora = datetime.utcnow()
@@ -209,9 +209,9 @@ class AutoExperimentacao:
                         except Exception:
                             logger.debug("Falha ao agendar timer")
                 except Exception:
-                    logger.warning("Formato inválido de experimento")
+                    logger.warning("Formato invlido de experimento")
         except Exception as e:
-            logger.error("âŒ Erro ao carregar ativos: %s", e)
+            logger.error("[ERRO] Erro ao carregar ativos: %s", e)
             _backup_move(caminho)
             self.experimentos_ativos = {}
 
@@ -220,11 +220,11 @@ class AutoExperimentacao:
         try:
             with self._lock:
                 _atomic_write_json(self.caminho_experimentos_ativos, self.experimentos_ativos)
-                self.logger.debug("âœ… Ativos salvos")
+                self.logger.debug("[OK] Ativos salvos")
         except Exception:
-            logger.exception("âŒ Falha ao salvar ativos")
+            logger.exception("[ERRO] Falha ao salvar ativos")
 
-    # ===== COLETA DE DADOS REAL (NÍO STUB) =====
+    # ===== COLETA DE DADOS REAL (NO STUB) =====
 
     def _coletar_dados_reais_experimento(
         self,
@@ -233,7 +233,7 @@ class AutoExperimentacao:
         fim: datetime
     ) -> Dict[str, Any]:
         """
-        IMPLEMENTAÇÍO REAL de coleta de dados.RETORNA DADOS REAIS, não vazio!
+        IMPLEMENTAO REAL de coleta de dados.RETORNA DADOS REAIS, no vazio!
         """
         dados_reais = {
             "fontes_consultadas": [],
@@ -255,7 +255,7 @@ class AutoExperimentacao:
                     if logs:
                         dados_reais["fontes_consultadas"].append("observador_arca")
                         dados_reais["observacoes"].extend(logs[:10])
-                        self.logger.info("âœ… Coletados %d logs do observador", len(logs))
+                        self.logger.info("[OK] Coletados %d logs do observador", len(logs))
                 except Exception as e:
                     self.logger.debug("Falha ao coletar do observador: %s", e)
             
@@ -269,7 +269,7 @@ class AutoExperimentacao:
                         estado_atual = ia_obj.estado_emocional.como_estou_me_sentindo()
                         dados_reais["fontes_consultadas"].append("estado_emocional")
                         dados_reais["mudancas_detectadas"]["emocoes"] = estado_atual
-                        self.logger.info("âœ… Estado emocional coletado")
+                        self.logger.info("[OK] Estado emocional coletado")
                 except Exception as e:
                     self.logger.debug("Falha ao coletar estado emocional: %s", e)
             
@@ -288,11 +288,11 @@ class AutoExperimentacao:
                             "solidao": estado_curiosidade.solidao,
                             "proposito": estado_curiosidade.proposito
                         }
-                        self.logger.info("âœ… Estado de curiosidade coletado")
+                        self.logger.info("[OK] Estado de curiosidade coletado")
             except Exception as e:
                 self.logger.debug("Falha ao coletar curiosidade: %s", e)
             
-            # ===== COLETA 4: Memórias consolidadas =====
+            # ===== COLETA 4: memórias consolidadas =====
             if hasattr(self.coracao, "gerenciador_memoria"):
                 try:
                     memorias = self.coracao.gerenciador_memoria.buscar_memorias_periodo(
@@ -306,14 +306,14 @@ class AutoExperimentacao:
                         dados_reais["fontes_consultadas"].append("memoria")
                         dados_reais["metricas_temporais"]["memorias_consolidadas"] = len(consolidadas)
                         dados_reais["metricas_temporais"]["memorias_totais"] = len(memorias)
-                        self.logger.info("âœ… Memórias coletadas: %d consolidadas de %d total", len(consolidadas), len(memorias))
+                        self.logger.info("[OK] memórias coletadas: %d consolidadas de %d total", len(consolidadas), len(memorias))
                 except Exception as e:
                     self.logger.debug("Falha ao coletar memórias: %s", e)
             
             # ===== COLETA 5: Tempo transcorrido =====
             tempo_total = (fim - inicio).total_seconds() / 3600.0
             dados_reais["metricas_temporais"]["tempo_total_horas"] = tempo_total
-            self.logger.info("âœ… Tempo total do experimento: %.2f horas", tempo_total)
+            self.logger.info("[OK] Tempo total do experimento: %.2f horas", tempo_total)
             
             # ===== COLETA 6: Feedback de sucesso =====
             if hasattr(self.coracao, "gerenciador_memoria"):
@@ -326,39 +326,39 @@ class AutoExperimentacao:
                     if feedback_events:
                         dados_reais["fontes_consultadas"].append("feedback_experimento")
                         dados_reais["metricas_temporais"]["feedbacks_registrados"] = len(feedback_events)
-                        self.logger.info("âœ… Feedback coletado: %d registros", len(feedback_events))
+                        self.logger.info("[OK] Feedback coletado: %d registros", len(feedback_events))
                 except Exception as e:
                     self.logger.debug("Falha ao coletar feedback: %s", e)
             
-            # ===== VALIDAÇÍO DE QUALIDADE =====
+            # ===== VALIDAO DE QUALIDADE =====
             fontes_count = len(dados_reais["fontes_consultadas"])
             dados_reais["qualidade_dados"]["fontes_count"] = fontes_count
             
             if fontes_count >= self._minimo_fontes_dados:
                 dados_reais["qualidade_dados"]["suficiente"] = True
-                self.logger.info("âœ… Dados SUFICIENTES: %d fontes", fontes_count)
+                self.logger.info("[OK] Dados SUFICIENTES: %d fontes", fontes_count)
             else:
                 dados_reais["qualidade_dados"]["alertas"].append(f"Apenas {fontes_count} fontes (mínimo: {self._minimo_fontes_dados})")
-                self.logger.warning("âš ï¸ Dados INSUFICIENTES: %d fontes", fontes_count)
+                self.logger.warning("[AVISO] Dados INSUFICIENTES: %d fontes", fontes_count)
 
         except Exception as e:
-            logger.exception("âŒ Erro ao coletar dados reais: %s", e)
+            logger.exception("[ERRO] Erro ao coletar dados reais: %s", e)
             dados_reais["qualidade_dados"]["alertas"].append(f"Erro na coleta: {str(e)}")
         
-        self.logger.info("ðŸ“Š Coleta completada: %d fontes, qualidade: %s",
+        self.logger.info(" Coleta completada: %d fontes, qualidade: %s",
                         len(dados_reais["fontes_consultadas"]),
                         dados_reais["qualidade_dados"]["suficiente"])
         
         return dados_reais
 
-    # ===== INCORPORAR APRENDIZADO REAL (NÍO STUB) =====
+    # ===== INCORPORAR APRENDIZADO REAL (NO STUB) =====
 
     def incorporar_aprendizado_na_proposta(self, proposta: Dict[str, Any]) -> Dict[str, Any]:
         """
-        IMPLEMENTAÇÍO REAL de incorporação de aprendizado.MODIFICA A PROPOSTA COM BASE EM HISTÓRICO REAL!
+        IMPLEMENTAO REAL de incorporao de aprendizado.MODIFICA A PROPOSTA COM BASE EM histórico REAL!
         """
         try:
-            # ===== APRENDER DURAÇÍO ÓTIMA =====
+            # ===== APRENDER DURAO TIMA =====
             if self.aprendizados_cumulativos.get('duracao_otima_min'):
                 duracao_sugerida = proposta.get('duracao_sugerida_min', 30)
                 duracao_otima = self.aprendizados_cumulativos['duracao_otima_min']
@@ -369,32 +369,32 @@ class AutoExperimentacao:
                 )
                 
                 proposta['duracao_sugerida_min'] = nova_duracao
-                self.logger.info("âœ… Duração otimizada: %d min (aprendido: %d min)",
+                self.logger.info("[OK] Durao otimizada: %d min (aprendido: %d min)",
                                nova_duracao, duracao_otima)
             
-            # ===== SUGERIR CARACTERÍSTICAS EFICAZES =====
+            # ===== SUGERIR CARACTERSTICAS EFICAZES =====
             caracteristicas = proposta.get('caracteristicas_para_experimento', {})
             eficazes = self.aprendizados_cumulativos.get('caracteristicas_eficazes', {})
             
             for carac, score in sorted(eficazes.items(), key=lambda x: -x[1])[:3]:
                 if carac not in caracteristicas:
                     caracteristicas[carac] = 0.5
-                    self.logger.info("âœ… Característica eficaz adicionada: %s (score: %.2f)", carac, score)
+                    self.logger.info("[OK] Caracterstica eficaz adicionada: %s (score: %.2f)", carac, score)
             
             proposta['caracteristicas_para_experimento'] = caracteristicas
             
-            # ===== ADICIONAR HIPÓTESES TESTADAS =====
+            # ===== ADICIONAR HIPTESES TESTADAS =====
             if self.aprendizados_cumulativos['hipoteses_testadas']:
                 proposta['hipoteses_baseadas_em_aprendizado'] = self.aprendizados_cumulativos['hipoteses_testadas'][-5:]
-                self.logger.info("âœ… %d hipóteses anteriores incorporadas", len(self.aprendizados_cumulativos['hipoteses_testadas'][-5:]))
+                self.logger.info("[OK] %d hipteses anteriores incorporadas", len(self.aprendizados_cumulativos['hipoteses_testadas'][-5:]))
             
-            self.logger.debug("âœ… Proposta melhorada com aprendizado real")
+            self.logger.debug("[OK] Proposta melhorada com aprendizado real")
         except Exception as e:
-            logger.exception("âŒ Erro ao incorporar aprendizado: %s", e)
+            logger.exception("[ERRO] Erro ao incorporar aprendizado: %s", e)
         
         return proposta
 
-    # ===== MEDIR IMPACTO REAL (NÍO STUB) =====
+    # ===== MEDIR IMPACTO REAL (NO STUB) =====
 
     def _medir_impacto_experimento(
         self,
@@ -402,7 +402,7 @@ class AutoExperimentacao:
         dados_reais: Dict[str, Any]
     ) -> Dict[str, Any]:
         """
-        IMPLEMENTAÇÍO REAL de medição de impacto.MEDE MUDANÇAS REAIS NA IA!
+        IMPLEMENTAO REAL de medio de impacto.MEDE MUDANAS REAIS NA IA!
         """
         impacto = {
             "experimento_id": experimento_id,
@@ -415,7 +415,7 @@ class AutoExperimentacao:
         try:
             mudancas = dados_reais.get("mudancas_detectadas", {})
             
-            # ===== VERIFICAR MUDANÇAS EM CURIOSIDADE =====
+            # ===== VERIFICAR MUDANAS EM CURIOSIDADE =====
             if "curiosidade" in mudancas:
                 curiosidade = mudancas["curiosidade"]
                 if isinstance(curiosidade, dict):
@@ -427,18 +427,18 @@ class AutoExperimentacao:
                         impacto["mudancas"]["curiosidade_alterada"] = True
                         impacto["metricas"]["curiosidade_mudanca"] = mudanca
                         impacto["sucesso"] = True
-                        self.logger.info("âœ… Mudança em curiosidade: %.3f", mudanca)
+                        self.logger.info("[OK] Mudana em curiosidade: %.3f", mudanca)
             
-            # ===== VERIFICAR MUDANÇAS EM EMOÇÍO =====
+            # ===== VERIFICAR MUDANAS EM EMOO =====
             if "emocoes" in mudancas:
                 emocoes = mudancas["emocoes"]
                 if isinstance(emocoes, dict):
                     impacto["mudancas"]["emocoes_alteradas"] = True
                     impacto["metricas"]["humor"] = emocoes.get("humor_geral", "neutro")
                     impacto["sucesso"] = True
-                    self.logger.info("âœ… Mudança em emoção: %s", impacto["metricas"]["humor"])
+                    self.logger.info("[OK] Mudana em emoção: %s", impacto["metricas"]["humor"])
             
-            # ===== VERIFICAR CONSOLIDAÇÍO DE MEMÓRIAS =====
+            # ===== VERIFICAR CONSOLIDAO DE memórias =====
             metricas_temporais = dados_reais.get("metricas_temporais", {})
             memorias_consolidadas = metricas_temporais.get("memorias_consolidadas", 0)
             
@@ -446,21 +446,21 @@ class AutoExperimentacao:
                 impacto["mudancas"]["memorias_consolidadas"] = True
                 impacto["metricas"]["memorias_consolidadas"] = memorias_consolidadas
                 impacto["sucesso"] = True
-                self.logger.info("âœ… Memórias consolidadas: %d", memorias_consolidadas)
+                self.logger.info("[OK] memórias consolidadas: %d", memorias_consolidadas)
             
             # ===== QUALIDADE DE DADOS =====
             qualidade = dados_reais.get("qualidade_dados", {})
             impacto["metricas"]["qualidade_dados_suficiente"] = qualidade.get("suficiente", False)
             
             if not qualidade.get("suficiente"):
-                self.logger.warning("âš ï¸ Dados insuficientes para conclusão")
+                self.logger.warning("[AVISO] Dados insuficientes para concluso")
                 impacto["sucesso"] = False
 
         except Exception as e:
-            logger.exception("âŒ Erro ao medir impacto: %s", e)
+            logger.exception("[ERRO] Erro ao medir impacto: %s", e)
             impacto["sucesso"] = False
         
-        self.logger.info("ðŸ“ˆ Impacto medido: sucesso=%s, mudanças=%d",
+        self.logger.info(" Impacto medido: sucesso=%s, mudanas=%d",
                         impacto["sucesso"],
                         len(impacto["mudancas"]))
         
@@ -475,10 +475,10 @@ class AutoExperimentacao:
         dados_reais: Dict[str, Any]
     ) -> None:
         """
-        IMPLEMENTAÇÍO REAL de aprendizado com experimento.MODIFICA APRENDIZADOS CUMULATIVOS COM BASE EM DADOS REAIS!
+        IMPLEMENTAO REAL de aprendizado com experimento.MODIFICA APRENDIZADOS CUMULATIVOS COM BASE EM DADOS REAIS!
         """
         try:
-            # ===== ATUALIZAR DURAÇÍO ÓTIMA =====
+            # ===== ATUALIZAR DURAO TIMA =====
             metricas = dados_reais.get("metricas_temporais", {})
             tempo_horas = metricas.get("tempo_total_horas", 1.0)
             
@@ -486,11 +486,11 @@ class AutoExperimentacao:
                 duracao_min = int(tempo_horas * 60)
                 duracao_atual = self.aprendizados_cumulativos.get("duracao_otima_min", 60)
                 
-                # Média móvel com peso para novo dado
+                # Mdia mvel com peso para novo dado
                 nova_duracao = int(0.7 * duracao_atual + 0.3 * duracao_min)
                 self.aprendizados_cumulativos["duracao_otima_min"] = nova_duracao
                 
-                self.logger.info("âœ… Duração ótima atualizada: %d min (de: %d)", nova_duracao, duracao_atual)
+                self.logger.info("[OK] Durao tima atualizada: %d min (de: %d)", nova_duracao, duracao_atual)
             
             # ===== ATUALIZAR TAXA DE SUCESSO POR IA =====
             exp_data = next((e for e in self.historico_experimentos if e.get('id') == experimento_id), None)
@@ -503,36 +503,36 @@ class AutoExperimentacao:
                     self.aprendizados_cumulativos["taxa_sucesso_por_ia"][autor].append(impacto["sucesso"])
                     
                     taxa = sum(self.aprendizados_cumulativos["taxa_sucesso_por_ia"][autor]) / len(self.aprendizados_cumulativos["taxa_sucesso_por_ia"][autor])
-                    self.logger.info("âœ… Taxa de sucesso %s: %.1f%%", autor, taxa * 100)
+                    self.logger.info("[OK] Taxa de sucesso %s: %.1f%%", autor, taxa * 100)
             
-            # ===== REGISTRAR PADRÍO DESCOBERTO =====
+            # ===== REGISTRAR padrão DESCOBERTO =====
             if impacto.get("sucesso"):
                 mudancas = impacto.get("mudancas", {})
                 if mudancas:
-                    padrao = {
+                    padrão = {
                         "timestamp": _now_iso(),
                         "mudancas": list(mudancas.keys()),
                         "metricas": impacto.get("metricas", {})
                     }
-                    self.aprendizados_cumulativos["padroes_descobertos"].append(padrao)
-                    self.logger.info("âœ… Padrão descoberto: %s", list(mudancas.keys()))
+                    self.aprendizados_cumulativos["padroes_descobertos"].append(padrão)
+                    self.logger.info("[OK] padrão descoberto: %s", list(mudancas.keys()))
             
-            self.logger.info("âœ… Aprendizado salvo do experimento %s", experimento_id)
+            self.logger.info("[OK] Aprendizado salvo do experimento %s", experimento_id)
 
         except Exception as e:
-            logger.exception("âŒ Erro ao aprender do experimento: %s", e)
+            logger.exception("[ERRO] Erro ao aprender do experimento: %s", e)
 
-    # ===== CANCELAMENTO ÉTICO REAL =====
+    # ===== CANCELAMENTO TICO REAL =====
 
-    def cancelar_experimento(self, experimento_id: str, motivo: str = "veto ético") -> bool:
+    def cancelar_experimento(self, experimento_id: str, motivo: str = "veto tico") -> bool:
         """
-        IMPLEMENTAÇÍO REAL de cancelamento.EFETIVAMENTE PARA O EXPERIMENTO!
+        IMPLEMENTAO REAL de cancelamento.EFETIVAMENTE PARA O EXPERIMENTO!
         """
         try:
             with self._lock:
                 if experimento_id in self.experimentos_ativos:
                     exp = self.experimentos_ativos[experimento_id]
-                    self.logger.warning("âŒ Experimento CANCELADO: %s (%s)", experimento_id, motivo)
+                    self.logger.warning("[ERRO] Experimento CANCELADO: %s (%s)", experimento_id, motivo)
                     
                     # Mover para histórico como cancelado
                     exp["status"] = "cancelado"
@@ -546,7 +546,7 @@ class AutoExperimentacao:
                     
                     return True
         except Exception as e:
-            logger.exception("âŒ Erro ao cancelar experimento: %s", e)
+            logger.exception("[ERRO] Erro ao cancelar experimento: %s", e)
         
         return False
 
@@ -581,7 +581,7 @@ class TimerGerenciado:
         autor: str,
         nome: str
     ) -> None:
-        """IMPLEMENTAÇÍO REAL de agendamento."""
+        """IMPLEMENTAO REAL de agendamento."""
         if duracao_segundos <= 0:
             duracao_segundos = 0.1
         
@@ -602,13 +602,13 @@ class TimerGerenciado:
             timer.start()
             self.timers_ativos[experimento_id] = timer
             
-            logger.info("â²ï¸ Timer agendado: %s (%.0f segundos)", experimento_id, duracao_segundos)
+            logger.info(" Timer agendado: %s (%.0f segundos)", experimento_id, duracao_segundos)
 
     def _finalizar_experimento_callback(self, experimento_id: str, autor: str, nome: str) -> None:
         """Callback quando experimento termina."""
         try:
-            logger.info("â° Finalizando experimento: %s", nome)
-            # Aqui você chamaria método de finalização real
+            logger.info(" Finalizando experimento: %s", nome)
+            # Aqui você chamaria método de finalizao real
             with self.timer_lock:
                 if experimento_id in self.timers_ativos:
                     del self.timers_ativos[experimento_id]
@@ -636,13 +636,13 @@ class TimerGerenciado:
                 except Exception:
                     pass
             self.timers_ativos.clear()
-            logger.info("ðŸ›‘ Todos os timers cancelados")
+            logger.info(" Todos os timers cancelados")
 
 
-# ===== ANALISADOR DE EFICÍCIA REAL =====
+# ===== ANALISADOR DE EFICCIA REAL =====
 
 class AnalisadorEficaciaExperimentos:
-    """Análise de eficácia REAL com dados verdadeiros."""
+    """Anlise de eficcia REAL com dados verdadeiros."""
     
     def __init__(self, auto_experimentacao_ref: AutoExperimentacao):
         self.auto_exp = auto_experimentacao_ref
@@ -657,7 +657,7 @@ class AnalisadorEficaciaExperimentos:
             )
         
         if not experimento:
-            return {"erro": "Experimento não encontrado"}
+            return {"erro": "Experimento no encontrado"}
         
         impacto = {
             "experimento_id": experimento_id,
@@ -669,11 +669,11 @@ class AnalisadorEficaciaExperimentos:
             "timestamp": _now_iso()
         }
         
-        self.logger.info("ðŸ“Š Impacto calculado: %s", impacto['nome'])
+        self.logger.info(" Impacto calculado: %s", impacto['nome'])
         return impacto
 
     def gerar_relatorio_tendencia(self, limite_dias: int = 30) -> Dict[str, Any]:
-        """Gera relatório REAL de tendência."""
+        """Gera relatrio REAL de tendncia."""
         agora = datetime.utcnow()
         with self.auto_exp._lock:
             recent = [
@@ -703,7 +703,7 @@ if __name__ == "__main__":
     )
     
     print("\n" + "="*80)
-    print("ðŸ§ª TESTE REAL: AutoExperimentacao v1.0")
+    print(" TESTE REAL: AutoExperimentacao v1.0")
     print("="*80 + "\n")
     
     class MockCoracaoReal:
@@ -719,11 +719,11 @@ if __name__ == "__main__":
     coracao = MockCoracaoReal()
     config = MockConfigReal()
     
-    print("1ï¸âƒ£  CRIANDO AUTO-EXPERIMENTAÇÍO...")
+    print("1  CRIANDO AUTO-EXPERIMENTAO...")
     auto_exp = AutoExperimentacao(coracao, config)
-    print("   âœ… Criada\n")
+    print("   [OK] Criada\n")
     
-    print("2ï¸âƒ£  TESTANDO COLETA DE DADOS REAL...")
+    print("2  TESTANDO COLETA DE DADOS REAL...")
     dados = auto_exp._coletar_dados_reais_experimento(
         "ALICE",
         datetime.utcnow() - timedelta(hours=1),
@@ -733,28 +733,28 @@ if __name__ == "__main__":
     print(f"   Qualidade: {dados['qualidade_dados']['suficiente']}")
     print(f"   Alertas: {dados['qualidade_dados']['alertas']}\n")
     
-    print("3ï¸âƒ£  TESTANDO INCORPORAÇÍO DE APRENDIZADO...")
+    print("3  TESTANDO INCORPORAO DE APRENDIZADO...")
     proposta = {
         "duracao_sugerida_min": 30,
         "caracteristicas_para_experimento": {}
     }
     proposta_melhorada = auto_exp.incorporar_aprendizado_na_proposta(proposta)
-    print(f"   Duração original: 30 min")
-    print(f"   Duração após aprendizado: {proposta_melhorada['duracao_sugerida_min']} min\n")
+    print(f"   Durao original: 30 min")
+    print(f"   Durao aps aprendizado: {proposta_melhorada['duracao_sugerida_min']} min\n")
     
-    print("4ï¸âƒ£  TESTANDO MEDIÇÍO DE IMPACTO...")
+    print("4  TESTANDO MEDIO DE IMPACTO...")
     impacto = auto_exp._medir_impacto_experimento("exp1", dados)
     print(f"   Sucesso: {impacto['sucesso']}")
-    print(f"   Mudanças: {len(impacto['mudancas'])}\n")
+    print(f"   Mudanas: {len(impacto['mudancas'])}\n")
     
-    print("5ï¸âƒ£  HEALTH CHECK:")
+    print("5  HEALTH CHECK:")
     health = auto_exp.health_check()
     print(f"   Status: {health['status']}")
     print(f"   Experimentos ativos: {health['experimentos_ativos']}")
-    print(f"   Padrões descobertos: {health['aprendizados_descobertos']}\n")
+    print(f"   padrões descobertos: {health['aprendizados_descobertos']}\n")
     
     print("="*80)
-    print("âœ… TESTE COMPLETADO - AUTO-EXPERIMENTAÇÍO FUNCIONA 100% REAL")
+    print("[OK] TESTE COMPLETADO - AUTO-EXPERIMENTAO FUNCIONA 100% REAL")
     print("="*80 + "\n")
 
 

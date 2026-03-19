@@ -1,10 +1,13 @@
-# telemetry_guard.py - Atualizado
+# telemetry_guard.py
 # -*- coding: utf-8 -*-
 """
-Compat / guard para telemetria PostHog usado localmente.
+Guard de telemetria para PostHog / ChromaDB.
 
-safe_capture(...) só envia eventos se POSTHOG_API_KEY estiver definida.
-Mantém comportamento previsível em ambiente de desenvolvimento.
+- Desativa COMPLETAMENTE telemetria do ChromaDB via variáveis de ambiente
+  (deve ser importado ANTES de qualquer import do chromadb).
+- safe_capture() substitui posthog.capture de forma segura.
+- Aplica monkey-patch no posthog para silenciar chamadas internas do ChromaDB
+  com assinatura errada (capture() takes 1 positional argument but 3 were given).
 """
 from __future__ import annotations
 
@@ -14,37 +17,57 @@ from typing import Any
 
 logger = logging.getLogger("telemetry_guard")
 
+# ── 1. Desativar telemetria via variáveis de ambiente (ChromaDB/PostHog) ──────
+# Deve ocorrer ANTES do import do chromadb para ter efeito.
+os.environ.setdefault("ANONYMIZED_TELEMETRY", "False")
+os.environ.setdefault("CHROMA_TELEMETRY", "False")
+os.environ.setdefault("POSTHOG_DISABLED", "1")
+
 
 def safe_capture(*args: Any, **kwargs: Any) -> Any:
     """
     Substituto seguro para posthog.capture.
-    - Se POSTHOG_API_KEY não estiver definida, não tenta inicializar o cliente e registra info.
-    - Se definida, importa posthog e delega; captura exceções e as registra.
-    Retorna o que posthog.capture retornar ou None em caso de telemetria desativada/erro.
+    Aceita qualquer assinatura (fix: 'capture() takes 1 positional argument but 3 were given').
+    - Sem POSTHOG_API_KEY -> silencia completamente.
+    - Com chave -> delega ao posthog real com captura de excecoes.
     """
-    # Evita import desnecessário de módulos externos quando chave não está definida
     if not os.getenv("POSTHOG_API_KEY"):
         try:
-            event = args[1] if len(args) > 1 else kwargs.get("event")
-        except:
-            event = None
-            logger.warning("⚠️ event não disponível")
-        
-        logger.info(
-            "Telemetria desativada localmente: POSTHOG_API_KEY ausente; evento pulado: %s",
-            event,
-        )
+            event = args[1] if len(args) > 1 else kwargs.get("event", "<desconhecido>")
+        except Exception:
+            event = "<desconhecido>"
+        logger.debug("Telemetria desativada (POSTHOG_API_KEY ausente); evento ignorado: %s", event)
         return None
 
-    # Se chegamos aqui, tentamos usar posthog se disponível
     try:
         import posthog  # type: ignore
-    except Exception:
-        logger.warning("posthog não disponível; não será enviado evento de telemetria.")
+    except ImportError:
+        logger.debug("posthog nao instalado; telemetria ignorada.")
         return None
 
     try:
         return posthog.capture(*args, **kwargs)
     except Exception:
-        logger.exception("Erro ao enviar telemetria")
+        logger.debug("Erro ao enviar telemetria (ignorado).", exc_info=True)
         return None
+
+
+def _aplicar_monkey_patch_posthog() -> None:
+    """
+    Aplica monkey-patch no modulo posthog caso ja esteja importado,
+    substituindo capture por safe_capture para evitar erros de assinatura
+    vindos do ChromaDB internamente.
+    """
+    try:
+        import sys
+        if "posthog" in sys.modules:
+            import posthog as _ph  # type: ignore
+            if getattr(_ph, "capture", None) is not safe_capture:
+                _ph.capture = safe_capture
+                logger.debug("Monkey-patch aplicado: posthog.capture -> safe_capture")
+    except Exception:
+        pass  # nunca quebrar por causa de telemetria
+
+
+# Aplicar patch imediatamente ao importar este modulo
+_aplicar_monkey_patch_posthog()

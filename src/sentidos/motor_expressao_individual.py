@@ -1,9 +1,9 @@
-"""
-src/camara/motor_expressao_individual.py — CORRIGIDO
-Shim que carrega a implementação real de motor_avatar_individual.py (na raiz do projeto).
-O shim anterior apontava para 'src.modules.motor_expressao_individual' que não existe.
-"""
 from __future__ import annotations
+"""
+src/sentidos/motor_expressao_individual.py  CORRIGIDO
+Shim que carrega a implementao real de motor_avatar_individual.py (na raiz do projeto).
+O shim anterior apontava para 'src.modules.motor_expressao_individual' que no existe.
+"""
 import importlib
 import sys
 import os
@@ -30,7 +30,7 @@ def _load_real():
         except Exception:
             continue
 
-    # Tenta 2: carregar pelo caminho físico (garante funcionar independente do sys.path)
+    # Tenta 2: carregar pelo caminho fsico (garante funcionar independente do sys.path)
     candidatos = [
         Path(__file__).parent.parent.parent / "motor_avatar_individual.py",
         Path(__file__).parent.parent / "encarnacao_e_interacao" / "motor_avatar_individual.py",
@@ -50,7 +50,7 @@ def _load_real():
                 continue
 
     raise ImportError(
-        "Não foi possível carregar MotorExpressaoIndividual. "
+        "No foi possível carregar MotorExpressaoIndividual. "
         "Verifique motor_avatar_individual.py na raiz do projeto."
     )
 
@@ -60,7 +60,7 @@ def __getattr__(name: str):
     try:
         return getattr(mod, name)
     except AttributeError as e:
-        raise AttributeError(f"módulo motor_expressao_individual não exporta '{name}'") from e
+        raise AttributeError(f"módulo motor_expressao_individual no exporta '{name}'") from e
 
 
 def __dir__():

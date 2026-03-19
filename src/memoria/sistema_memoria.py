@@ -1,144 +1,610 @@
-﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from __future__ import annotations
-
 import logging
-import os
 import sqlite3
-import threading
-import time
-from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
-from enum import Enum
 import json
-import uuid
+import time
+from datetime import datetime, timedelta
+from typing import Dict, List, Tuple, Any, Optional
+from enum import Enum
+import os
+from pathlib import Path
 
-logger = logging.getLogger(__name__)
-
-# Tentativa de import do chromadb
-CHROMA_AVAILABLE = False
-CHROMA_CLIENT = None
 try:
     import chromadb
     from chromadb.config import Settings
-    CHROMA_AVAILABLE = True
-    logger.info("✅ ChromaDB disponível")
-except ImportError as e:
-    logger.warning(f"⚠️ ChromaDB não disponível: {e}")
+    CHROMADB_AVAILABLE = True
+except:
+    logging.getLogger(__name__).warning("[AVISO] chromadb no disponível")
+    chromadb = None
+    Settings = None
+    CHROMADB_AVAILABLE = False
 
-# Tentativa de import do ConstrutorDataset
-try:
-    from src.memoria.construtor_dataset import ConstrutorDataset
-    CONSTRUTOR_OK = True
-except ImportError as e:
-    logger.warning(f"⚠️ ConstrutorDataset não disponível: {e}")
-    ConstrutorDataset = None
-    CONSTRUTOR_OK = False
+logger = logging.getLogger('SistemaMemoriaHibrido')
+
+DEFAULT_DATASET_THRESHOLD_BYTES = 100 * 1024 * 1024  # 100 MiB
+DEFAULT_DATASET_ACTION = "archive"
+DEFAULT_DATASET_ARCHIVE_SUBDIR = r"E:\Arca_Celestial_Genesis_Alfa_Omega\santuarios\datasets_archive"
+DEFAULT_DATASET_RETENTION_DAYS = 30
+DEFAULT_DNA_ID_PATH = r"E:\Arca_Celestial_Genesis_Alfa_Omega\santuarios\dna_identidades"
+
+
+class MemoryTier(Enum):
+    M0 = "M0_PERMANENTE"
+    M1 = "M1_ALTO_USO"
+    M2 = "M2_MEDIO_USO"
+    M3 = "M3_BAIXO_USO"
+
 
 class TipoInteracao(Enum):
-    CONVERSA = "conversa"
-    REFLEXAO = "reflexao"
-    APRENDIZADO = "aprendizado"
-    SONHO = "sonho"
-    DECISAO = "decisao"
-    EMOCAO = "emocao"
-    CURIOSIDADE = "curiosidade"
+    HUMANO_AI = "humano_ai"
+    AI_AI = "ai_ai"
+    AI_PESQUISA = "ai_pesquisa"
+    AI_PLANO = "ai_plano"
+    AI_ACAO_EXECUTADA = "ai_acao_executada"
+    AI_REFLEXAO = "ai_reflexao"
+
+
+try:
+    from src.core.m0_ejector import M0Ejector
+except:
+    logging.getLogger(__name__).warning("[AVISO] M0Ejector no disponível")
+    M0Ejector = None
+
+try:
+    from src.memoria.construtor_dataset import ConstrutorDataset
+except:
+    logging.getLogger(__name__).warning("[AVISO] ConstrutorDataset no disponível")
+    ConstrutorDataset = None
 
 
 class SistemaMemoriaHibrido:
-    def __init__(self, config=None):
-        self.config = config
-        self.diarios = {}  # nome_alma -> (conn, cursor)
-        self.chroma_client = None
-        self.chroma_collections = {}
-        self.construtor_dataset = None
-        self.lock = threading.RLock()
-        
-        # Inicializar ChromaDB com API nova
-        self._inicializar_chroma()
-        
-        # Inicializar ConstrutorDataset se disponível
-        if CONSTRUTOR_OK and ConstrutorDataset is not None:
-            try:
-                self.construtor_dataset = ConstrutorDataset(self)
-                logger.info("✅ ConstrutorDataset inicializado")
-            except Exception as e:
-                logger.exception(f"Erro inicializando ConstrutorDataset: {e}")
-                self.construtor_dataset = None
-    
-    def _inicializar_chroma(self):
-        """Inicializa cliente ChromaDB com API compatível"""
-        if not CHROMA_AVAILABLE:
-            logger.warning("⚠️ ChromaDB não disponível - memória semântica desativada")
-            return
-            
+    def __init__(self, config: Any):
+        if config is None:
+            cfg_dict = {}
+        else:
+            cfg_dict = config
+
+        if isinstance(cfg_dict, dict):
+            class _SafeConfig:
+                def __init__(self, d):
+                    self._d = d or {}
+                def get(self, *args, **kwargs):
+                    if len(args) == 0:
+                        return kwargs.get('fallback')
+                    if len(args) == 1:
+                        return self._d.get(args[0], kwargs.get('fallback'))
+                    if len(args) == 2:
+                        section, option = args[0], args[1]
+                        fallback = kwargs.get('fallback')
+                        sec = self._d.get(section)
+                        if isinstance(sec, dict):
+                            return sec.get(option, fallback)
+                        combined = f"{section}.{option}"
+                        return self._d.get(combined, fallback)
+                    return kwargs.get('fallback')
+            cfg = _SafeConfig(cfg_dict)
+        else:
+            cfg = cfg_dict
+
+        self.config = cfg
+
+        raw_ais = self.config.get('ALMAS', 'lista_almas_votantes_csv', fallback="EVA,LUMINA,NYRA,YUNA,KAIYA,WELLINGTON")
+        if raw_ais is None:
+            raw_ais = "EVA,LUMINA,NYRA,YUNA,KAIYA,WELLINGTON"
+        if isinstance(raw_ais, str):
+            self.ais = [a.strip().upper() for a in raw_ais.split(",") if a.strip()]
+        else:
+            self.ais = [str(a).strip().upper() for a in raw_ais]
+
+        m0_path = self.config.get('MEMORIA', 'M0_PATH', fallback="data/m0_identidade.json")
+        sig_key = None
         try:
-            # Configurar diretório persistente
-            persist_dir = os.getenv("CHROMA_PERSIST_DIR", "./chroma_data")
-            os.makedirs(persist_dir, exist_ok=True)
+            sig_key = self.config.get('MEMORIA', 'M0_SIGNATURE_KEY', fallback=os.getenv("M0_SIGNATURE_KEY"))
+        except Exception:
+            sig_key = os.getenv("M0_SIGNATURE_KEY")
+        
+        if M0Ejector:
+            self.m0_ejector = M0Ejector(m0_path=m0_path, signature_key=sig_key)
+        else:
+            self.m0_ejector = None
             
-            # Tentar API nova (PersistentClient)
+        self.m0_data = {}
+        try:
+            if self.m0_ejector and Path(self.m0_ejector.m0_path).exists():
+                with open(self.m0_ejector.m0_path, 'r', encoding='utf-8') as f:
+                    self.m0_data = json.load(f)
+        except Exception:
+            logger.debug("Falha ao carregar M0 existente; mantendo vazio")
+            self.m0_data = {}
+
+        self.diarios: Dict[str, Tuple[sqlite3.Connection, sqlite3.Cursor]] = {}
+        db_base_path = self.config.get('MEMORIA', 'SQLITE_DB_PATH', fallback="Santuarios/Diarios")
+        os.makedirs(db_base_path, exist_ok=True)
+        for ai in self.ais:
+            db_path = os.path.join(db_base_path, f"diario_{ai}.db")
+            conn = sqlite3.connect(db_path, check_same_thread=False)
+            cursor = conn.cursor()
             try:
-                self.chroma_client = chromadb.PersistentClient(
-                    path=persist_dir,
-                    settings=Settings(anonymized_telemetry=False, allow_reset=False)
+                cursor.execute("PRAGMA journal_mode=WAL")
+                cursor.execute("PRAGMA synchronous=NORMAL")
+            except Exception:
+                logger.debug("PRAGMA no aplicvel ação DB %s", db_path)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS transcricoes (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TEXT NOT NULL,
+                    tipo_interacao TEXT NOT NULL,
+                    alma_principal TEXT NOT NULL,
+                    outros_participantes TEXT,
+                    entrada TEXT,
+                    resposta TEXT,
+                    contexto_extra TEXT,
+                    importancia INTEGER DEFAULT 1
                 )
-                logger.info(f"✅ Cliente ChromaDB (PersistentClient) inicializado em {persist_dir}")
-            except Exception as e:
-                # Fallback para API antiga se necessário
-                try:
-                    self.chroma_client = chromadb.Client(
-                        Settings(
-                            chroma_db_impl="duckdb+parquet",
-                            persist_directory=persist_dir,
-                            anonymized_telemetry=False
-                        )
-                    )
-                    logger.info(f"✅ Cliente ChromaDB (Client legacy) inicializado em {persist_dir}")
-                except Exception as e2:
-                    logger.warning(f"⚠️ Falha ao inicializar ChromaDB: {e2}")
-                    self.chroma_client = None
-                    
-        except Exception as e:
-            logger.warning(f"⚠️ Erro na configuração do ChromaDB: {e}")
-            self.chroma_client = None
-    
-    def obter_colecao(self, nome_colecao: str):
-        """Obtém ou cria uma coleção ChromaDB"""
-        if not self.chroma_client:
-            return None
-            
-        if nome_colecao in self.chroma_collections:
-            return self.chroma_collections[nome_colecao]
-            
+            """)
+            conn.commit()
+            self.diarios[ai] = (conn, cursor)
+        logger.info("Dirios SQLite inicializados: %d", len(self.diarios))
+
+        self.chroma_client = None
+        self._inicializar_chroma()
+
         try:
-            # Tentar obter coleção existente
-            colecao = self.chroma_client.get_collection(name=nome_colecao)
-        except:
-            # Criar nova coleção
+            if ConstrutorDataset:
+                self.construtor_dataset = ConstrutorDataset(self)
+            else:
+                self.construtor_dataset = None
+        except Exception:
+            logger.exception("Erro inicializando ConstrutorDataset")
+            self.construtor_dataset = None
+
+        try:
+            auto_injetar = str(self.config.get('MEMORIA', 'AUTO_INJETAR_M0_FROM_DNA', fallback="true")).lower() in ("1", "true", "yes")
+        except Exception:
+            auto_injetar = True
+        if auto_injetar and self.m0_ejector:
+            dna_path = self.config.get('MEMORIA', 'DNA_IDENTIDADES_PATH', fallback=DEFAULT_DNA_ID_PATH)
             try:
-                colecao = self.chroma_client.create_collection(name=nome_colecao)
-            except Exception as e:
-                logger.warning(f"⚠️ Erro ao criar coleção {nome_colecao}: {e}")
-                return None
+                inject_res = self.inject_m0_from_dna_folder(dna_path, force=False)
+                logger.info("Resultado injeo M0 a partir de DNA: %s", inject_res)
+            except Exception:
+                logger.exception("Falha ao injetar M0 a partir de pasta DNA")
+
+    def _inicializar_chroma(self) -> None:
+        if not CHROMADB_AVAILABLE:
+            logger.debug("ChromaDB no disponível; pulando inicialização das camadas M1/M2/M3")
+            self.chroma_client = None
+            return
+        try:
+            persist_dir = self.config.get('MEMORIA', 'CHROMA_PERSIST_DIRECTORY', fallback=self.config.get('PATHS', 'CHROMA_DB_PATH', fallback=None) or "data/chroma_mem")
+            os.makedirs(persist_dir, exist_ok=True)
+            try:
+                self.chroma_client = chromadb.PersistentClient(path=persist_dir, settings=Settings(anonymized_telemetry=False, allow_reset=False))
+            except Exception:
+                try:
+                    self.chroma_client = chromadb.Client(path=persist_dir)
+                except Exception as e:
+                    logger.exception("Falha ao criar cliente Chroma: %s", e)
+                    self.chroma_client = None
+                    return
+            for ai in self.ais:
+                for tier in ("m1", "m2", "m3"):
+                    name = f"{ai}_{tier}"
+                    try:
+                        self.chroma_client.get_collection(name)
+                    except Exception:
+                        try:
+                            self.chroma_client.create_collection(name=name)
+                        except Exception:
+                            logger.exception("Falha criando coleo %s", name)
+            logger.info("Camadas M1/M2/M3 (ChromaDB) inicializadas.")
+        except Exception as e:
+            logger.exception("Falha ao inicializar ChromaDB: %s", e)
+            self.chroma_client = None
+
+    def _normalize_ai(self, nome_alma: str) -> str:
+        if not nome_alma:
+            raise ValueError("nome_alma vazio")
+        return str(nome_alma).strip().upper()
+
+    def get_context(self, nome_alma: str, query: str, limit: int = 2048) -> str:
+        """
+        Gera contexto de memória para o CerebroFamilia usar no prompt do LLM.
+        Busca as últimas interações do diário SQLite e, se ChromaDB disponível,
+        busca também memórias semânticas relevantes à query.
+        Retorna string formatada pronta para injetar no system prompt.
+        """
+        nome = self._normalize_ai(nome_alma)
+        partes: List[str] = []
+
+        # ── 1. Últimas interações do diário SQLite ──────────────────────────
+        try:
+            conn, cursor = self._get_diario(nome)
+            cursor.execute(
+                """SELECT tipo_interacao, entrada, resposta
+                   FROM transcricoes
+                   WHERE alma_principal = ?
+                   ORDER BY timestamp DESC
+                   LIMIT 10""",
+                (nome,)
+            )
+            rows = cursor.fetchall()
+            if rows:
+                partes.append("=== Histórico recente ===")
+                for tipo, entrada, resposta in reversed(rows):
+                    entrada_s  = (entrada  or "")[:200]
+                    resposta_s = (resposta or "")[:300]
+                    partes.append(f"[{tipo}] Usuário: {entrada_s}\n{nome}: {resposta_s}")
+        except Exception:
+            logger.debug("get_context: falha ao ler diário de %s", nome_alma, exc_info=True)
+
+        # ── 2. Memórias semânticas via ChromaDB (M3) ────────────────────────
+        if self.chroma_client and query:
+            try:
+                col = self.chroma_client.get_collection(f"{nome}_m3")
+                resultado = col.query(
+                    query_texts=[query[:512]],
+                    n_results=5,
+                    include=["documents"]
+                )
+                docs = resultado.get("documents", [[]])[0] or []
+                if docs:
+                    partes.append("=== Memórias relevantes ===")
+                    for doc in docs:
+                        partes.append(str(doc)[:300])
+            except Exception:
+                logger.debug("get_context: falha ChromaDB para %s", nome_alma, exc_info=True)
+
+        if not partes:
+            return ""
+
+        contexto = "\n".join(partes)
+        # Respeita o limite de caracteres pedido pelo CerebroFamilia
+        return contexto[:limit]
+
+    def _get_diario(self, nome_alma: str) -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
+        nome = self._normalize_ai(nome_alma)
+        if nome not in self.diarios:
+            raise KeyError(f"IA desconhecida: {nome_alma}")
+        return self.diarios[nome]
+
+    def salvar_evento_autonomo(
+        self,
+        nome_alma: str,
+        tipo: TipoInteracao,
+        entrada: str,
+        resposta: str,
+        outros_participantes: Optional[List[str]] = None,
+        contexto_extra: Optional[Dict] = None,
+        importancia: int = 1
+    ) -> None:
+        nome = self._normalize_ai(nome_alma)
+        timestamp = datetime.now().isoformat()
+        participantes_json = json.dumps(outros_participantes or [])
+        contexto_json = json.dumps(contexto_extra or {}, ensure_ascii=False)
+        try:
+            conn, cursor = self._get_diario(nome)
+        except KeyError:
+            logger.error("Tentativa de salvar evento para IA desconhecida: %s", nome_alma)
+            return
+        try:
+            cursor.execute("""
+                INSERT INTO transcricoes 
+                (timestamp, tipo_interacao, alma_principal, outros_participantes, 
+                entrada, resposta, contexto_extra, importancia)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (timestamp, tipo.value, nome, participantes_json, entrada, resposta, contexto_json, importancia))
+            conn.commit()
+        except Exception:
+            logger.exception("Falha ao escrever no dirio de %s", nome)
+        if self.chroma_client:
+            try:
+                if tipo == TipoInteracao.AI_AI:
+                    doc = f"{nome} conversou com {', '.join(outros_participantes or [])}:\n{entrada[:200]}\n {resposta[:300]}"
+                elif tipo == TipoInteracao.AI_PESQUISA:
+                    doc = f"{nome} pesquisou: {entrada}\nResultados: {resposta[:400]}"
+                elif tipo == TipoInteracao.AI_PLANO:
+                    doc = f"{nome} planejou: {entrada}\nDetalhes: {resposta[:400]}"
+                else:
+                    doc = f"[{tipo.value}] {nome}: {entrada}\n {resposta}"
                 
-        self.chroma_collections[nome_colecao] = colecao
-        return colecao
-    
-    def listar_ais(self) -> List[str]:
-        """Retorna lista de nomes de AIs conhecidas"""
-        # Implementação básica
-        return ["EVA", "KAIYA", "LUMINA", "NYRA", "WELLINGTON", "YUNA"]
-    
-    def shutdown(self):
-        """Desliga recursos da memória"""
-        logger.info("Desligando SistemaMemoriaHibrido")
-        # Fechar conexões SQLite
-        for nome_alma, (conn, _) in self.diarios.items():
+                metadata = {
+                    "alma": nome,
+                    "tier": "m3",
+                    "tipo_interacao": tipo.value,
+                    "timestamp": timestamp,
+                    "importancia": importancia,
+                    "ultima_acesso": timestamp,
+                    "contador_acessos": 0,
+                    "participantes": participantes_json,
+                    "contexto_extra": contexto_json
+                }
+                mem_id = f"{nome}_{tipo.value}_{int(time.time())}"
+                col_m3 = self.chroma_client.get_collection(f"{nome}_m3")
+                col_m3.add(documents=[doc], metadatas=[metadata], ids=[mem_id])
+            except Exception:
+                logger.exception("Falha ao salvar autonomia no Chroma para %s", nome)
+        logger.info("Evento autnomo salvo: %s [%s]", nome, tipo.value)
+
+    def exportar_para_fine_tuning(self, nome_alma: str, limite: int = 100) -> List[Dict]:
+        dataset: List[Dict] = []
+        try:
+            conn, cursor = self._get_diario(nome_alma)
+            cursor.execute("""
+                SELECT tipo_interacao, outros_participantes, entrada, resposta, contexto_extra
+                FROM transcricoes
+                WHERE alma_principal = ?
+                ORDER BY timestamp DESC
+                LIMIT ?
+            """, (self._normalize_ai(nome_alma), limite))
+            rows = cursor.fetchall()
+            for row in rows:
+                tipo = row[0]
+                participantes = json.loads(row[1]) if row[1] else []
+                contexto = json.loads(row[4]) if row[4] else {}
+                
+                if tipo == TipoInteracao.HUMANO_AI.value:
+                    dataset.append({"instruction": row[2], "input": "", "output": row[3], "metadata": {"tipo": "humano_ai"}})
+                elif tipo == TipoInteracao.AI_AI.value:
+                    dataset.append({
+                        "instruction": f"Como {self._normalize_ai(nome_alma)}, responda a {participantes[0] if participantes else 'outra AI'}:",
+                        "input": row[2],
+                        "output": row[3],
+                        "metadata": {"tipo": "ai_ai", "participantes": participantes, "contexto": contexto}
+                    })
+                elif tipo == TipoInteracao.AI_PESQUISA.value:
+                    dataset.append({
+                        "instruction": "Com base em sua pesquisa, responda:",
+                        "input": row[2],
+                        "output": row[3],
+                        "metadata": {"tipo": "pesquisa", "fonte": contexto.get("fonte", ""), "topico": contexto.get("topico", "")}
+                    })
+                elif tipo == TipoInteracao.AI_PLANO.value:
+                    dataset.append({"instruction": "Desenvolva um plano para:", "input": row[2], "output": row[3], "metadata": {"tipo": "planejamento"}})
+            logger.info("Exportadas %d entradas para fine-tuning de %s", len(dataset), nome_alma)
+        except KeyError:
+            logger.warning("Exportar para fine-tuning: IA desconhecida %s", nome_alma)
+        except Exception:
+            logger.exception("Erro ao exportar para fine-tuning para %s", nome_alma)
+        return dataset
+
+    def _estimar_tamanho_m3(self) -> int:
+        total_bytes = 0
+        try:
+            if self.chroma_client:
+                for ai in self.ais:
+                    try:
+                        col = self.chroma_client.get_collection(f"{ai}_m3")
+                        offset = 0
+                        page = 256
+                        while True:
+                            try:
+                                res = col.get(include=["documents"], limit=page, offset=offset)
+                            except Exception:
+                                break
+                            docs = res.get("documents", []) or []
+                            if not docs:
+                                break
+                            for d in docs:
+                                if isinstance(d, str):
+                                    total_bytes += len(d.encode("utf-8"))
+                                elif isinstance(d, (bytes, bytearray)):
+                                    total_bytes += len(d)
+                            offset += len(docs)
+                            if len(docs) < page:
+                                break
+                    except Exception:
+                        continue
+                return total_bytes
+        except Exception:
+            pass
+        try:
+            persist_dir = self.config.get('MEMORIA', 'CHROMA_PERSIST_DIRECTORY', fallback=None) or self.config.get('PATHS', 'CHROMA_DB_PATH', fallback=None)
+            if persist_dir and os.path.exists(persist_dir):
+                for root, _, files in os.walk(persist_dir):
+                    for fn in files:
+                        try:
+                            total_bytes += os.path.getsize(os.path.join(root, fn))
+                        except Exception:
+                            pass
+                return total_bytes
+        except Exception:
+            pass
+        try:
+            db_base = self.config.get('MEMORIA', 'SQLITE_DB_PATH', fallback="Santuarios/Diarios")
+            for ai in self.ais:
+                p = os.path.join(db_base, f"diario_{ai}.db")
+                if os.path.exists(p):
+                    total_bytes += os.path.getsize(p)
+        except Exception:
+            pass
+        return total_bytes
+
+    def _ensure_archive_index(self, archive_path: Path) -> Dict[str, Any]:
+        index_file = archive_path / "index.json"
+        if not index_file.exists():
+            index_file.parent.mkdir(parents=True, exist_ok=True)
+            index_file.write_text(json.dumps({"datasets": []}, ensure_ascii=False, indent=2), encoding="utf-8")
+        try:
+            return json.loads(index_file.read_text(encoding="utf-8"))
+        except Exception:
+            return {"datasets": []}
+
+    def _append_archive_index(self, archive_path: Path, meta: Dict[str, Any]) -> None:
+        index_file = archive_path / "index.json"
+        idx = self._ensure_archive_index(archive_path)
+        idx["datasets"].append(meta)
+        index_file.write_text(json.dumps(idx, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    def forcar_offload_m3(self, action: Optional[str] = None, archive_path_override: Optional[str] = None) -> Dict[str, Any]:
+        try:
+            threshold_bytes = int(self.config.get('MEMORIA', 'DATASET_THRESHOLD_BYTES', fallback=DEFAULT_DATASET_THRESHOLD_BYTES))
+            action_cfg = action or self.config.get('MEMORIA', 'DATASET_ACTION', fallback=DEFAULT_DATASET_ACTION)
+            archive_base = archive_path_override or self.config.get('MEMORIA', 'DATASET_ARCHIVE_PATH', fallback=DEFAULT_DATASET_ARCHIVE_SUBDIR)
+            
+            archive_path = Path(archive_base)
+            archive_path.mkdir(parents=True, exist_ok=True)
+            size_m3 = self._estimar_tamanho_m3()
+            result = {"size_m3": size_m3, "threshold_bytes": threshold_bytes, "action": action_cfg, "archived": []}
+            if size_m3 < threshold_bytes and action is None:
+                result["skipped"] = True
+                return result
+                
+            resultados = {}
+            if self.construtor_dataset:
+                resultados = self.construtor_dataset.construir_todos_datasets()
+            
+            for ai, caminho in (resultados or {}).items():
+                if not caminho:
+                    continue
+                try:
+                    srcp = Path(caminho)
+                    target = archive_path / srcp.name
+                    os.replace(str(srcp), str(target))
+                    meta = {
+                        "alma": ai,
+                        "path": str(target),
+                        "size_bytes": int(target.stat().st_size),
+                        "timestamp": int(time.time())
+                    }
+                    self._append_archive_index(archive_path, meta)
+                    result["archived"].append(meta)
+                except Exception:
+                    logger.exception("Falha ao arquivar dataset %s", caminho)
+            
+            if action_cfg == "delete":
+                logger.info("Action delete selecionada: a deleo no ser executada automaticamente aqui.")
+            return result
+        except Exception:
+            logger.exception("Erro durante forcar_offload_m3")
+        return {"error": "exception"}
+
+    def listar_datasets_arquivados(self) -> List[Dict[str, Any]]:
+        archive_base = self.config.get('MEMORIA', 'DATASET_ARCHIVE_PATH', fallback=DEFAULT_DATASET_ARCHIVE_SUBDIR)
+        archive_path = Path(archive_base)
+        idx = self._ensure_archive_index(archive_path)
+        return idx.get("datasets", [])
+
+    def consultar_dataset_arquivado(self, alma: str, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
+        alma_norm = self._normalize_ai(alma)
+        archive_base = self.config.get('MEMORIA', 'DATASET_ARCHIVE_PATH', fallback=DEFAULT_DATASET_ARCHIVE_SUBDIR)
+        archive_path = Path(archive_base)
+        idx = self._ensure_archive_index(archive_path)
+        resultados = []
+        for entry in idx.get("datasets", []):
+            if entry.get("alma") != alma_norm:
+                continue
+            try:
+                p = Path(entry.get("path"))
+                if not p.exists():
+                    continue
+                data = json.loads(p.read_text(encoding="utf-8"))
+                for item in data:
+                    text_blob = ""
+                    if isinstance(item, dict):
+                        text_blob = " ".join(str(item.get(k, "")) for k in ("instruction", "input", "output"))
+                    else:
+                        text_blob = str(item)
+                    if query.lower() in text_blob.lower():
+                        resultados.append({"dataset": str(p), "item": item})
+                        if len(resultados) >= top_k:
+                            return resultados
+            except Exception:
+                logger.debug("Erro consultando dataset %s", entry.get("path"), exc_info=True)
+        return resultados
+
+    def purge_archived_older_than(self, days: int = DEFAULT_DATASET_RETENTION_DAYS) -> Dict[str, Any]:
+        archive_base = self.config.get('MEMORIA', 'DATASET_ARCHIVE_PATH', fallback=DEFAULT_DATASET_ARCHIVE_SUBDIR)
+        archive_path = Path(archive_base)
+        idx = self._ensure_archive_index(archive_path)
+        cutoff = time.time() - (days * 86400)
+        removed = []
+        kept = []
+        for entry in idx.get("datasets", []):
+            try:
+                ts = entry.get("timestamp", 0)
+                p = Path(entry.get("path"))
+                if ts < cutoff and p.exists():
+                    try:
+                        os.remove(str(p))
+                        removed.append(str(p))
+                    except Exception:
+                        logger.exception("Erro removendo arquivo arquivado %s", p)
+                else:
+                    kept.append(entry)
+            except Exception:
+                logger.debug("Erro processando entrada index para purge", exc_info=True)
+        try:
+            index_file = archive_path / "index.json"
+            index_file.write_text(json.dumps({"datasets": kept}, ensure_ascii=False, indent=2), encoding="utf-8")
+        except Exception:
+            logger.exception("Erro atualizando index.json aps purge")
+        return {"removed": removed, "kept_count": len(kept)}
+
+    def inject_m0_from_dna_folder(self, folder: Optional[str] = None, force: bool = False) -> Dict[str, Any]:
+        results: Dict[str, Any] = {}
+        if not self.m0_ejector:
+            logger.warning("M0Ejector no disponível; pulando injeo")
+            return {"error": "no_m0_ejector"}
+            
+        folder_path_str = folder or self.config.get('MEMORIA', 'DNA_IDENTIDADES_PATH', fallback=DEFAULT_DNA_ID_PATH)
+        folder_path = Path(folder_path_str)
+        if not folder_path.exists() or not folder_path.is_dir():
+            for ai in self.ais:
+                results[ai] = {"status": "dna_folder_missing"}
+            return results
+
+        files_map: Dict[str, Path] = {}
+        for f in folder_path.glob("*.txt"):
+            try:
+                stem = f.stem.strip().upper()
+                if stem:
+                    files_map[stem] = f
+            except Exception:
+                continue
+                
+        for ai in self.ais:
+            ai_key = ai.upper()
+            fpath = files_map.get(ai_key)
+            if not fpath:
+                for stem, p in files_map.items():
+                    if stem.upper().startswith(ai_key):
+                        fpath = p
+                        break
+            if not fpath:
+                results[ai] = {"status": "file_not_found"}
+                continue
+            try:
+                text = fpath.read_text(encoding="utf-8").strip()
+                if not text:
+                    results[ai] = {"status": "file_empty", "path": str(fpath)}
+                    continue
+                identidade_data = {"identidade_text": text}
+                res = self.m0_ejector.inject(identidade_data, autor="dna_loader", allow_overwrite=force)
+                results[ai] = {"status": res.get("status", "unknown"), "path": res.get("path"), "signature": res.get("signature")}
+            except Exception as e:
+                logger.exception("Erro injetando M0 para %s a partir de %s: %s", ai, fpath if fpath else "<none>", e)
+                results[ai] = {"status": "error", "error": str(e)}
+        return results
+
+    def shutdown(self) -> None:
+        for ai, (conn, _) in list(self.diarios.items()):
             try:
                 conn.close()
-            except:
-                pass
+                logger.info("Dirio de %s fechado", ai)
+            except Exception:
+                logger.exception("Erro ao fechar dirio de %s", ai)
         self.diarios.clear()
-        self.chroma_collections.clear()
+        if self.chroma_client:
+            try:
+                if hasattr(self.chroma_client, "persist"):
+                    try:
+                        self.chroma_client.persist()
+                    except Exception:
+                        logger.debug("chroma_client.persist() falhou")
+            except Exception:
+                logger.exception("Erro ao encerrar chroma_client")
+            finally:
+                self.chroma_client = None
+        logger.info("SistemaMemoriaHibrido finalizado")

@@ -11,7 +11,7 @@ def hierarquia_valores(items: List[str]) -> List[Tuple[str, int]]:
 def mapear_associacoes_semanticas(text: str, window: int = 4) -> Dict[str, List[str]]:
     if not text:
         return {}
-    tokens = re.findall(r'\w+', text.lower())
+    tokens = re.findall(r'\\w+', text.lower())
     assoc = defaultdict(Counter)
     for i, t in enumerate(tokens):
         start = max(0, i - window)
@@ -55,3 +55,39 @@ class AnalisadorDePadroes:
 
     def perfil_aprendizado(self, history: List[Dict[str, Any]]) -> Dict[str, Any]:
         return perfil_aprendizado(history)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PerfilComportamental — dataclass de perfil de alma para geração de artefatos
+# (Aqui para centralizar o import, evitando dependência circular com gerador_almas)
+# ─────────────────────────────────────────────────────────────────────────────
+from dataclasses import dataclass, field
+from typing import Optional as _Opt
+
+@dataclass
+class PerfilComportamental:
+    """Perfil comportamental de uma alma — usado pelo GeradorDeAlmas e câmaras."""
+    nome_alma_destino: str = "ALMA"
+    descricao_alma_externa: str = ""
+    estilo_comunicacao: str = "claro"
+    nivel_formalidade: str = "moderado"
+    valores_principais: List[str] = field(default_factory=list)
+    areas_interesse: List[str] = field(default_factory=list)
+    assinaturas_linguisticas: List[str] = field(default_factory=list)
+    padrao_racional_preferido: str = "pragmatico"
+    nivel_seguranca: str = "padrao"
+    nivel_abertura: str = "moderado"
+    humor_base: str = "sereno"
+    tracos_personalidade: List[str] = field(default_factory=list)
+    restricoes_tematicas: List[str] = field(default_factory=list)
+    idioma_principal: str = "pt"
+    metadados: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        from dataclasses import asdict
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "PerfilComportamental":
+        valid = {k: v for k, v in d.items() if k in cls.__dataclass_fields__}
+        return cls(**valid)

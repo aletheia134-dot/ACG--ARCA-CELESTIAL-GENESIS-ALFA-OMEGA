@@ -1,4 +1,4 @@
-# Ferramenta: Transformar Vídeo em Anime (frame a frame)
+# Ferramenta: Transformar Vdeo em Anime (frame a frame)
 # Usa AnimeGAN (2GB VRAM) + processamento sequencial
 
 import sys
@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS, USAR_GPU
 
 import cv2
@@ -41,9 +41,9 @@ class FerramentaAnimeVideo:
             self.animegan.eval()
             self.face2paint = f2p
             
-            print(f"âœ… AnimeGAN carregado na {self.device}")
+            print(f"[OK] AnimeGAN carregado na {self.device}")
         except Exception as e:
-            print(f"âŒ Erro AnimeGAN: {e}")
+            print(f"[ERRO] Erro AnimeGAN: {e}")
             self.animegan = None
     
     def frame_para_anime(self, frame):
@@ -71,22 +71,22 @@ class FerramentaAnimeVideo:
     def processar_video(self, caminho_video, pasta_saida=None, 
                         qualidade="media", fps_reducao=1):
         """
-        Processa vídeo inteiro frame a frame
+        Processa vdeo inteiro frame a frame
         
         qualidade: "baixa" (480p), "media" (720p), "alta" (1080p)
         fps_reducao: 1=mesmo FPS, 2=metade, etc
         """
         try:
-            # Abre vídeo
+            # Abre vdeo
             cap = cv2.VideoCapture(caminho_video)
             
-            # Informações originais
+            # informações originais
             fps = cap.get(cv2.CAP_PROP_FPS)
             total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
             largura = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             altura = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
             
-            # Define resolução
+            # Define resoluo
             if qualidade == "baixa":
                 nova_largura = 640
                 nova_altura = 480
@@ -97,7 +97,7 @@ class FerramentaAnimeVideo:
                 nova_largura = 1280
                 nova_altura = 720
             
-            # Pasta de saída
+            # Pasta de sada
             if not pasta_saida:
                 pasta_saida = PASTA_SAIDAS / f"anime_{Path(caminho_video).stem}"
             
@@ -133,7 +133,7 @@ class FerramentaAnimeVideo:
             
             cap.release()
             
-            # Cria vídeo a partir dos frames
+            # Cria vdeo a partir dos frames
             fps_novo = fps / fps_reducao
             video_saida = pasta_saida / "video_anime.mp4"
             
@@ -173,7 +173,7 @@ class FerramentaAnimeVideo:
 
 class InterfaceAnimeVideo(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸŽ¨ Transformar Vídeo em Anime", "750x650")
+        super().__init__(" Transformar Vdeo em Anime", "750x650")
         self.ferramenta = FerramentaAnimeVideo(usar_gpu=USAR_GPU)
         self.caminho_video = None
         self.setup_interface()
@@ -181,28 +181,28 @@ class InterfaceAnimeVideo(InterfaceBase):
     def setup_interface(self):
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸŽ¬ Converter Vídeo para Estilo Anime",
+            text=" Converter Vdeo para Estilo Anime",
             font=("Arial", 24, "bold")
         )
         titulo.pack(pady=10)
         
         # Status GPU
-        status = "âœ… GPU Ativa (AnimeGAN - 2GB VRAM)" if self.ferramenta.usar_gpu else "âš ï¸ CPU (lento)"
+        status = "[OK] GPU Ativa (AnimeGAN - 2GB VRAM)" if self.ferramenta.usar_gpu else "[AVISO] CPU (lento)"
         self.lbl_gpu = ctk.CTkLabel(self.frame, text=status)
         self.lbl_gpu.pack(pady=5)
         
         # Aviso
         aviso = ctk.CTkLabel(
             self.frame,
-            text="âš ï¸ Processamento frame a frame - pode demorar!",
+            text="[AVISO] Processamento frame a frame - pode demorar!",
             text_color="orange"
         )
         aviso.pack(pady=5)
         
-        # Seleção
+        # Seleo
         self.btn_video = ctk.CTkButton(
             self.frame,
-            text="ðŸ“ Selecionar Vídeo",
+            text=" Selecionar Vdeo",
             command=self.selecionar_video,
             width=200,
             height=40
@@ -211,7 +211,7 @@ class InterfaceAnimeVideo(InterfaceBase):
         
         self.lbl_video = ctk.CTkLabel(
             self.frame,
-            text="Nenhum vídeo selecionado"
+            text="Nenhum vdeo selecionado"
         )
         self.lbl_video.pack(pady=5)
         
@@ -221,21 +221,21 @@ class InterfaceAnimeVideo(InterfaceBase):
         
         self.lbl_preview = ctk.CTkLabel(
             self.frame_preview,
-            text="Preview aparecerá aqui"
+            text="Preview aparecer aqui"
         )
         self.lbl_preview.pack(expand=True)
         
-        # Botão teste
+        # Boto teste
         self.btn_teste = ctk.CTkButton(
             self.frame,
-            text="ðŸŽ¨ Testar (10 frames)",
+            text=" Testar (10 frames)",
             command=self.testar,
             width=150,
             state="disabled"
         )
         self.btn_teste.pack(pady=5)
         
-        # Opções
+        # Opes
         self.frame_opcoes = ctk.CTkFrame(self.frame)
         self.frame_opcoes.pack(pady=10, padx=10, fill="x")
         
@@ -247,7 +247,7 @@ class InterfaceAnimeVideo(InterfaceBase):
         
         self.radio_baixa = ctk.CTkRadioButton(
             self.frame_opcoes,
-            text="Baixa (480p) - Mais rápido",
+            text="Baixa (480p) - Mais rpido",
             variable=self.qualidade_var,
             value="baixa"
         )
@@ -255,7 +255,7 @@ class InterfaceAnimeVideo(InterfaceBase):
         
         self.radio_media = ctk.CTkRadioButton(
             self.frame_opcoes,
-            text="Média (720p) - Equilibrado",
+            text="Mdia (720p) - Equilibrado",
             variable=self.qualidade_var,
             value="media"
         )
@@ -286,10 +286,10 @@ class InterfaceAnimeVideo(InterfaceBase):
         )
         self.fps_combo.pack(side="left", padx=5)
         
-        # Botão processar
+        # Boto processar
         self.btn_processar = ctk.CTkButton(
             self.frame,
-            text="ðŸŽ¬ Processar Vídeo Completo",
+            text=" Processar Vdeo Completo",
             command=self.processar,
             width=250,
             height=45,
@@ -318,12 +318,12 @@ class InterfaceAnimeVideo(InterfaceBase):
     
     def selecionar_video(self):
         caminho = self.utils.selecionar_arquivo(
-            "Selecione um vídeo",
-            [("Vídeo", "*.mp4 *.avi *.mkv *.mov")]
+            "Selecione um vdeo",
+            [("Vdeo", "*.mp4 *.avi *.mkv *.mov")]
         )
         if caminho:
             self.caminho_video = caminho
-            self.lbl_video.configure(text=f"Vídeo: {Path(caminho).name}")
+            self.lbl_video.configure(text=f"Vdeo: {Path(caminho).name}")
             self.btn_teste.configure(state="normal")
             self.btn_processar.configure(state="normal")
             
@@ -337,13 +337,13 @@ class InterfaceAnimeVideo(InterfaceBase):
             # 2 segundos por frame na GPU
             tempo_estimado = (total_frames / self.fps_var.get()) * 2 / 60
             self.lbl_estimativa.configure(
-                text=f"Vídeo: {duracao:.1f}s, {total_frames} frames\n"
+                text=f"Vdeo: {duracao:.1f}s, {total_frames} frames\n"
                      f"Tempo estimado: {tempo_estimado:.1f} minutos"
             )
     
     def testar(self):
         def testar_thread():
-            self.btn_teste.configure(state="disabled", text="â³ Testando...")
+            self.btn_teste.configure(state="disabled", text=" Testando...")
             
             frames = self.ferramenta.processar_amostra(self.caminho_video, 5)
             
@@ -361,13 +361,13 @@ class InterfaceAnimeVideo(InterfaceBase):
                 
                 self.utils.mostrar_info("Teste", "Preview gerado com sucesso!")
             
-            self.btn_teste.configure(state="normal", text="ðŸŽ¨ Testar")
+            self.btn_teste.configure(state="normal", text=" Testar")
         
         threading.Thread(target=testar_thread).start()
     
     def processar(self):
         def processar_thread():
-            self.btn_processar.configure(state="disabled", text="â³ Processando...")
+            self.btn_processar.configure(state="disabled", text=" Processando...")
             self.progress.set(0.1)
             
             resultado, msg = self.ferramenta.processar_video(
@@ -381,7 +381,7 @@ class InterfaceAnimeVideo(InterfaceBase):
             if resultado:
                 self.utils.mostrar_info(
                     "Sucesso",
-                    f"Vídeo processado!\n"
+                    f"Vdeo processado!\n"
                     f"Arquivo: {Path(resultado['video']).name}\n"
                     f"Frames: {resultado['frames']} @ {resultado['fps']:.1f}fps"
                 )
@@ -389,7 +389,7 @@ class InterfaceAnimeVideo(InterfaceBase):
                 self.utils.mostrar_erro("Erro", msg)
             
             self.progress.set(1)
-            self.btn_processar.configure(state="normal", text="ðŸŽ¬ Processar Vídeo Completo")
+            self.btn_processar.configure(state="normal", text=" Processar Vdeo Completo")
         
         threading.Thread(target=processar_thread).start()
 

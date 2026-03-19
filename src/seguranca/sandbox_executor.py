@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
-sandbox_executor.py - Executor seguro de código utilizando Docker CLI ou RestrictedPython.
+sandbox_executor.py - Executor seguro de cdigo utilizando Docker CLI ou RestrictedPython.
 """
 
-from __future__ import annotations
 
 import ast
 import logging
@@ -19,7 +19,7 @@ try:
     from RestrictedPython.Guards import safe_builtins
     _RESTRICTED_OK = True
 except:
-    logging.getLogger(__name__).warning("âš ï¸ compile_restricted não disponível")
+    logging.getLogger(__name__).warning("[AVISO] compile_restricted no disponível")
     compile_restricted = None
     safe_builtins = {}
     _RESTRICTED_OK = False
@@ -30,7 +30,7 @@ logger.addHandler(logging.NullHandler())
 
 class SandboxExecutor:
     """
-    Classe responsável por executar o código em Sandbox com Docker ou RestrictedPython.
+    Classe responsvel por executar o cdigo em Sandbox com Docker ou RestrictedPython.
     """
 
     def __init__(
@@ -47,46 +47,46 @@ class SandboxExecutor:
         self.logger = logging.getLogger("SandboxExecutor")
         self.containers_ativos = {}
 
-        # Identificar se o Docker CLI está disponível
+        # Identificar se o Docker CLI est disponível
         self.docker_disponivel = self._verificar_docker_cli()
 
     def _verificar_docker_cli(self) -> bool:
         """
-        Verifica se o Docker CLI está disponível no PATH e funcional.
+        Verifica se o Docker CLI est disponível no PATH e funcional.
         """
         try:
             self._testar_docker_cli()  # Método adicionado para logs detalhados
             return True
         except subprocess.CalledProcessError as e:
-            self.logger.warning(f"âš ï¸ Docker CLI indisponível ou mal configurado. Detalhes: {e.stderr}")
+            self.logger.warning(f"[AVISO] Docker CLI indisponível ou mal configurado. Detalhes: {e.stderr}")
             return False
         except FileNotFoundError:
-            self.logger.error("âŒ Docker CLI não encontrado. Certifique-se de que está instalado e no PATH.")
+            self.logger.error("[ERRO] Docker CLI no encontrado. Certifique-se de que est instalado e no PATH.")
             return False
 
     def _testar_docker_cli(self) -> None:
         """
-        Executa o comando 'docker version' para validar se o CLI está acessível.
+        Executa o comando 'docker version' para validar se o CLI est acessvel.
         """
         self.logger.info("Testando comando Docker 'docker version'...")
         resultado = subprocess.run(
             ["docker", "version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
         )
-        self.logger.info(f"âœ… Docker CLI detectado.")
+        self.logger.info(f"[OK] Docker CLI detectado.")
         self.logger.debug(f"Detalhes Docker: {resultado.stdout}")
 
     def executar_codigo(
         self, codigo: str, parametros: Optional[Dict[str, Any]] = None, funcao_entrada: str = "executar"
     ) -> Dict[str, Any]:
         """
-        Verifica e executa o código em Sandbox. Fallback para RestrictedPython caso Docker CLI não esteja disponível.
+        Verifica e executa o cdigo em Sandbox. Fallback para RestrictedPython caso Docker CLI no esteja disponível.
         """
         inicio = time.time()
         exec_id = str(uuid.uuid4())[:6]  # Gerar ID curto para o log
 
-        # Validação inicial do código
-        valido, erros, avisos = self._validar_codigo_restrito(codigo)
-        if not valido:
+        # Validao inicial do cdigo
+        válido, erros, avisos = self._validar_codigo_restrito(codigo)
+        if not válido:
             return {
                 "sucesso": False,
                 "stdout": "",
@@ -108,7 +108,7 @@ class SandboxExecutor:
 
     def _validar_codigo_restrito(self, codigo: str) -> Tuple[bool, List[str], List[str]]:
         """
-        Valida o código usando RestrictedPython para prevenir execução de comportamentos não seguros.
+        válida o cdigo usando RestrictedPython para prevenir execução de comportamentos no seguros.
         """
         erros = []
         avisos = []
@@ -116,31 +116,31 @@ class SandboxExecutor:
         try:
             ast.parse(codigo)
         except SyntaxError as e:
-            erros.append(f"âŒ Erro de sintaxe: {e}")
+            erros.append(f"[ERRO] Erro de sintaxe: {e}")
             return False, erros, avisos
 
         try:
             resultado = compile_restricted(codigo, "<string>", "exec")
             if hasattr(resultado, "errors") and resultado.errors:
-                erros.extend([f"âŒ {e}" for e in resultado.errors])
+                erros.extend([f"[ERRO] {e}" for e in resultado.errors])
         except Exception as e:
-            erros.append(f"âŒ Erro de compilação: {e}")
+            erros.append(f"[ERRO] Erro de compilao: {e}")
             return False, erros, avisos
 
         padroes_perigosos = [
-            (r"import os", "âš ï¸ Importação do módulo OS detectada."),
-            (r"exec\(", "âš ï¸ Uso do método exec() encontrado."),
-            (r"eval\(", "âš ï¸ Uso do método eval() encontrado."),
+            (r"import os", "[AVISO] Importao do módulo OS detectada."),
+            (r"exec\(", "[AVISO] Uso do método exec() encontrado."),
+            (r"eval\(", "[AVISO] Uso do método eval() encontrado."),
         ]
-        for padrao, descricao in padroes_perigosos:
-            if re.search(padrao, codigo, re.IGNORECASE):
+        for padrão, descricao in padroes_perigosos:
+            if re.search(padrão, codigo, re.IGNORECASE):
                 avisos.append(descricao)
 
         return len(erros) == 0, erros, avisos
 
     def _executar_em_docker(self, codigo: str, funcao_entrada: str, exec_id: str) -> Dict[str, Any]:
         """
-        Executa código em um contêiner Docker utilizando subprocess.
+        Executa cdigo em um continer Docker utilizando subprocess.
         """
         try:
             comando = [
@@ -156,7 +156,7 @@ class SandboxExecutor:
                 "-c",
                 codigo,
             ]
-            self.logger.info(f"ðŸ› ï¸ Executando código em contêiner Docker (ID {exec_id})...")
+            self.logger.info(f" Executando cdigo em continer Docker (ID {exec_id})...")
             resultado = subprocess.run(
                 comando,
                 stdout=subprocess.PIPE,
@@ -165,7 +165,7 @@ class SandboxExecutor:
                 timeout=self.timeout_segundos,
                 text=True,
             )
-            self.logger.info(f"âœ… Execução no contêiner Docker concluída com sucesso (ID {exec_id})")
+            self.logger.info(f"[OK] execução no continer Docker concluda com sucesso (ID {exec_id})")
             return {
                 "sucesso": True,
                 "stdout": resultado.stdout,
@@ -173,7 +173,7 @@ class SandboxExecutor:
                 "erros": [],
             }
         except subprocess.TimeoutExpired:
-            self.logger.error(f"â³ Tempo limite de execução excedido (ID {exec_id})!")
+            self.logger.error(f" Tempo limite de execução excedido (ID {exec_id})!")
             return {
                 "sucesso": False,
                 "stdout": "",
@@ -181,7 +181,7 @@ class SandboxExecutor:
                 "erros": ["Timeout"],
             }
         except subprocess.CalledProcessError as e:
-            self.logger.error(f"âŒ Erro durante a execução no Docker (ID {exec_id}): {e.stderr}")
+            self.logger.error(f"[ERRO] Erro durante a execução no Docker (ID {exec_id}): {e.stderr}")
             return {
                 "sucesso": False,
                 "stdout": e.stdout,
@@ -191,14 +191,14 @@ class SandboxExecutor:
 
     def _executar_modo_restrito(self, codigo: str, funcao_entrada: str) -> Dict[str, Any]:
         """
-        Executa o código de forma restrita (fallback para o RestrictedPython).
+        Executa o cdigo de forma restrita (fallback para o RestrictedPython).
         """
         try:
             namespace = {"__builtins__": safe_builtins}
             exec(compile_restricted(codigo, "<string>", "exec"), namespace)
             return {
                 "sucesso": True,
-                "stdout": "Código executado no modo restrito.",
+                "stdout": "Cdigo executado no modo restrito.",
                 "stderr": "",
                 "erros": [],
             }

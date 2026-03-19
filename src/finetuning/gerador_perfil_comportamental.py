@@ -5,18 +5,18 @@ import logging
 from typing import List, Dict, Any
 
 
-# Logger para depuração
+# Logger para depurao
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 
 # =====================================================================
-# ANÍLISE DE PADRÕES (MÓDULO BASE)
+# ANLISE DE padrões (módulo BASE)
 # =====================================================================
 
 class AnalisadorDePadroes:
     """
-    Analisador de padrões para transformar dados de eventos e textos em informações úteis.
+    Analisador de padrões para transformar dados de eventos e textos em informações teis.
     """
 
     def hierarquia_valores(self, itens: List[str]) -> List[Tuple[str, int]]:
@@ -29,7 +29,7 @@ class AnalisadorDePadroes:
 
     def mapear_associacoes_semanticas(self, texto: str, janela: int = 4) -> Dict[str, List[str]]:
         """
-        Analisa um texto e encontra palavras frequentemente associadas umas Í s outras.
+        Analisa um texto e encontra palavras frequentemente associadas umas s outras.
         """
         tokens = texto.split()
         assoc = defaultdict(Counter)
@@ -41,14 +41,14 @@ class AnalisadorDePadroes:
                     assoc[palavra][tokens[j]] += 1
         return {k: [v for v, _ in contador.most_common(3)] for k, contador in assoc.items()}
 
-    def perfil_aprendizado(self, historico: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def perfil_aprendizado(self, histórico: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Analisa um histórico de eventos e calcula taxas de sucesso e aprendizado.
         """
-        total = len(historico)
+        total = len(histórico)
         estatisticas = defaultdict(lambda: {"sucesso": 0, "total": 0})
 
-        for evento in historico:
+        for evento in histórico:
             tag = evento.get("tag", "geral")
             sucesso = evento.get("sucesso", False)
             estatisticas[tag]["total"] += 1
@@ -65,18 +65,18 @@ class AnalisadorDePadroes:
 
 
 # =====================================================================
-# GERADOR DE PERFIS DINÂMICOS (EXTENSÍO)
+# GERADOR DE PERFIS DINMICOS (EXTENSO)
 # =====================================================================
 
 class GeradorPerfilComportamental(AnalisadorDePadroes):
     """
-    Extensão do Analisador para gerar perfis comportamentais individualizados.
+    Extenso do Analisador para gerar perfis comportamentais individualizados.
     """
 
     def __init__(self):
         super().__init__()
         self.perfis = {}  # Base de perfis comportamentais
-        self.historico = []  # Histórico de eventos analisados
+        self.histórico = []  # histórico de eventos analisados
 
     def analisar_evento(self, id_objeto: str, evento: Dict[str, Any]) -> None:
         """
@@ -84,12 +84,12 @@ class GeradorPerfilComportamental(AnalisadorDePadroes):
         """
         logger.info("Analisando evento para '%s': %s", id_objeto, evento)
 
-        # Inicializa o perfil caso não exista
+        # Inicializa o perfil caso no exista
         if id_objeto not in self.perfis:
             self.perfis[id_objeto] = {
                 "curiosidade": 50,
                 "assertividade": 50,
-                "paciência": 50,
+                "pacincia": 50,
                 "otimismo": 50,
                 "eventos_processados": 0,
             }
@@ -110,14 +110,14 @@ class GeradorPerfilComportamental(AnalisadorDePadroes):
 
         # Atualiza contador de eventos e histórico
         perfil["eventos_processados"] += 1
-        self.historico.append({"id": id_objeto, "evento": evento, "timestamp": datetime.datetime.now()})
+        self.histórico.append({"id": id_objeto, "evento": evento, "timestamp": datetime.datetime.now()})
 
     def gerar_perfil_texto(self, id_objeto: str, texto: str) -> None:
         """
         Gera ajustes de perfil com base no entendimento do texto.
         """
         associacoes_semanticas = self.mapear_associacoes_semanticas(texto)
-        logger.debug("Associações semânticas geradas para '%s': %s", id_objeto, associacoes_semanticas)
+        logger.debug("Associaes semnticas geradas para '%s': %s", id_objeto, associacoes_semanticas)
 
         for palavra in texto.split():
             if palavra in ["descobrir", "investigar", "explorar"]:
@@ -133,6 +133,6 @@ class GeradorPerfilComportamental(AnalisadorDePadroes):
         """
         Ajusta o perfil baseado em todos os eventos registrados no histórico.
         """
-        eventos_obj = [evt for evt in self.historico if evt["id"] == id_objeto]
+        eventos_obj = [evt for evt in self.histórico if evt["id"] == id_objeto]
         for evento in eventos_obj:
             self.analisar_evento(id_objeto, evento.get("evento", {}))

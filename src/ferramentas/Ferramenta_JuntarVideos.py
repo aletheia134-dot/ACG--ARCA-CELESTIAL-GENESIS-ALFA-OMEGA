@@ -1,4 +1,4 @@
-# Ferramenta: Juntar Múltiplos Vídeos
+# Ferramenta: Juntar Mltiplos Vdeos
 # Usa MoviePy (CPU)
 
 import sys
@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS
 
 from moviepy import VideoFileClip, concatenate_videoclips
@@ -20,7 +20,7 @@ class FerramentaJuntarVideos:
         self.videos = []
     
     def adicionar_video(self, caminho):
-        """Adiciona vídeo Í  lista"""
+        """Adiciona vdeo  lista"""
         try:
             video = VideoFileClip(caminho)
             self.videos.append({
@@ -34,18 +34,18 @@ class FerramentaJuntarVideos:
             return False, str(e)
     
     def juntar(self, metodo="concat", pasta_saida=None, nome_saida="video_compilado.mp4"):
-        """Junta todos os vídeos"""
+        """Junta todos os vdeos"""
         if len(self.videos) < 2:
-            return None, "Adicione pelo menos 2 vídeos"
+            return None, "Adicione pelo menos 2 vdeos"
         
         try:
             clips = [v["clip"] for v in self.videos]
             
             if metodo == "concat":
-                # Concatenação simples
+                # Concatenao simples
                 final = concatenate_videoclips(clips, method="compose")
             else:
-                # Transição (fade)
+                # Transio (fade)
                 from moviepy import vfx
                 clips_com_transicao = []
                 for i, clip in enumerate(clips):
@@ -80,29 +80,29 @@ class FerramentaJuntarVideos:
             return None, str(e)
     
     def limpar(self):
-        """Limpa lista de vídeos"""
+        """Limpa lista de vdeos"""
         for v in self.videos:
             v["clip"].close()
         self.videos = []
 
 class InterfaceJuntarVideos(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸŽ¬ Juntar Vídeos", "700x600")
+        super().__init__(" Juntar Vdeos", "700x600")
         self.ferramenta = FerramentaJuntarVideos()
         self.setup_interface()
     
     def setup_interface(self):
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸŽ¬ Juntar Múltiplos Vídeos",
+            text=" Juntar Mltiplos Vdeos",
             font=("Arial", 24, "bold")
         )
         titulo.pack(pady=10)
         
-        # Lista de vídeos
+        # Lista de vdeos
         self.lbl_lista = ctk.CTkLabel(
             self.frame,
-            text="Vídeos a serem juntados:",
+            text="Vdeos a serem juntados:",
             font=("Arial", 14, "bold")
         )
         self.lbl_lista.pack(pady=(10,0))
@@ -113,13 +113,13 @@ class InterfaceJuntarVideos(InterfaceBase):
         self.lista_texto = ctk.CTkTextbox(self.frame_lista, height=150)
         self.lista_texto.pack(pady=5, padx=5, fill="both", expand=True)
         
-        # Botões adicionar
+        # Botes adicionar
         self.frame_botoes = ctk.CTkFrame(self.frame)
         self.frame_botoes.pack(pady=5)
         
         self.btn_adicionar = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ“ Adicionar Vídeo",
+            text=" Adicionar Vdeo",
             command=self.adicionar_video,
             width=150
         )
@@ -127,7 +127,7 @@ class InterfaceJuntarVideos(InterfaceBase):
         
         self.btn_remover = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ—‘ï¸ Remover Último",
+            text=" Remover ltimo",
             command=self.remover_ultimo,
             width=150
         )
@@ -135,13 +135,13 @@ class InterfaceJuntarVideos(InterfaceBase):
         
         self.btn_limpar = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ§¹ Limpar Tudo",
+            text=" Limpar Tudo",
             command=self.limpar_lista,
             width=150
         )
         self.btn_limpar.pack(side="left", padx=5)
         
-        # Opções
+        # Opes
         self.frame_opcoes = ctk.CTkFrame(self.frame)
         self.frame_opcoes.pack(pady=10, padx=10, fill="x")
         
@@ -153,7 +153,7 @@ class InterfaceJuntarVideos(InterfaceBase):
         
         self.radio_concat = ctk.CTkRadioButton(
             self.frame_opcoes,
-            text="Concatenação simples",
+            text="Concatenao simples",
             variable=self.metodo_var,
             value="concat"
         )
@@ -161,13 +161,13 @@ class InterfaceJuntarVideos(InterfaceBase):
         
         self.radio_trans = ctk.CTkRadioButton(
             self.frame_opcoes,
-            text="Com transição (fade)",
+            text="Com transio (fade)",
             variable=self.metodo_var,
             value="transicao"
         )
         self.radio_trans.pack(pady=2)
         
-        # Nome saída
+        # Nome sada
         self.frame_nome = ctk.CTkFrame(self.frame_opcoes)
         self.frame_nome.pack(pady=10, fill="x")
         
@@ -182,10 +182,10 @@ class InterfaceJuntarVideos(InterfaceBase):
         self.nome_entry.pack(side="left", padx=5)
         self.nome_entry.insert(0, "video_compilado.mp4")
         
-        # Botão juntar
+        # Boto juntar
         self.btn_juntar = ctk.CTkButton(
             self.frame,
-            text="ðŸŽ¬ Juntar Vídeos",
+            text=" Juntar Vdeos",
             command=self.juntar,
             width=200,
             height=45,
@@ -201,8 +201,8 @@ class InterfaceJuntarVideos(InterfaceBase):
     
     def adicionar_video(self):
         caminhos = filedialog.askopenfilenames(
-            title="Selecione os vídeos",
-            filetypes=[("Vídeo", "*.mp4 *.avi *.mkv *.mov")]
+            title="Selecione os vdeos",
+            filetypes=[("Vdeo", "*.mp4 *.avi *.mkv *.mov")]
         )
         
         for caminho in caminhos:
@@ -242,7 +242,7 @@ class InterfaceJuntarVideos(InterfaceBase):
     
     def juntar(self):
         def juntar_thread():
-            self.btn_juntar.configure(state="disabled", text="â³ Juntando...")
+            self.btn_juntar.configure(state="disabled", text=" Juntando...")
             self.progress.set(0.2)
             
             nome = self.nome_entry.get().strip()
@@ -261,13 +261,13 @@ class InterfaceJuntarVideos(InterfaceBase):
             self.progress.set(0.8)
             
             if caminho:
-                self.utils.mostrar_info("Sucesso", f"Vídeos juntados:\n{caminho}")
+                self.utils.mostrar_info("Sucesso", f"Vdeos juntados:\n{caminho}")
                 self.limpar_lista()
             else:
                 self.utils.mostrar_erro("Erro", msg)
             
             self.progress.set(1)
-            self.btn_juntar.configure(state="normal", text="ðŸŽ¬ Juntar Vídeos")
+            self.btn_juntar.configure(state="normal", text=" Juntar Vdeos")
         
         threading.Thread(target=juntar_thread).start()
 

@@ -21,7 +21,7 @@ class GerenciadorAliadas:
     Carrega adaptadores dinamicamente e gerencia disponibilidade.Responsabilidades:
     - Carregar adaptadores de aliadas dinamicamente
     - Normalizar interface de consulta
-    - Gerenciar ativação/desativação em runtime
+    - Gerenciar ativao/desativao em runtime
     - Notificar UI de eventos
     - Thread-safe em todas operações
     """
@@ -48,14 +48,14 @@ class GerenciadorAliadas:
         self._carregar_config()
         self._importar_adaptadores()
         
-        logger.info("âœ… GerenciadorAliadas inicializado com %d aliadas", len(self.aliadas_disponiveis))
+        logger.info("[OK] GerenciadorAliadas inicializado com %d aliadas", len(self.aliadas_disponiveis))
         self._notificar_ui("GERENCIADOR_ALIADAS_INICIALIZADO", {
             "total_aliadas": len(self.aliadas_disponiveis),
             "ativas": sum(1 for c in self.aliadas_disponiveis.values() if c.get("ativa", False))
         })
 
     def _carregar_config(self) -> None:
-        """Carrega configurações das Aliadas (inclui fallback de resiliência)."""
+        """Carrega configurações das Aliadas (inclui fallback de resilincia)."""
         try:
             if self.config_path.exists():
                 with open(self.config_path, "r", encoding="utf-8") as f:
@@ -76,86 +76,94 @@ class GerenciadorAliadas:
                             "ativa": False
                         }
                 self.aliadas_disponiveis = normalized
-                logger.info("ðŸ“– Configurações de aliadas carregadas: %d", len(self.aliadas_disponiveis))
+                logger.info(" Configurações de aliadas carregadas: %d", len(self.aliadas_disponiveis))
             else:
-                # Fallback padrão (resiliência)
+                # Fallback padrão (resilincia)
                 self._usar_config_padrao()
         except Exception as e:
-            logger.exception("âŒ Erro ao carregar config: %s", e)
+            logger.exception("[ERRO] Erro ao carregar config: %s", e)
             self._usar_config_padrao()
 
     def _usar_config_padrao(self) -> None:
         """Define configuração padrão de aliadas."""
         defaults = self._get_config_padrao()
         self.aliadas_disponiveis = defaults
-        logger.warning("âš ï¸ Usando configuração padrão de aliadas")
+        logger.warning("[AVISO] Usando configuração padrão de aliadas")
 
     def _get_config_padrao(self) -> Dict[str, Dict[str, Any]]:
-        """Retorna config padrão externalizada."""
+        """Retorna config padrão externalizada com módulos e endpoints REAIS."""
         return {
             "qwen": {
                 "nome": "Qwen",
                 "ativa": True,
                 "palavra_chave": "correntinha",
-                "modulo": "src.aliadas.aliada_qwen",
+                # Arquivo aliada_qwen.py está na raiz do projeto
+                "modulo": "aliada_qwen",
                 "classe": "AliadaQwen",
-                "endpoint": "https://api.qwen.com/v1/chat/completions"
+                # Endpoint real da API Qwen (Alibaba DashScope)
+                "endpoint": "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation"
             },
             "gemini": {
                 "nome": "Gemini",
                 "ativa": True,
                 "palavra_chave": "gemini",
-                "modulo": "src.aliadas.aliada_gemini",
+                # Arquivo aliada_gemini.py está na raiz do projeto
+                "modulo": "aliada_gemini",
                 "classe": "AliadaGemini",
-                "endpoint": "https://api.gemini.com/v1/generate"
+                # Endpoint real da API Gemini (Google)
+                # NOTA: a chave API deve ser passada como parâmetro ?key=... na URL
+                # O AliadaGemini cuida disso internamente
+                "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
             },
             "deepseek": {
                 "nome": "DeepSeek",
                 "ativa": True,
                 "palavra_chave": "deepseek",
-                "modulo": "src.aliadas.aliada_deepseek",
+                # Arquivo aliada_deepseek.py está na raiz do projeto
+                "modulo": "aliada_deepseek",
                 "classe": "AliadaDeepSeek",
-                "endpoint": "https://api.deepseek.com/v1/chat"
+                # Endpoint real da API DeepSeek (compatível com OpenAI)
+                "endpoint": "https://api.deepseek.com/v1/chat/completions"
             },
             "qwen_cloud": {
                 "nome": "Qwen Cloud",
                 "ativa": False,
                 "palavra_chave": "qwen_cloud",
-                "modulo": "src.aliadas.aliada_qwen_cloud",
+                "modulo": "aliada_qwen_cloud",
                 "classe": "AliadaQwenCloud",
-                "endpoint": "https://cloud.qwen.com/api/v1/completions"
+                "endpoint": "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation"
             }
         }
 
     def _importar_adaptadores(self) -> None:
         """Importa dinamicamente adaptadores para as aliadas marcadas como ativas."""
-        logger.info("ðŸ”§ Importando adaptadores de aliadas ativas...")
+        logger.info(" Importando adaptadores de aliadas ativas...")
         
         for nome, cfg in list(self.aliadas_disponiveis.items()):
             nome_l = str(nome).lower()
             
             if not cfg.get("ativa", False):
-                logger.debug("   â¸ï¸ %s está desativada", cfg.get("nome", nome_l))
+                logger.debug("    %s est desativada", cfg.get("nome", nome_l))
                 continue
             
             modulo_nome = cfg.get("modulo")
             classe_nome = cfg.get("classe")
             
             if not modulo_nome or not classe_nome:
-                logger.warning("   âŒ %s: config incompleta (modulo/classe)", nome_l)
+                logger.warning("   [ERRO] %s: config incompleta (modulo/classe)", nome_l)
                 continue
             
             try:
                 module = importlib.import_module(modulo_nome)
                 adapt_class = getattr(module, classe_nome)
             except ModuleNotFoundError as e:
-                logger.warning("   âŒ %s: módulo não encontrado (%s)", nome_l, modulo_nome)
+                logger.warning("   [ERRO] %s: módulo no encontrado (%s)", nome_l, modulo_nome)
                 continue
             except AttributeError as e:
-                logger.warning("   âŒ %s: classe não encontrada (%s.%s)", nome_l, modulo_nome, classe_nome)
+                logger.warning("   [ERRO] %s: classe no encontrada (%s.%s)", nome_l, modulo_nome, classe_nome)
                 continue
             except Exception as e:
-                logger.exception("   âŒ %s: erro ao importar", nome_l)
+                logger.exception("   [ERRO] %s: erro ação importar", nome_l)
                 continue
 
             # Instanciar adaptador com tentativas de fallback
@@ -164,7 +172,7 @@ class GerenciadorAliadas:
             if inst is not None:
                 with self._lock:
                     self.adaptadores_carregados[nome_l] = inst
-                logger.info("   âœ… %s carregada", cfg.get("nome", nome_l))
+                logger.info("   [OK] %s carregada", cfg.get("nome", nome_l))
                 self._notificar_ui("ALIADA_CARREGADA", {
                     "nome": cfg.get("nome", nome_l),
                     "chave": nome_l
@@ -193,11 +201,11 @@ class GerenciadorAliadas:
             logger.debug("   Fallback 3 falhou para %s: %s", nome_l, e)
 
         # Todas falharam
-        logger.exception("   âŒ Falha ao instanciar %s", nome_l)
+        logger.exception("   [ERRO] Falha ao instanciar %s", nome_l)
         return None
 
     def _notificar_ui(self, tipo_evento: str, dados: Dict[str, Any]) -> None:
-        """Envia notificação para UI via queue."""
+        """Envia notificao para UI via queue."""
         if not self._ui_queue:
             return
         
@@ -208,9 +216,9 @@ class GerenciadorAliadas:
                 "timestamp": time.time()
             })
         except queue.Full:
-            logger.debug("âš ï¸ UI Queue cheia ao notificar %s", tipo_evento)
+            logger.debug("[AVISO] UI Queue cheia ação notificar %s", tipo_evento)
         except Exception as e:
-            logger.debug("âš ï¸ Erro ao notificar UI: %s", e)
+            logger.debug("[AVISO] Erro ao notificar UI: %s", e)
 
     def consultar(
         self,
@@ -219,7 +227,7 @@ class GerenciadorAliadas:
         contexto: Optional[Dict] = None
     ) -> Tuple[bool, Optional[str], str]:
         """
-        Consulta uma Aliada específica.Args:
+        Consulta uma Aliada especfica.Args:
             aliada: Nome da aliada (normalizado para lowercase)
             comando: Comando/pergunta para a aliada
             contexto: Dict com contexto adicional (opcional)
@@ -228,14 +236,14 @@ class GerenciadorAliadas:
         """
         aliada_lower = str(aliada).lower()
         
-        # Registrar estatística
+        # Registrar estatstica
         with self._lock_stats:
             self._stats_consultas["total"] += 1
         
         # Validar se aliada existe
         if aliada_lower not in self.aliadas_disponiveis:
-            msg = f"Aliada '{aliada}' não reconhecida"
-            logger.warning("âŒ %s", msg)
+            msg = f"Aliada '{aliada}' no reconhecida"
+            logger.warning("[ERRO] %s", msg)
             self._notificar_ui("CONSULTA_FALHA", {
                 "aliada": aliada,
                 "motivo": msg
@@ -244,10 +252,10 @@ class GerenciadorAliadas:
 
         cfg = self.aliadas_disponiveis[aliada_lower]
         
-        # Validar se está ativa
+        # Validar se est ativa
         if not cfg.get("ativa", False):
-            msg = f"Aliada '{cfg.get('nome', aliada)}' está desativada"
-            logger.warning("âŒ %s", msg)
+            msg = f"Aliada '{cfg.get('nome', aliada)}' est desativada"
+            logger.warning("[ERRO] %s", msg)
             self._notificar_ui("CONSULTA_FALHA", {
                 "aliada": cfg.get("nome", aliada),
                 "motivo": "Desativada"
@@ -259,11 +267,11 @@ class GerenciadorAliadas:
             adaptador = self.adaptadores_carregados.get(aliada_lower)
 
         if adaptador is None:
-            msg = f"Adaptador para '{cfg.get('nome', aliada_lower)}' não disponível"
-            logger.warning("âŒ %s", msg)
+            msg = f"Adaptador para '{cfg.get('nome', aliada_lower)}' no disponível"
+            logger.warning("[ERRO] %s", msg)
             self._notificar_ui("CONSULTA_FALHA", {
                 "aliada": cfg.get("nome", aliada_lower),
-                "motivo": "Adaptador não disponível"
+                "motivo": "Adaptador no disponível"
             })
             return False, None, msg
 
@@ -275,9 +283,9 @@ class GerenciadorAliadas:
             # Adicionar palavra-chave se necessário
             if palavra_chave and palavra_chave.lower() not in comando.lower():
                 comando_final = f"{palavra_chave} {comando}"
-                logger.debug("   ðŸ”‘ Palavra-chave '%s' adicionada", palavra_chave)
+                logger.debug("    Palavra-chave '%s' adicionada", palavra_chave)
 
-            # Encontrar método compatível
+            # Encontrar método compatvel
             func = None
             if hasattr(adaptador, "processar"):
                 func = getattr(adaptador, "processar")
@@ -286,13 +294,13 @@ class GerenciadorAliadas:
             elif hasattr(adaptador, "__call__"):
                 func = adaptador
             else:
-                msg = "Adaptador não implementa interface conhecida (processar/run/__call__)"
-                logger.warning("âŒ %s", msg)
+                msg = "Adaptador no implementa interface conhecida (processar/run/__call__)"
+                logger.warning("[ERRO] %s", msg)
                 with self._lock_stats:
                     self._stats_consultas["falha"] += 1
                 self._notificar_ui("CONSULTA_FALHA", {
                     "aliada": cfg.get("nome", aliada_lower),
-                    "motivo": "Interface inválida"
+                    "motivo": "Interface invlida"
                 })
                 return False, None, msg
 
@@ -307,7 +315,7 @@ class GerenciadorAliadas:
             sucesso, resposta, status = self._normalizar_resposta(result)
 
             if sucesso:
-                logger.info("âœ… %s respondeu com sucesso", cfg.get("nome", aliada_lower))
+                logger.info("[OK] %s respondeu com sucesso", cfg.get("nome", aliada_lower))
                 with self._lock_stats:
                     self._stats_consultas["sucesso"] += 1
                 self._notificar_ui("CONSULTA_SUCESSO", {
@@ -316,7 +324,7 @@ class GerenciadorAliadas:
                     "resposta_length": len(str(resposta)) if resposta else 0
                 })
             else:
-                logger.warning("âš ï¸ %s respondeu com falha: %s", cfg.get("nome", aliada_lower), status)
+                logger.warning("[AVISO] %s respondeu com falha: %s", cfg.get("nome", aliada_lower), status)
                 with self._lock_stats:
                     self._stats_consultas["falha"] += 1
                 self._notificar_ui("CONSULTA_FALHA", {
@@ -327,7 +335,7 @@ class GerenciadorAliadas:
             return bool(sucesso), (resposta if resposta is not None else None), str(status)
 
         except Exception as e:
-            logger.exception("âŒ Erro ao consultar %s", aliada_lower)
+            logger.exception("[ERRO] Erro ao consultar %s", aliada_lower)
             with self._lock_stats:
                 self._stats_consultas["falha"] += 1
             msg = f"Erro na consulta: {e}"
@@ -364,7 +372,7 @@ class GerenciadorAliadas:
             return bool(sucesso), resposta, status
         except Exception as e:
             logger.exception("Erro ao normalizar resposta: %s", e)
-            return False, None, f"Erro na normalização: {e}"
+            return False, None, f"Erro na normalizao: {e}"
 
     def listar_disponiveis(self) -> Dict[str, Dict[str, Any]]:
         """Lista Aliadas configuradas e seu estado atual."""
@@ -384,15 +392,15 @@ class GerenciadorAliadas:
         nome_lower = str(nome).lower()
         
         if nome_lower not in self.aliadas_disponiveis:
-            msg = f"Aliada '{nome}' não existe"
-            logger.warning("âŒ %s", msg)
+            msg = f"Aliada '{nome}' no existe"
+            logger.warning("[ERRO] %s", msg)
             return False, msg
         
         cfg = self.aliadas_disponiveis[nome_lower]
         
         if cfg.get("ativa", False):
-            msg = f"Aliada '{cfg.get('nome', nome)}' já está ativa"
-            logger.info("â„¹ï¸ %s", msg)
+            msg = f"Aliada '{cfg.get('nome', nome)}' j est ativa"
+            logger.info(" %s", msg)
             return False, msg
         
         cfg["ativa"] = True
@@ -404,8 +412,8 @@ class GerenciadorAliadas:
         
         if not modulo_nome or not classe_nome:
             cfg["ativa"] = False
-            msg = "Configuração incompleta (módulo/classe ausente)"
-            logger.warning("âŒ %s: %s", nome_lower, msg)
+            msg = "configuração incompleta (módulo/classe ausente)"
+            logger.warning("[ERRO] %s: %s", nome_lower, msg)
             return False, msg
         
         try:
@@ -422,12 +430,12 @@ class GerenciadorAliadas:
                 self.adaptadores_carregados[nome_lower] = inst
             
             msg = f"Aliada '{cfg.get('nome', nome_lower)}' ativada"
-            logger.info("âœ… %s", msg)
+            logger.info("[OK] %s", msg)
             self._notificar_ui("ALIADA_ATIVADA", {"aliada": cfg.get("nome", nome_lower)})
             return True, msg
             
         except Exception as e:
-            logger.exception("âŒ Erro ao ativar %s: %s", nome_lower, e)
+            logger.exception("[ERRO] Erro ao ativar %s: %s", nome_lower, e)
             cfg["ativa"] = False
             msg = f"Erro ao ativar: {e}"
             self._notificar_ui("ALIADA_ATIVACAO_FALHA", {
@@ -441,8 +449,8 @@ class GerenciadorAliadas:
         nome_lower = str(nome).lower()
         
         if nome_lower not in self.aliadas_disponiveis:
-            msg = f"Aliada '{nome}' não existe"
-            logger.warning("âŒ %s", msg)
+            msg = f"Aliada '{nome}' no existe"
+            logger.warning("[ERRO] %s", msg)
             return False, msg
         
         cfg = self.aliadas_disponiveis[nome_lower]
@@ -459,14 +467,14 @@ class GerenciadorAliadas:
                     if hasattr(inst, "shutdown"):
                         try:
                             inst.shutdown()
-                            logger.debug("   ðŸ“¤ Shutdown executado para %s", nome_lower)
+                            logger.debug("    Shutdown executado para %s", nome_lower)
                         except Exception:
-                            logger.debug("   âš ï¸ Erro no shutdown (ignorado)")
+                            logger.debug("   [AVISO] Erro no shutdown (ignorado)")
                 except Exception:
-                    logger.exception("   âŒ Erro removendo adaptador")
+                    logger.exception("   [ERRO] Erro removendo adaptador")
         
         msg = f"Aliada '{cfg.get('nome', nome_lower)}' desativada"
-        logger.info("âœ… %s", msg)
+        logger.info("[OK] %s", msg)
         self._notificar_ui("ALIADA_DESATIVADA", {"aliada": cfg.get("nome", nome_lower)})
         return True, msg
 
@@ -481,7 +489,7 @@ class GerenciadorAliadas:
             logger.exception("Erro ao salvar config: %s", e)
 
     def obter_estatisticas(self) -> Dict[str, Any]:
-        """Retorna estatísticas resumidas das aliadas."""
+        """Retorna estatsticas resumidas das aliadas."""
         with self._lock:
             total = len(self.aliadas_disponiveis)
             ativas = sum(1 for c in self.aliadas_disponiveis.values() if c.get("ativa", False))
@@ -499,11 +507,11 @@ class GerenciadorAliadas:
         }
 
     def recarregar_config(self) -> None:
-        """Força recarregamento da configuração e (re)carrega adaptadores ativos."""
-        logger.info("ðŸ”„ Recarregando configuração de aliadas...")
+        """Fora recarregamento da configuração e (re)carrega adaptadores ativos."""
+        logger.info(" Recarregando configuração de aliadas...")
         self._carregar_config()
         
-        # Descarregar adaptadores que não estão mais ativos
+        # Descarregar adaptadores que no esto mais ativos
         with self._lock:
             to_remove = [
                 n for n, cfg in self.aliadas_disponiveis.items()
@@ -511,21 +519,21 @@ class GerenciadorAliadas:
             ]
             for n in to_remove:
                 self.adaptadores_carregados.pop(n, None)
-                logger.debug("   âœ‚ï¸ Adaptador %s removido", n)
+                logger.debug("    Adaptador %s removido", n)
         
         # (Re)importar adaptadores ativos
         self._importar_adaptadores()
-        logger.info("âœ… Configuração recarregada")
+        logger.info("[OK] configuração recarregada")
         self._notificar_ui("CONFIG_RECARREGADA", self.obter_estatisticas())
 
     def injetar_ui_queue(self, fila_ui: queue.Queue) -> None:
-        """Injeta fila de UI para notificações."""
+        """Injeta fila de UI para notificaes."""
         self._ui_queue = fila_ui
-        logger.info("ðŸ”Œ UI Queue injetada no GerenciadorAliadas")
+        logger.info(" UI Queue injetada no GerenciadorAliadas")
 
     def shutdown(self) -> None:
         """Desativa todas as aliadas e libera recursos."""
-        logger.info("ðŸ›‘ Desligando GerenciadorAliadas...")
+        logger.info(" Desligando GerenciadorAliadas...")
         
         # Desativar todas as aliadas
         nomes = list(self.aliadas_disponiveis.keys())
@@ -535,7 +543,7 @@ class GerenciadorAliadas:
         with self._lock:
             self.adaptadores_carregados.clear()
         
-        logger.info("âœ… GerenciadorAliadas desligado")
+        logger.info("[OK] GerenciadorAliadas desligado")
         self._notificar_ui("GERENCIADOR_ALIADAS_DESLIGADO", {})
 
 
@@ -549,11 +557,11 @@ _singleton_instance: Optional[GerenciadorAliadas] = None
 
 def obter_gerenciador(ui_queue: Optional[queue.Queue] = None) -> GerenciadorAliadas:
     """
-    Retorna instância global (singleton) do gerenciador de aliadas.Args:
-        ui_queue: Fila para notificações de UI (opcional)
+    Retorna instncia global (singleton) do gerenciador de aliadas.Args:
+        ui_queue: Fila para notificaes de UI (opcional)
     
     Returns:
-        Instância singleton do GerenciadorAliadas
+        Instncia singleton do GerenciadorAliadas
     """
     global _singleton_instance
     with _singleton_lock:
@@ -584,38 +592,38 @@ if __name__ == "__main__":
     gerenciador = obter_gerenciador(ui_queue=ui_queue)
 
     # Mostrar status
-    logger.info("\nðŸ“Š ESTATÍSTICAS INICIAIS:")
+    logger.info("\n ESTATSTICAS INICIAIS:")
     stats = gerenciador.obter_estatisticas()
     logger.info("   Total de aliadas: %d", stats["total_aliadas"])
     logger.info("   Ativas: %d", stats["ativas"])
     logger.info("   Carregadas: %d", stats["carregadas"])
 
     # Listar aliadas
-    logger.info("\nðŸ“‹ ALIADAS DISPONÍVEIS:")
+    logger.info("\n ALIADAS disponíveis:")
     for nome, info in gerenciador.listar_disponiveis().items():
-        status_ativo = "âœ… ATIVA" if info["ativa"] else "â¸ï¸ INATIVA"
-        status_carregada = "ðŸ”Œ Carregada" if info["carregada"] else "âŒ Não carregada"
-        logger.info("   • %s (%s) - %s - %s", 
+        status_ativo = "[OK] ATIVA" if info["ativa"] else " INATIVA"
+        status_carregada = " Carregada" if info["carregada"] else "[ERRO] No carregada"
+        logger.info("    %s (%s) - %s - %s", 
                    info["nome_exibicao"], nome, status_ativo, status_carregada)
 
     # Tentar consulta (exemplo simulado)
-    logger.info("\nðŸ”„ TESTE DE CONSULTA (simulado):")
-    logger.info("   Consultando 'qwen' com comando: 'Olá, como você está?'")
-    sucesso, resposta, msg = gerenciador.consultar("qwen", "Olá, como você está?")
+    logger.info("\n TESTE DE CONSULTA (simulado):")
+    logger.info("   Consultando 'qwen' com comando: 'Ol, como você est?'")
+    sucesso, resposta, msg = gerenciador.consultar("qwen", "Ol, como você est?")
     logger.info("   Sucesso: %s", sucesso)
     logger.info("   Mensagem: %s", msg)
 
     # Verificar eventos na UI Queue
-    logger.info("\nðŸ“¡ EVENTOS ENVIADOS PARA UI:")
+    logger.info("\n EVENTOS ENVIADOS PARA UI:")
     while True:
         try:
             evento = ui_queue.get_nowait()
-            logger.info("   ðŸ“¨ %s - %s", evento["tipo_resp"], evento["dados"])
+            logger.info("    %s - %s", evento["tipo_resp"], evento["dados"])
         except queue.Empty:
             break
 
     # Shutdown
-    logger.info("\nðŸ›‘ Desligando...")
+    logger.info("\n Desligando...")
     gerenciador.shutdown()
 
     logger.info("="*70)

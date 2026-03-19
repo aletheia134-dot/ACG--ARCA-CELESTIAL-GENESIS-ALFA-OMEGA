@@ -9,7 +9,7 @@ import shutil
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS
 
 import customtkinter as ctk
@@ -21,7 +21,7 @@ try:
     PATOOL_AVAILABLE = True
 except:
     PATOOL_AVAILABLE = False
-    print("âš ï¸ patool não instalado. Instale com: pip install patool")
+    print("[AVISO] patool no instalado. Instale com: pip install patool")
 
 class FerramentaCompressor:
     def __init__(self):
@@ -41,9 +41,9 @@ class FerramentaCompressor:
         
         Args:
             arquivos: Lista de caminhos
-            nome_saida: Nome do arquivo (sem extensão)
+            nome_saida: Nome do arquivo (sem extenso)
             formato: zip, rar, 7z, tar, gz, bz2
-            nivel_compressao: 0-9 (0=sem compressão, 9=máxima)
+            nivel_compressao: 0-9 (0=sem compresso, 9=máxima)
         """
         try:
             if not pasta_destino:
@@ -56,7 +56,7 @@ class FerramentaCompressor:
             extensao = self.formatos_suportados.get(formato, '.zip')
             arquivo_saida = pasta_destino / f"{nome_saida}{extensao}"
             
-            # Estatísticas
+            # Estatsticas
             stats = {
                 'total_arquivos': len(arquivos),
                 'tamanho_original': 0,
@@ -75,7 +75,7 @@ class FerramentaCompressor:
                             for file in files:
                                 stats['tamanho_original'] += (Path(root) / file).stat().st_size
             
-            # Compressão ZIP (nativo)
+            # Compresso ZIP (nativo)
             if formato == 'zip':
                 with zipfile.ZipFile(arquivo_saida, 'w', 
                                     zipfile.ZIP_DEFLATED, 
@@ -108,7 +108,7 @@ class FerramentaCompressor:
             if arquivo_saida.exists():
                 stats['tamanho_compactado'] = arquivo_saida.stat().st_size
                 
-                # Razão de compressão
+                # Razo de compresso
                 if stats['tamanho_original'] > 0:
                     stats['taxa_compressao'] = (
                         (1 - stats['tamanho_compactado'] / stats['tamanho_original']) * 100
@@ -128,7 +128,7 @@ class FerramentaCompressor:
             arquivo = Path(arquivo)
             
             if not arquivo.exists():
-                return None, "Arquivo não encontrado"
+                return None, "Arquivo no encontrado"
             
             if not pasta_destino:
                 pasta_destino = arquivo.parent / arquivo.stem
@@ -152,7 +152,7 @@ class FerramentaCompressor:
             else:
                 return None, f"Formato {arquivo.suffix} requer patool"
             
-            # Lista arquivos extraídos
+            # Lista arquivos extrados
             arquivos_extraidos = []
             for root, dirs, files in os.walk(pasta_destino):
                 for file in files:
@@ -168,12 +168,12 @@ class FerramentaCompressor:
             return None, str(e)
     
     def listar_conteudo(self, arquivo):
-        """Lista conteúdo do arquivo compactado"""
+        """Lista contedo do arquivo compactado"""
         try:
             arquivo = Path(arquivo)
             
             if not arquivo.exists():
-                return None, "Arquivo não encontrado"
+                return None, "Arquivo no encontrado"
             
             conteudo = []
             
@@ -195,7 +195,7 @@ class FerramentaCompressor:
 
 class InterfaceCompressor(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸ—œï¸ Compressor de Arquivos", "800x700")
+        super().__init__(" Compressor de Arquivos", "800x700")
         self.ferramenta = FerramentaCompressor()
         self.arquivos_selecionados = []
         self.setup_interface()
@@ -203,7 +203,7 @@ class InterfaceCompressor(InterfaceBase):
     def setup_interface(self):
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸ—œï¸ Compressor e Descompressor de Arquivos",
+            text=" Compressor e Descompressor de Arquivos",
             font=("Arial", 24, "bold")
         )
         titulo.pack(pady=10)
@@ -221,7 +221,7 @@ class InterfaceCompressor(InterfaceBase):
         self.setup_tab_descomprimir()
         
         # Aba: Listar
-        self.tab_listar = self.tabview.add("Listar Conteúdo")
+        self.tab_listar = self.tabview.add("Listar Contedo")
         self.setup_tab_listar()
         
         # Barra de progresso
@@ -244,13 +244,13 @@ class InterfaceCompressor(InterfaceBase):
         self.lista_texto = ctk.CTkTextbox(self.frame_lista, height=120)
         self.lista_texto.pack(fill="both", expand=True)
         
-        # Botões adicionar
+        # Botes adicionar
         self.frame_botoes = ctk.CTkFrame(self.tab_comprimir)
         self.frame_botoes.pack(pady=5)
         
         self.btn_add_arquivos = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ“ Adicionar Arquivos",
+            text=" Adicionar Arquivos",
             command=self.adicionar_arquivos,
             width=150
         )
@@ -258,7 +258,7 @@ class InterfaceCompressor(InterfaceBase):
         
         self.btn_add_pasta = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ“‚ Adicionar Pasta",
+            text=" Adicionar Pasta",
             command=self.adicionar_pasta,
             width=150
         )
@@ -266,13 +266,13 @@ class InterfaceCompressor(InterfaceBase):
         
         self.btn_limpar = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ§¹ Limpar",
+            text=" Limpar",
             command=self.limpar_lista,
             width=100
         )
         self.btn_limpar.pack(side="left", padx=5)
         
-        # Opções
+        # Opes
         self.frame_opcoes = ctk.CTkFrame(self.tab_comprimir)
         self.frame_opcoes.pack(pady=10, padx=10, fill="x")
         
@@ -293,11 +293,11 @@ class InterfaceCompressor(InterfaceBase):
         )
         self.formato_combo.pack(side="left", padx=5)
         
-        # Nível compressão
+        # nível compresso
         self.frame_nivel = ctk.CTkFrame(self.frame_opcoes)
         self.frame_nivel.pack(pady=2, fill="x")
         
-        self.lbl_nivel = ctk.CTkLabel(self.frame_nivel, text="Compressão:")
+        self.lbl_nivel = ctk.CTkLabel(self.frame_nivel, text="Compresso:")
         self.lbl_nivel.pack(side="left", padx=5)
         
         self.nivel_var = ctk.IntVar(value=9)
@@ -332,10 +332,10 @@ class InterfaceCompressor(InterfaceBase):
         )
         self.entry_nome.pack(side="left", padx=5)
         
-        # Botão comprimir
+        # Boto comprimir
         self.btn_comprimir = ctk.CTkButton(
             self.tab_comprimir,
-            text="ðŸ—œï¸ Comprimir",
+            text=" Comprimir",
             command=self.comprimir,
             width=200,
             height=40,
@@ -360,7 +360,7 @@ class InterfaceCompressor(InterfaceBase):
         
         self.btn_selecionar = ctk.CTkButton(
             self.frame_arquivo,
-            text="ðŸ“ Selecionar",
+            text=" Selecionar",
             command=self.selecionar_arquivo,
             width=80
         )
@@ -382,7 +382,7 @@ class InterfaceCompressor(InterfaceBase):
         
         self.btn_pasta = ctk.CTkButton(
             self.frame_pasta,
-            text="ðŸ“ Selecionar",
+            text=" Selecionar",
             command=self.selecionar_pasta_destino,
             width=80
         )
@@ -390,7 +390,7 @@ class InterfaceCompressor(InterfaceBase):
         
         self.btn_descomprimir = ctk.CTkButton(
             self.tab_descomprimir,
-            text="ðŸ“‚ Descomprimir",
+            text=" Descomprimir",
             command=self.descomprimir,
             width=200,
             height=40,
@@ -415,7 +415,7 @@ class InterfaceCompressor(InterfaceBase):
         
         self.btn_listar = ctk.CTkButton(
             self.frame_listar,
-            text="ðŸ” Listar",
+            text=" Listar",
             command=self.listar_conteudo,
             width=80
         )
@@ -429,14 +429,14 @@ class InterfaceCompressor(InterfaceBase):
         for arquivo in arquivos:
             if arquivo not in self.arquivos_selecionados:
                 self.arquivos_selecionados.append(arquivo)
-                self.lista_texto.insert('end', f"ðŸ“„ {Path(arquivo).name}\n")
+                self.lista_texto.insert('end', f" {Path(arquivo).name}\n")
     
     def adicionar_pasta(self):
         pasta = filedialog.askdirectory()
         if pasta:
             if pasta not in self.arquivos_selecionados:
                 self.arquivos_selecionados.append(pasta)
-                self.lista_texto.insert('end', f"ðŸ“‚ {Path(pasta).name}/\n")
+                self.lista_texto.insert('end', f" {Path(pasta).name}/\n")
     
     def limpar_lista(self):
         self.arquivos_selecionados = []
@@ -462,7 +462,7 @@ class InterfaceCompressor(InterfaceBase):
             nome = "arquivo_compactado"
         
         def comprimir_thread():
-            self.btn_comprimir.configure(state="disabled", text="â³ Comprimindo...")
+            self.btn_comprimir.configure(state="disabled", text=" Comprimindo...")
             self.progress.set(0.3)
             
             resultado, msg = self.ferramenta.comprimir_arquivos(
@@ -476,7 +476,7 @@ class InterfaceCompressor(InterfaceBase):
             
             if resultado:
                 stats = resultado['stats']
-                texto = f"âœ… Compactado com sucesso!\n\n"
+                texto = f"[OK] Compactado com sucesso!\n\n"
                 texto += f"Arquivo: {Path(resultado['arquivo']).name}\n"
                 texto += f"Original: {stats['tamanho_original']/(1024*1024):.2f} MB\n"
                 texto += f"Compactado: {stats['tamanho_compactado']/(1024*1024):.2f} MB\n"
@@ -490,7 +490,7 @@ class InterfaceCompressor(InterfaceBase):
                 self.utils.mostrar_erro("Erro", msg)
             
             self.progress.set(1)
-            self.btn_comprimir.configure(state="normal", text="ðŸ—œï¸ Comprimir")
+            self.btn_comprimir.configure(state="normal", text=" Comprimir")
         
         threading.Thread(target=comprimir_thread).start()
     
@@ -503,7 +503,7 @@ class InterfaceCompressor(InterfaceBase):
         pasta_destino = self.pasta_destino_var.get() or None
         
         def descomprimir_thread():
-            self.btn_descomprimir.configure(state="disabled", text="â³ Descomprimindo...")
+            self.btn_descomprimir.configure(state="disabled", text=" Descomprimindo...")
             self.progress.set(0.3)
             
             resultado, msg = self.ferramenta.descomprimir(arquivo, pasta_destino)
@@ -511,19 +511,19 @@ class InterfaceCompressor(InterfaceBase):
             self.progress.set(0.8)
             
             if resultado:
-                texto = f"âœ… Descompactado com sucesso!\n\n"
+                texto = f"[OK] Descompactado com sucesso!\n\n"
                 texto += f"Pasta: {resultado['pasta']}\n"
                 texto += f"Arquivos: {resultado['total']}\n"
                 
                 self.texto_lista.delete('1.0', 'end')
                 self.texto_lista.insert('1.0', texto)
                 
-                self.utils.mostrar_info("Sucesso", f"Arquivos extraídos para:\n{resultado['pasta']}")
+                self.utils.mostrar_info("Sucesso", f"Arquivos extrados para:\n{resultado['pasta']}")
             else:
                 self.utils.mostrar_erro("Erro", msg)
             
             self.progress.set(1)
-            self.btn_descomprimir.configure(state="normal", text="ðŸ“‚ Descomprimir")
+            self.btn_descomprimir.configure(state="normal", text=" Descomprimir")
         
         threading.Thread(target=descomprimir_thread).start()
     
@@ -537,10 +537,10 @@ class InterfaceCompressor(InterfaceBase):
         
         if conteudo:
             self.texto_lista.delete('1.0', 'end')
-            texto = f"ðŸ“¦ Conteúdo de {Path(arquivo).name}:\n\n"
+            texto = f" Contedo de {Path(arquivo).name}:\n\n"
             
             for item in conteudo:
-                texto += f"ðŸ“„ {item['nome']}\n"
+                texto += f" {item['nome']}\n"
                 texto += f"   Tamanho: {item['tamanho']/1024:.1f} KB\n"
                 texto += f"   Compactado: {item['compactado']/1024:.1f} KB\n"
                 texto += f"   Taxa: {item['taxa']:.1f}%\n\n"

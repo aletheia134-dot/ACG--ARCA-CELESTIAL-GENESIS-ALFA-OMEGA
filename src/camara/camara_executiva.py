@@ -20,9 +20,9 @@ from dataclasses import dataclass, field
 try:
     import PyPDF2
 except:
-    logging.getLogger(__name__).warning("âš ï¸ PyPDF2 não disponível")
+    logging.getLogger(__name__).warning("[AVISO] PyPDF2 no disponível")
     PyPDF2 = None
-    logging.getLogger(__name__).warning("PyPDF2 não instalado; suporte a PDF limitado.")
+    logging.getLogger(__name__).warning("PyPDF2 no instalado; suporte a PDF limitado.")
 
 logger = logging.getLogger("CamaraLegislativa")
 logger.addHandler(logging.NullHandler())
@@ -290,7 +290,7 @@ class ConsultorBibliaLegislativa:
     def _carregar_biblia(self) -> Dict[str, Any]:
         try:
             if not self.caminho_biblia or not self.caminho_biblia.exists():
-                logger.warning("Caminho da Bíblia não encontrado: %s", self.caminho_biblia)
+                logger.warning("Caminho da Bblia no encontrado: %s", self.caminho_biblia)
                 return {}
             suffix = self.caminho_biblia.suffix.lower()
             if suffix == ".pdf" and PyPDF2:
@@ -305,9 +305,9 @@ class ConsultorBibliaLegislativa:
                                 parts.append("")
                         return {"texto_completo": "\n".join(parts)}
                 except Exception:
-                    logger.exception("Falha lendo PDF da Bíblia")
+                    logger.exception("Falha lendo PDF da Bblia")
         except Exception:
-            logger.exception("Erro ao carregar Bíblia")
+            logger.exception("Erro ao carregar Bblia")
         return {}
 
     def consultar_fundamento_biblico(self, tema: str) -> Dict[str, Any]:
@@ -337,7 +337,7 @@ class ConsultorBibliaLegislativa:
                             if len(resultados) >= limite:
                                 break
         except Exception:
-            logger.exception("Erro ao buscar na Bíblia")
+            logger.exception("Erro ao buscar na Bblia")
         return resultados
 
 class LivroDaLei:
@@ -361,10 +361,10 @@ class LivroDaLei:
                                 continue
                             self.leis[lei.id] = lei
                         except Exception:
-                            logger.exception("Item inválido no Livro da Lei: %s", item)
+                            logger.exception("Item invlido no Livro da Lei: %s", item)
                 logger.info("Livro da Lei carregado: %d leis", len(self.leis))
             else:
-                logger.warning("Arquivo do Livro da Lei não encontrado: %s", self.caminho_livro)
+                logger.warning("Arquivo do Livro da Lei no encontrado: %s", self.caminho_livro)
         except Exception:
             logger.exception("Erro ao carregar Livro da Lei")
 
@@ -380,7 +380,7 @@ class LivroDaLei:
     def adicionar_lei(self, lei: Lei):
         with self._lock:
             if any(existing.numero_protocolo == lei.numero_protocolo for existing in self.leis.values()):
-                raise ValueError(f"Protocolo já existente: {lei.numero_protocolo}")
+                raise ValueError(f"Protocolo j existente: {lei.numero_protocolo}")
             self.leis[lei.id] = lei
         self.salvar_livro()
 
@@ -428,8 +428,8 @@ class ArquivoNovasLeis:
                             lei = Lei.from_dict(item)
                             self.novas_leis[lei.id] = lei
                         except Exception:
-                            logger.exception("Item inválido em novas_leis: %s", item)
-                logger.info("Novas leis carregadas: %d aguardando aprovação", len(self.novas_leis))
+                            logger.exception("Item invlido em novas_leis: %s", item)
+                logger.info("Novas leis carregadas: %d aguardando aprovao", len(self.novas_leis))
         except Exception:
             logger.exception("Erro ao carregar novas leis")
 
@@ -447,7 +447,7 @@ class ArquivoNovasLeis:
         with self._lock:
             self.novas_leis[lei.id] = lei
         self.salvar_novas_leis()
-        logger.info("Lei adicionada para aprovação do Criador: %s", lei.titulo)
+        logger.info("Lei adicionada para aprovao do Criador: %s", lei.titulo)
 
     def remover_lei(self, id_lei: str):
         with self._lock:
@@ -496,7 +496,7 @@ class CamaraLegislativa:
         self.audit_path = self.config.get("audit_path", repo_root / "Santuarios/legislativo/audit.log")
         Path(self.audit_path).parent.mkdir(parents=True, exist_ok=True)
 
-        self.logger.info("âœ… Câmara Legislativa inicializada with %d leis", len(self.livro_da_lei.leis))
+        self.logger.info("[OK] Cmara Legislativa inicializada with %d leis", len(self.livro_da_lei.leis))
 
     def _carregar_categorias(self):
         try:
@@ -533,11 +533,11 @@ class CamaraLegislativa:
             try:
                 self.notificar_falta_lei(descricao_caso)
             except Exception:
-                logger.debug("Erro notificando falta de lei (não crítico).")
+                logger.debug("Erro notificando falta de lei (no crítico).")
         return leis
 
     def notificar_falta_lei(self, descricao_caso: str):
-        logger.warning("Falta lei aplicável para caso: %s", descricao_caso)
+        logger.warning("Falta lei aplicvel para caso: %s", descricao_caso)
         if self.sistema_julgamento:
             try:
                 self.sistema_julgamento.notificar_falta_lei_legislativa(descricao_caso)
@@ -547,13 +547,13 @@ class CamaraLegislativa:
     def propor_nova_lei(self, token: str, titulo: str, justificativa: str, necessidade: str, fundamento_biblico: str, detalhes: Dict[str, Any]) -> Tuple[bool, str]:
         username = self.auth.verify_token(token)
         if not username:
-            return False, "Token inválido ou expirado"
+            return False, "Token invlido ou expirado"
         if not (self.auth.has_role(username, "legislativo") or username == "SISTEMA_LEGISLATIVO"):
-            return False, "Usuário não autorizado"
+            return False, "Usurio no autorizado"
         if not necessidade or len(str(necessidade).strip()) < 50:
-            return False, "Necessidade deve explicar por que as leis existentes não bastam (mín.50 caracteres)"
+            return False, "Necessidade deve explicar por que as leis existentes no bastam (mn.50 caracteres)"
         if not isinstance(detalhes, dict):
-            return False, "Detalhes deve ser um objeto/dicionário"
+            return False, "Detalhes deve ser um objeto/dicionrio"
         id_proposta = str(uuid.uuid4())
         proposta = PropostaLei(
             id=id_proposta,
@@ -573,8 +573,8 @@ class CamaraLegislativa:
             try:
                 self.coracao.sistema_propostas.registrar_proposta_legislativa(username, proposta.to_dict())
             except Exception:
-                logger.debug("Erro ao notificar sistema de propostas (não crítico).")
-        self.logger.info("ðŸ“œ Nova lei proposta por %s: %s", username, titulo)
+                logger.debug("Erro ao notificar sistema de propostas (no crítico).")
+        self.logger.info(" Nova lei proposta por %s: %s", username, titulo)
         return True, id_proposta
 
     def votar_proposta_lei(self, token: str, id_proposta: str, voto: bool) -> bool:
@@ -603,10 +603,10 @@ class CamaraLegislativa:
             lei = self._criar_lei_da_proposta(proposta)
             self.arquivo_novas_leis.adicionar_lei_aprovada_ais(lei)
             proposta.status = "APROVADA_AGUARDANDO_CRIADOR"
-            self.logger.info("ðŸ“œ Lei aprovada pelas AIs, aguardando Criador: %s", proposta.titulo_proposto)
+            self.logger.info(" Lei aprovada pelas AIs, aguardando Criador: %s", proposta.titulo_proposto)
         else:
             proposta.status = "REJEITADA"
-            self.logger.info("ðŸ“œ Lei rejeitada pelas AIs: %s", proposta.titulo_proposto)
+            self.logger.info(" Lei rejeitada pelas AIs: %s", proposta.titulo_proposto)
 
     def _criar_lei_da_proposta(self, proposta: PropostaLei) -> Lei:
         protocolo = generate_protocolo(self.caminho_protocol_counter, prefix="PF", width=3)
@@ -643,26 +643,26 @@ class CamaraLegislativa:
                 try:
                     self.arquivo_novas_leis.remover_lei(id_lei)
                 except Exception:
-                    logger.debug("Erro ao remover lei das novas_leis após aprovação (não crítico).")
+                    logger.debug("Erro ao remover lei das novas_leis aps aprovao (no crítico).")
                 if self.sistema_precedentes and hasattr(self.sistema_precedentes, "registrar_precedente"):
                     try:
                         self.sistema_precedentes.registrar_precedente(
                             id_decisao_judicial=f"CRIADOR-APROVACAO-{id_lei}",
                             descricao_caso=lei.instrucao_base,
-                            decisao="LEI_APROVADA_CRIADOR",
+                            decisão="LEI_APROVADA_CRIADOR",
                             justificativa=motivo,
                             leis_aplicaveis=[lei.numero_protocolo],
                             autor_julgador="CRIADOR",
                         )
                     except Exception:
-                        logger.debug("Erro ao registrar precedente (não crítico).")
-                self.logger.critical("ðŸ“œ Lei aprovada pelo Criador e entrou em vigor: %s", lei.titulo)
+                        logger.debug("Erro ao registrar precedente (no crítico).")
+                self.logger.critical(" Lei aprovada pelo Criador e entrou em vigor: %s", lei.titulo)
             else:
                 lei.status = StatusLei.EM_DELIBERACAO
                 try:
                     self.arquivo_novas_leis.remover_lei(id_lei)
                 except Exception:
-                    logger.debug("Erro ao remover lei das novas_leis após rejeição (não crítico).")
+                    logger.debug("Erro ao remover lei das novas_leis aps rejeio (no crítico).")
                 with self._lock:
                     proposta_rejeitada = PropostaLei(
                         id=str(uuid.uuid4()),
@@ -676,7 +676,7 @@ class CamaraLegislativa:
                         status="REJEITADA_CRIADOR",
                     )
                     self.propostas_leis[proposta_rejeitada.id] = proposta_rejeitada
-                self.logger.critical("ðŸ“œ Lei rejeitada pelo Criador, voltou para legislativo: %s", lei.titulo)
+                self.logger.critical(" Lei rejeitada pelo Criador, voltou para legislativo: %s", lei.titulo)
             self._audit("voto_final_criador", username, {"id_lei": id_lei, "aprovado": aprovado})
             return True
         except Exception:
@@ -704,7 +704,7 @@ class CamaraLegislativa:
                     self.sistema_precedentes.registrar_precedente(
                         id_decisao_judicial=f"REVOGACAO-{id_lei}",
                         descricao_caso=motivo,
-                        decisao="LEI_REVOGADA",
+                        decisão="LEI_REVOGADA",
                         justificativa=motivo,
                         leis_aplicaveis=[lei.numero_protocolo],
                         autor_julgador="CAMARA_LEGISLATIVA",
@@ -712,7 +712,7 @@ class CamaraLegislativa:
                 except Exception:
                     logger.debug("Erro ao registrar precedente")
             self._audit("revogar_lei", username, {"id_lei": id_lei, "motivo": motivo})
-            self.logger.info("ðŸ“œ Lei revogada: %s", lei.titulo)
+            self.logger.info(" Lei revogada: %s", lei.titulo)
             return True
         except Exception:
             logger.exception("Erro ao revogar lei")
@@ -734,33 +734,228 @@ class CamaraLegislativa:
                 "categorias_classificadas": list(self.categorias_classificadas.keys()),
             }
         except Exception:
-            logger.exception("Erro ao compilar estatísticas")
+            logger.exception("Erro ao compilar estatsticas")
             return {}
 
     def shutdown(self):
         try:
             self.livro_da_lei.salvar_livro()
         except Exception:
-            logger.debug("Erro ao salvar Livro da Lei no shutdown (não crítico).")
+            logger.debug("Erro ao salvar Livro da Lei no shutdown (no crítico).")
         try:
             self.arquivo_novas_leis.salvar_novas_leis()
         except Exception:
-            logger.debug("Erro ao salvar Novas Leis no shutdown (não crítico).")
-        self.logger.info("Câmara Legislativa desligada")
+            logger.debug("Erro ao salvar Novas Leis no shutdown (no crítico).")
+        self.logger.info("Cmara Legislativa desligada")
 
-# Adicionado: Classe CamaraExecutiva (stub para resolver import)
 class CamaraExecutiva:
-    def __init__(self, config=None, coracao_ref=None, camara_judiciaria_ref=None):
-        self.config = config
-        self.coracao_ref = coracao_ref
-        self.camara_judiciaria_ref = camara_judiciaria_ref
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.info("âœ… CamaraExecutiva inicializada (stub)")
+    """
+    Câmara Executiva — responsável por executar ações decididas pelo sistema judiciário/deliberativo.
+    Gerencia fila de execução, rastreio de status e modo silêncio.
+    """
 
-    def injetar_ui_queue(self, queue):
+    STATUS_PENDENTE   = "PENDENTE"
+    STATUS_EXECUTANDO = "EXECUTANDO"
+    STATUS_CONCLUIDO  = "CONCLUIDO"
+    STATUS_FALHOU     = "FALHOU"
+    STATUS_CANCELADO  = "CANCELADO"
+
+    def __init__(self, config=None, coracao_ref=None, camara_judiciaria_ref=None):
+        self.config               = config
+        self.coracao_ref          = coracao_ref
+        self.camara_judiciaria_ref = camara_judiciaria_ref
+        self.ui_queue             = None
+        self.consulado            = None
+        self.modo_silencio_ativo  = False
+        self._lock                = threading.Lock()
+        self._acoes: Dict[str, Dict[str, Any]] = {}   # id_acao → registro
+        self.logger = logging.getLogger("CamaraExecutiva")
+        self.logger.info("[OK] CamaraExecutiva inicializada")
+
+    # -----------------------------------------------------------------------
+    # Injeção de dependências
+    # -----------------------------------------------------------------------
+    def injetar_ui_queue(self, queue: Any) -> None:
+        """Injeta a fila de UI para envio de eventos."""
         self.ui_queue = queue
 
-    def injetar_consulado(self, consulado):
+    def injetar_consulado(self, consulado: Any) -> None:
+        """Injeta a referência ao Consulado Soberano."""
         self.consulado = consulado
 
-    # Adicione métodos reais conforme necessário
+    # -----------------------------------------------------------------------
+    # Execução de ações
+    # -----------------------------------------------------------------------
+    def executar_acao(self, acao: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Registra e executa uma ação ordenada pelo judiciário/deliberativo.
+        Retorna dict com id_acao e status.
+        """
+        if not isinstance(acao, dict):
+            return {"erro": "acao deve ser um dicionário", "status": self.STATUS_FALHOU}
+
+        id_acao = acao.get("id") or str(uuid.uuid4())
+        tipo    = acao.get("tipo", "DESCONHECIDO")
+        alvo    = acao.get("alvo", "")
+        dados   = acao.get("dados", {})
+
+        registro: Dict[str, Any] = {
+            "id":          id_acao,
+            "tipo":        tipo,
+            "alvo":        alvo,
+            "dados":       dados,
+            "status":      self.STATUS_PENDENTE,
+            "início":      datetime.utcnow().isoformat(),
+            "fim":         None,
+            "resultado":   None,
+            "erro":        None,
+        }
+
+        with self._lock:
+            self._acoes[id_acao] = registro
+
+        self.logger.info("[EXEC] Iniciando ação id=%s tipo=%s alvo=%s", id_acao, tipo, alvo)
+
+        # Se estiver em modo silêncio, bloqueia ações de voz/fala
+        if self.modo_silencio_ativo and tipo in ("FALAR", "VOZ", "ANUNCIO"):
+            registro["status"]    = self.STATUS_CANCELADO
+            registro["resultado"] = "Bloqueado por modo silêncio"
+            registro["fim"]       = datetime.utcnow().isoformat()
+            self.logger.info("[EXEC] Ação %s cancelada: modo silêncio ativo", id_acao)
+            self._notificar_ui(registro)
+            return {"id_acao": id_acao, "status": self.STATUS_CANCELADO, "resultado": registro["resultado"]}
+
+        # Executa a ação conforme tipo
+        try:
+            registro["status"] = self.STATUS_EXECUTANDO
+            resultado = self._despachar_acao(tipo, alvo, dados, id_acao)
+            registro["status"]    = self.STATUS_CONCLUIDO
+            registro["resultado"] = resultado
+        except Exception as exc:
+            registro["status"] = self.STATUS_FALHOU
+            registro["erro"]   = str(exc)
+            self.logger.exception("[EXEC] Falha na ação id=%s: %s", id_acao, exc)
+        finally:
+            registro["fim"] = datetime.utcnow().isoformat()
+            self._notificar_ui(registro)
+
+        self.logger.info("[EXEC] Ação id=%s finalizada com status=%s", id_acao, registro["status"])
+        return {
+            "id_acao":   id_acao,
+            "status":    registro["status"],
+            "resultado": registro.get("resultado"),
+            "erro":      registro.get("erro"),
+        }
+
+    def _despachar_acao(self, tipo: str, alvo: str, dados: Dict[str, Any], id_acao: str) -> Any:
+        """Despacha a ação para o módulo correto conforme tipo."""
+        tipo_upper = tipo.upper()
+
+        if tipo_upper in ("MODO_SILENCIO", "SILENCIO"):
+            self.ativar_modo_silencio()
+            return "Modo silêncio ativado"
+
+        if tipo_upper in ("DESATIVAR_SILENCIO",):
+            self.desativar_modo_silencio()
+            return "Modo silêncio desativado"
+
+        if tipo_upper in ("NOTIFICAR_UI", "UI"):
+            if self.ui_queue:
+                try:
+                    self.ui_queue.put_nowait({"tipo": "ACAO_EXECUTIVA", "dados": dados, "alvo": alvo})
+                except Exception:
+                    pass
+            return "Notificação UI enviada"
+
+        if tipo_upper in ("CONSULADO", "CONSULADO_ACAO"):
+            if self.consulado and hasattr(self.consulado, "processar_acao_executiva"):
+                return self.consulado.processar_acao_executiva(alvo, dados)
+            return "Consulado indisponível para ação executiva"
+
+        if tipo_upper in ("CORACAO", "CORACAO_ACAO"):
+            if self.coracao_ref and hasattr(self.coracao_ref, "executar_comando_interno"):
+                return self.coracao_ref.executar_comando_interno(alvo, dados)
+            return "Coração indisponível para ação executiva"
+
+        # Tipo genérico — registra e retorna aviso
+        self.logger.debug("[EXEC] Tipo de ação '%s' sem handler dedicado; registrado apenas.", tipo)
+        return f"Ação '{tipo}' registrada (sem handler dedicado)"
+
+    def _notificar_ui(self, registro: Dict[str, Any]) -> None:
+        """Envia evento de atualização para a UI via fila."""
+        if not self.ui_queue:
+            return
+        try:
+            self.ui_queue.put_nowait({
+                "tipo":     "STATUS_ACAO_EXECUTIVA",
+                "id_acao":  registro["id"],
+                "status":   registro["status"],
+                "tipo_acao": registro.get("tipo"),
+                "fim":      registro.get("fim"),
+            })
+        except Exception:
+            pass
+
+    # -----------------------------------------------------------------------
+    # Consulta de status
+    # -----------------------------------------------------------------------
+    def obter_status_execucao(self, id_acao: str) -> Dict[str, Any]:
+        """Retorna o status atual de uma ação pelo seu id."""
+        with self._lock:
+            registro = self._acoes.get(id_acao)
+        if not registro:
+            return {"erro": f"Ação '{id_acao}' não encontrada", "status": None}
+        return {
+            "id_acao":   registro["id"],
+            "tipo":      registro["tipo"],
+            "alvo":      registro["alvo"],
+            "status":    registro["status"],
+            "início":    registro["início"],
+            "fim":       registro["fim"],
+            "resultado": registro["resultado"],
+            "erro":      registro["erro"],
+        }
+
+    def listar_acoes(self, filtro_status: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Lista todas as ações, opcionalmente filtradas por status."""
+        with self._lock:
+            acoes = list(self._acoes.values())
+        if filtro_status:
+            acoes = [a for a in acoes if a["status"] == filtro_status]
+        return acoes
+
+    # -----------------------------------------------------------------------
+    # Modo silêncio
+    # -----------------------------------------------------------------------
+    def ativar_modo_silencio(self) -> None:
+        """Ativa modo silêncio: bloqueia execução de ações de voz/anúncio."""
+        with self._lock:
+            self.modo_silencio_ativo = True
+        self.logger.info("[EXEC] Modo silêncio ATIVADO")
+
+    def desativar_modo_silencio(self) -> None:
+        """Desativa modo silêncio."""
+        with self._lock:
+            self.modo_silencio_ativo = False
+        self.logger.info("[EXEC] Modo silêncio DESATIVADO")
+
+    # -----------------------------------------------------------------------
+    # Status geral
+    # -----------------------------------------------------------------------
+    def obter_status(self) -> Dict[str, Any]:
+        with self._lock:
+            total     = len(self._acoes)
+            pendentes = sum(1 for a in self._acoes.values() if a["status"] == self.STATUS_PENDENTE)
+            concluidos = sum(1 for a in self._acoes.values() if a["status"] == self.STATUS_CONCLUIDO)
+            falhos    = sum(1 for a in self._acoes.values() if a["status"] == self.STATUS_FALHOU)
+        return {
+            "operacional":        True,
+            "modo_silencio":      self.modo_silencio_ativo,
+            "total_acoes":        total,
+            "acoes_pendentes":    pendentes,
+            "acoes_concluidas":   concluidos,
+            "acoes_falhas":       falhos,
+        }
+
+    def shutdown(self) -> None:
+        self.logger.info("[OK] CamaraExecutiva desligada (%d ações registradas)", len(self._acoes))

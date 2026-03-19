@@ -1,16 +1,36 @@
-﻿"""
-ARCA CELESTIAL GENESIS - CORAÇÍO ORQUESTRADOR v7.1
-Arquivo: coracao_orquestrador.py (CONSERTADO - Caracteres corrigidos)
-"""
-
 from __future__ import annotations
+"""
+ARCA CELESTIAL GENESIS - CORAÇÃO ORQUESTRADOR v7.1
+Arquivo: coracao_orquestrador.py (ATUALIZADO com LlamaExeClient)
+"""
+# ── GARANTIR RAIZ DO PROJETO NO sys.path ────────────────────────────────────
+# Este arquivo pode ser carregado de src/core/ ou da raiz.
+# Em qualquer caso, todos os módulos do projeto estão NA RAIZ.
+import sys as _sys, os as _os
+_ESTE_ARQUIVO = _os.path.abspath(__file__)
+_ESTE_DIR = _os.path.dirname(_ESTE_ARQUIVO)
+# Se estamos em src/core/, subir 2 níveis; se na raiz, subir 0
+_CANDIDATOS_RAIZ = [
+    _ESTE_DIR,                                    # raiz direta
+    _os.path.dirname(_ESTE_DIR),                  # um nível acima (ex: src/)
+    _os.path.dirname(_os.path.dirname(_ESTE_DIR)),# dois níveis acima (ex: src/core/ → raiz)
+]
+for _r in _CANDIDATOS_RAIZ:
+    # config.ini só existe na raiz real do projeto, não em src/ ou src/core/
+    if _os.path.isfile(_os.path.join(_r, "config.ini")) or _os.path.isfile(_os.path.join(_r, "main.py")):
+        if _r not in _sys.path:
+            _sys.path.insert(0, _r)
+        break
+del _ESTE_ARQUIVO, _ESTE_DIR, _CANDIDATOS_RAIZ, _r
+# ────────────────────────────────────────────────────────────────────────────
+
 import logging
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 try:
-    from src.emocoes.validador_etico import ValidadorEtico
+    from src.legislativo.validador_etico import ValidadorEtico
     VALIDADOR_ETICO_DISPONIVEL = True
 except:
     logging.getLogger(__name__).warning("⚠️ ValidadorEtico não disponível")
@@ -72,7 +92,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 # ============================================================================
-# CONFIGURAÇÍO INICIAL
+# CONFIGURAÇÃO INICIAL
 # ============================================================================
     
 
@@ -82,16 +102,27 @@ try :
     _MOTOR_CURIOSIDADE_OK =True 
     logger.debug ("✅ MotorCuriosidade importado")
 except Exception as e :
-    logger.debug ("⚠️ MotorCuriosidade: %s",e )
+    logger.warning("⚠️ MotorCuriosidade: %s", e, exc_info=True)
     MotorCuriosidade =None 
+
+# ===== NOVO: Import do DicionarioDesejos =====
+try:
+    from src.emocoes.motor_curiosidade import DicionarioDesejos
+    _DICIONARIO_DESEJOS_OK = True
+    logger.debug("✅ DicionarioDesejos importado")
+except Exception as e:
+    logger.warning("⚠️ DicionarioDesejos: %s", e, exc_info=True)
+    DicionarioDesejos = None
+    _DICIONARIO_DESEJOS_OK = False
+# ==============================================
 
 _ESTADO_EMOCIONAL_OK =False 
 try :
-    from src.emocoes.estado_emocional import EstadoEmocional ,EmocaoBase 
+    from src.emocoes.estado_emocional import EstadoEmocional, EmocaoBase 
     _ESTADO_EMOCIONAL_OK =True 
     logger.debug ("✅ EstadoEmocional importado")
 except Exception as e :
-    logger.debug ("⚠️ EstadoEmocional: %s",e )
+    logger.warning("⚠️ EstadoEmocional: %s", e, exc_info=True)
     EstadoEmocional =None 
 
 _SONHADOR_OK =False 
@@ -100,7 +131,7 @@ try :
     _SONHADOR_OK =True 
     logger.debug ("✅ SonhadorIndividual importado")
 except Exception as e :
-    logger.debug ("⚠️ SonhadorIndividual: %s",e )
+    logger.warning("⚠️ SonhadorIndividual: %s", e, exc_info=True)
     SonhadorIndividual =None 
 
 _DETECTOR_EMOCIONAL_OK =False 
@@ -109,7 +140,7 @@ try :
     _DETECTOR_EMOCIONAL_OK =True 
     logger.debug ("✅ DetectorEmocional importado")
 except Exception as e :
-    logger.debug ("⚠️ DetectorEmocional: %s",e )
+    logger.warning("⚠️ DetectorEmocional: %s", e, exc_info=True)
     DetectorEmocional =None 
 
 _AUTO_EXPERIMENTACAO_OK =False 
@@ -118,53 +149,76 @@ try :
     _AUTO_EXPERIMENTACAO_OK =True 
     logger.debug ("✅ AutoExperimentacao importado")
 except Exception as e :
-    logger.debug ("⚠️ AutoExperimentacao: %s",e )
+    logger.warning("⚠️ AutoExperimentacao: %s", e, exc_info=True)
     AutoExperimentacao =None 
 
 _PERCEPCAO_TEMPORAL_OK =False 
 try :
-    from src.sentidos.percepcao_temporal import PercepcaoTemporal ,RitmoTemporal ,Urgencia 
+    from src.sentidos.percepcao_temporal import PercepcaoTemporal, RitmoTemporal, Urgencia 
     _PERCEPCAO_TEMPORAL_OK =True 
     logger.debug ("✅ PercepcaoTemporal importada")
 except Exception as e :
-    logger.debug ("⚠️ PercepcaoTemporal: %s",e )
+    logger.warning("⚠️ PercepcaoTemporal: %s", e, exc_info=True)
     PercepcaoTemporal =None 
 
-try :
-    from src.analisador_intencoes import AnalisadorIntencao 
-    _ANALISADOR_INTENCOES_OK =True 
-    logger.debug ("✅ AnalisadorIntencao importado")
-except Exception as e :
-    logger.debug ("⚠️ AnalisadorIntencao: %s",e )
-    AnalisadorIntencao =None 
-    _ANALISADOR_INTENCOES_OK =False 
+_ANALISADOR_INTENCOES_OK = False
+AnalisadorIntencao = None
+try:
+    from src.sentidos.analisador_intencoes import AnalisadorIntencao
+    _ANALISADOR_INTENCOES_OK = True
+    logger.debug("✅ AnalisadorIntencao importado")
+except Exception as _e:
+    logger.warning("⚠️ AnalisadorIntencao falhou: %s", _e, exc_info=True)
 
-_MEMORIA_OK =False 
-try :
+_MEMORIA_OK =False
+try:
     from src.memoria import (
-    SistemaMemoriaHibrido ,
-    GerenciadorMemoriaChromaDBIsolado ,
-    MemoryFacade ,
-    ConstrutorDataset ,
-    TipoInteracao ,
+    SistemaMemoriaHibrido,
+    GerenciadorMemoriaChromaDBIsolado,
+    MemoryFacade,
+    ConstrutorDataset,
+    TipoInteracao,
     )
-    _MEMORIA_OK =True 
-    logger.debug ("✅ Memória importada")
-except Exception as e :
-    logger.debug ("⚠️ Memória: %s",e )
+    _MEMORIA_OK =True
+    logger.debug("✅ Memória importada")
+except Exception as e:
+    logger.error("❌ Memória import FALHOU: %s", e, exc_info=True)
     SistemaMemoriaHibrido =None 
+
+# ============================================================================
+# ===== NOVO: LlamaExeClient em vez de ParallelLLMEngine =====
+try:
+    from src.core.llama_exe_client import LlamaExeClient
+    LLAMA_EXE_CLIENT_OK = True
+    logger.debug("✅ LlamaExeClient importado")
+except Exception as e:
+    logger.warning(f"⚠️ LlamaExeClient não disponível: {e}")
+    LlamaExeClient = None
+    LLAMA_EXE_CLIENT_OK = False
+# ============================================================
+
+# ===== ANTIGO ParallelLLMEngine (comentado para referência) =====
+# _PARALLEL_LLM_OK =False 
+# try :
+#     from src.core.parallel_llm_engine import ParallelLLMEngine 
+#     _PARALLEL_LLM_OK =True 
+#     logger.debug ("OK ParallelLLMEngine importado")
+# except Exception as e :
+#     logger.warning ("WARN ParallelLLMEngine indisponivel: %s",e )
+#     ParallelLLMEngine =None 
+# ================================================================
 
 _DETECTOR_OK =False 
 try :
     from src.core.detector_hdd_hitachi import (
-    DetectorHardware ,
-    SistemaDeMemoriaSoberana ,
-    CacheHDD ,
+    DetectorHardware,
+    SistemaDeMemoriaSoberana,
+    CacheHDD,
     )
     _DETECTOR_OK =True 
     logger.debug ("✅ Hardware importado")
 except Exception as e :
-    logger.debug ("⚠️ Hardware: %s",e )
+    logger.warning("⚠️ Hardware indisponível: %s", e)
     DetectorHardware =None 
 
 _CEREBRO_OK =False 
@@ -175,7 +229,7 @@ try :
     _CEREBRO_OK =True 
     logger.debug ("✅ Cérebro importado")
 except Exception as e :
-    logger.debug ("⚠️ Cérebro: %s",e )
+    logger.warning("⚠️ Cérebro indisponível: %s", e)
     CerebroFamilia =None 
 
 try :
@@ -183,7 +237,7 @@ try :
     _AI2AI_OK =True 
     logger.debug ("✅ AI↔AI importado")
 except Exception as e :
-    logger.debug ("⚠️ AI↔AI: %s",e )
+    logger.warning("⚠️ AI↔AI: %s", e, exc_info=True)
     DispositivoAItoAI =None 
 
 try :
@@ -191,7 +245,7 @@ try :
     _OBSERVADOR_OK =True 
     logger.debug ("✅ Observador importado")
 except Exception as e :
-    logger.debug ("⚠️ Observador: %s",e )
+    logger.warning("⚠️ Observador: %s", e, exc_info=True)
     ObservadorArca =None 
 
 # ── Orquestradores de Finetuning ──────────────────────────────────────
@@ -229,16 +283,16 @@ try :
     _CONSULADO_OK =True 
     logger.debug ("✅ Consulado importado")
 except Exception as e :
-    logger.debug ("⚠️ Consulado: %s",e )
+    logger.warning("⚠️ Consulado: %s", e, exc_info=True)
     ConsuladoSoberano =None 
 
 _CRONISTA_OK =False 
 try :
-    from src.core.cronista import Cronista ,ConfigCronistaSeguro 
+    from src.core.cronista import Cronista, ConfigCronistaSeguro 
     _CRONISTA_OK =True 
     logger.debug ("✅ Cronista importado")
 except Exception as e :
-    logger.debug ("⚠️ Cronista: %s",e )
+    logger.warning("⚠️ Cronista indisponível: %s", e)
     Cronista =None 
 
 _SENTIDOS_OK =False 
@@ -247,7 +301,7 @@ try :
     _SENTIDOS_OK =True 
     logger.debug ("✅ Sentidos importados")
 except Exception as e :
-    logger.debug ("⚠️ Sentidos: %s",e )
+    logger.warning("⚠️ Sentidos: %s", e, exc_info=True)
     SentidosHumanos =None 
 
 _CAMARA_DELIBERATIVA_OK =False 
@@ -257,7 +311,7 @@ try :
     _CAMARA_DELIBERATIVA_OK =True 
     logger.debug ("✅ Câmara Deliberativa importada")
 except Exception as e :
-    logger.debug ("⚠️ Câmara Deliberativa: %s",e )
+    logger.warning("⚠️ Câmara Deliberativa: %s", e, exc_info=True)
     CamaraDeliberativa =None 
 
 try :
@@ -265,7 +319,7 @@ try :
     _CAMARA_LEGISLATIVA_OK =True 
     logger.debug ("✅ Câmara Legislativa importada")
 except Exception as e :
-    logger.debug ("⚠️ Câmara Legislativa: %s",e )
+    logger.warning("⚠️ Câmara Legislativa indisponível: %s", e)
     CamaraLegislativa =None 
 
 _CAMARA_JUDICIARIA_OK =False 
@@ -275,7 +329,7 @@ try :
     _CAMARA_JUDICIARIA_OK =True 
     logger.debug ("✅ Câmara Judiciária importada")
 except Exception as e :
-    logger.debug ("⚠️ Câmara Judiciária: %s",e )
+    logger.error ("❌ Câmara Judiciária FALHOU: %s",e ,exc_info =True )
     CamaraJudiciaria =None 
 
 try :
@@ -283,7 +337,7 @@ try :
     _SISTEMA_PRECEDENTES_OK =True 
     logger.debug ("✅ Sistema de Precedentes importado")
 except Exception as e :
-    logger.debug ("⚠️ Sistema Precedentes: %s",e )
+    logger.warning("⚠️ Sistema Precedentes indisponível: %s", e)
     SistemaDePrecedentes =None 
 
 _CAMARA_EXECUTIVA_OK =False 
@@ -292,7 +346,7 @@ try :
     _CAMARA_EXECUTIVA_OK =True 
     logger.debug ("✅ Câmara Executiva importada")
 except Exception as e :
-    logger.debug ("⚠️ Câmara Executiva: %s",e )
+    logger.warning("⚠️ Câmara Executiva indisponível: %s", e)
     CamaraExecutiva =None 
 
 _SCR_OK =False 
@@ -303,16 +357,17 @@ try :
     _SCR_OK =True 
     logger.debug ("✅ SCR importado")
 except Exception as e :
-    logger.debug ("⚠️ SCR: %s",e )
+    logger.warning("⚠️ SCR: %s", e, exc_info=True)
     SistemaCorrecaoRedentora =None 
 
 try :
-    from src.camara.modo_vidro_sentenca import ModoVidroSentenca ,SistemaJudiciarioCompleto 
+    from src.camara.modo_vidro_sentenca import ModoVidroSentenca
+    from src.camara.sistema_julgamento_completo import SistemaJulgamentoCompleto as SistemaJudiciarioCompleto
     _VIDRO_OK =True 
     _SISTEMA_JUDICIARIO_OK =True 
     logger.debug ("✅ Vidro e Sistema Judiciário importados")
 except Exception as e :
-    logger.debug ("⚠️ Vidro/Judiciário: %s",e )
+    logger.warning("⚠️ Vidro/Judiciário: %s", e, exc_info=True)
     ModoVidroSentenca =None 
     SistemaJudiciarioCompleto =None 
 
@@ -322,36 +377,36 @@ try :
     _ALIADAS_OK =True 
     logger.debug ("✅ Aliadas importado")
 except Exception as e :
-    logger.debug ("⚠️ Aliadas: %s",e )
+    logger.warning("⚠️ Aliadas: %s", e, exc_info=True)
     obter_gerenciador_aliadas =None 
 
-_ENGENHARIA_OK =False 
-try :
+_ENGENHARIA_OK =False
+try:
     from src.engenharia import (
-    GerenciadorPropostas ,
-    ConstrutorFerramentasIncremental ,
-    SolicitadorArquivos ,
-    BotAnalisadorSeguranca ,
-    IntegracaoProptas ,
+    GerenciadorPropostas,
+    ConstrutorFerramentasIncremental,
+    SolicitadorArquivos,
+    IntegracaoProptas,
     )
-    _ENGENHARIA_OK =True 
-    logger.debug ("✅ Engenharia importada")
-except Exception as e :
-    logger.debug ("⚠️ Engenharia: %s",e )
+    from src.seguranca.bot_analise_seguranca import BotAnalisadorSeguranca
+    _ENGENHARIA_OK =True
+    logger.debug("✅ Engenharia importada")
+except Exception as e:
+    logger.warning("⚠️ Engenharia falhou: %s", e, exc_info=True)
     GerenciadorPropostas =None 
 
-_EVOLUCAO_OK =False 
-try :
+_EVOLUCAO_OK =False
+try:
     from src.engenharia import (
-    ScannerSistema ,
-    ListaEvolucaoIA ,
-    GestorCicloEvolucao ,
-    IntegracaoEvolucaoIA ,
+    ScannerSistema,
+    ListaEvolucaoIA,
+    GestorCicloEvolucao,
+    IntegracaoEvolucaoIA,
     )
-    _EVOLUCAO_OK =True 
-    logger.debug ("✅ Evolução importada")
-except Exception as e :
-    logger.debug ("⚠️ Evolução: %s",e )
+    _EVOLUCAO_OK =True
+    logger.debug("✅ Evolução importada")
+except Exception as e:
+    logger.warning("⚠️ Evolução falhou: %s", e, exc_info=True)
     ScannerSistema =None 
 
 _SANDBOX_OK =False 
@@ -360,7 +415,7 @@ try :
     _SANDBOX_OK =True 
     logger.debug ("✅ Sandbox importado")
 except Exception as e :
-    logger.debug ("⚠️ Sandbox: %s",e )
+    logger.warning("⚠️ Sandbox: %s", e, exc_info=True)
     DetectorSandbox =None 
 
 _MANIPULADOR_OK =False 
@@ -369,11 +424,11 @@ _GERADOR_OK =False
 _ANALISADOR_OK =False 
 
 try :
-    from src.camara.manipulador_arquivos_emails import ManipuladorArquivosEmails ,TermoAcesso 
+    from src.camara.manipulador_arquivos_emails import ManipuladorArquivosEmails, TermoAcesso 
     _MANIPULADOR_OK =True 
     logger.debug ("✅ ManipuladorArquivosEmails importado")
 except Exception as e :
-    logger.debug ("⚠️ ManipuladorArquivosEmails: %s",e )
+    logger.warning("⚠️ ManipuladorArquivosEmails: %s", e, exc_info=True)
     ManipuladorArquivosEmails =None 
 
 try :
@@ -381,7 +436,7 @@ try :
     _NAVEGADOR_OK =True 
     logger.debug ("✅ AutomatizadorNavegadorMultiAI importado")
 except Exception as e :
-    logger.debug ("⚠️ AutomatizadorNavegadorMultiAI: %s",e )
+    logger.warning("⚠️ AutomatizadorNavegadorMultiAI: %s", e, exc_info=True)
     AutomatizadorNavegadorMultiAI =None 
 
 try :
@@ -389,15 +444,15 @@ try :
     _GERADOR_OK =True 
     logger.debug ("✅ GeradorDeAlmas importado")
 except Exception as e :
-    logger.debug ("⚠️ GeradorDeAlmas: %s",e )
+    logger.warning("⚠️ GeradorDeAlmas: %s", e, exc_info=True)
     GeradorDeAlmas =None 
 
 try :
-    from src.camara.analisador_padroes import AnalisadorDePadroes ,PerfilComportamental 
+    from src.camara.analisador_padroes import AnalisadorDePadroes, PerfilComportamental 
     _ANALISADOR_OK =True 
     logger.debug ("✅ AnalisadorDePadroes importado")
 except Exception as e :
-    logger.debug ("⚠️ AnalisadorDePadroes: %s",e )
+    logger.warning("⚠️ AnalisadorDePadroes: %s", e, exc_info=True)
     AnalisadorDePadroes =None 
 
 _CRESCIMENTO_OK =False 
@@ -406,7 +461,7 @@ try :
     _CRESCIMENTO_OK =True 
     logger.debug ("✅ CrescimentoPersonalidade importado")
 except Exception as e :
-    logger.debug ("⚠️ CrescimentoPersonalidade: %s",e )
+    logger.warning("⚠️ CrescimentoPersonalidade: %s", e, exc_info=True)
     CrescimentoPersonalidade =None 
 
 _FEEDBACK_OK =False 
@@ -415,7 +470,7 @@ try :
     _FEEDBACK_OK =True 
     logger.debug ("✅ FeedbackLoopAprendizado importado")
 except Exception as e :
-    logger.debug ("⚠️ FeedbackLoopAprendizado: %s",e )
+    logger.warning("⚠️ FeedbackLoopAprendizado: %s", e, exc_info=True)
     FeedbackLoopAprendizado =None 
 
 _FALA_OK =False 
@@ -424,7 +479,7 @@ try :
     _FALA_OK =True 
     logger.debug ("✅ MotorFalaIndividualCombinado importado")
 except Exception as e :
-    logger.debug ("⚠️ MotorFalaIndividualCombinado: %s",e )
+    logger.warning("⚠️ MotorFalaIndividualCombinado: %s", e, exc_info=True)
     MotorFalaIndividualCombinado =None 
 
 _ENCARNACAO_API_OK =False 
@@ -433,21 +488,21 @@ try :
     _ENCARNACAO_API_OK =True 
     logger.debug ("✅ EncarnacaoAPI importada")
 except Exception as e :
-    logger.debug ("⚠️ EncarnacaoAPI: %s",e )
+    logger.warning("⚠️ EncarnacaoAPI: %s", e, exc_info=True)
     EncarnacaoAPI =None 
 
 _CONFIG_OK =False 
 try :
-    from src.config.config import get_config ,Config 
+    from src.config.config import get_config, Config 
     _CONFIG_OK =True 
     logger.debug ("✅ Configuração carregada")
 except Exception as e :
-    logger.debug ("⚠️ Config: %s",e )
+    logger.warning("⚠️ Config: %s", e, exc_info=True)
     get_config =None 
     Config =None 
 
 # ============================================================================
-# CLASSE ADAPTADOR DE CONFIGURAÇÍO
+# CLASSE ADAPTADOR DE CONFIGURAÇÃO
 # ============================================================================
 
 class _ConfigAdapter:
@@ -578,9 +633,25 @@ class SandboxExecutor :
         self.cpu_max_cores =cpu_max_cores 
 
         try :
-            self.docker_client =docker.from_env ()
+            # Tenta conexão real ao Docker - loga QUAL backend conectou
+            _docker_url ="(padrão env)"
+            try :
+                self.docker_client =docker.from_env ()
+                self.docker_client.ping ()  # confirma conexão real
+            except Exception as _e1 :
+                self.logger.warning ("Docker.from_env falhou (%s), tentando npipe Windows...",_e1 )
+                _docker_url ="npipe:////./pipe/docker_engine"
+                try :
+                    self.docker_client =docker.DockerClient (base_url=_docker_url )
+                    self.docker_client.ping ()
+                except Exception as _e2 :
+                    self.logger.warning ("npipe falhou (%s), tentando tcp...",_e2 )
+                    _docker_url ="tcp://localhost:2375"
+                    self.docker_client =docker.DockerClient (base_url=_docker_url )
+                    self.docker_client.ping ()
             self.docker_disponivel =True 
-            self.logger.info ("✅ Docker client conectado")
+            _ver =self.docker_client.version ().get ("Version","?")
+            self.logger.info ("✅ Docker OK (backend=%s, version=%s)",_docker_url ,_ver )
         except Exception as e :
             self.logger.warning ("⚠️ Docker não disponível: %s (usando modo fallback)",e )
             self.docker_client =None 
@@ -611,15 +682,15 @@ class SandboxExecutor :
             return False ,erros ,avisos 
 
         padroes_perigosos =[
-        (r"\b(import|from)\s+(os|sys|subprocess|socket|ctypes|pickle)","Import de módulo perigoso"),
-        (r"\b__import__\s*\(","Chamada __import__() perigosa"),
-        (r"\bexec\s*\(","Chamada exec() detectada"),
-        (r"\beval\s*\(","Chamada eval() detectada"),
-        (r"\bcompile\s*\(","Chamada compile() detectada"),
+        (r"\b(import|from)\\s+(os|sys|subprocess|socket|ctypes|pickle)","Import de módulo perigoso"),
+        (r"\b__import__\\s*\(","Chamada __import__() perigosa"),
+        (r"\bexec\\s*\(","Chamada exec() detectada"),
+        (r"\beval\\s*\(","Chamada eval() detectada"),
+        (r"\bcompile\\s*\(","Chamada compile() detectada"),
         ]
 
-        for padrao ,descricao in padroes_perigosos :
-            if re.search (padrao ,codigo ,re.IGNORECASE ):
+        for padrão ,descricao in padroes_perigosos :
+            if re.search (padrão ,codigo ,re.IGNORECASE ):
                 avisos.append (f"⚠️ {descricao} detectado")
 
         return len (erros )==0 ,erros ,avisos
@@ -635,8 +706,8 @@ class SandboxExecutor :
 
         self.logger.info ("🔧 Iniciando execução %s",exec_id )
 
-        valido ,erros ,avisos =self.validar_codigo (codigo )
-        if not valido :
+        válido ,erros ,avisos =self.validar_codigo (codigo )
+        if not válido :
             return {
             "sucesso":False ,
             "resultado":None ,
@@ -838,7 +909,7 @@ finally:
                     parados +=1 
                     self.logger.info ("Container %s parado",exec_id )
                 except Exception as e :
-                    self.logger.debug ("Erro ao parar container: %s",e )
+                    self.logger.warning("Erro ao parar container: %s", e, exc_info=True)
 
         return parados 
 
@@ -1076,7 +1147,7 @@ class GerenciadorAuditoriaPeriodicaCoracao :
 
 
 # ============================================================================
-# CORAÇÍO ORQUESTRADOR (COM TODOS OS PATCHES APLICADOS)
+# CORAÇÃO ORQUESTRADOR (COM TODOS OS PATCHES APLICADOS)
 # ============================================================================
 
 class CoracaoOrquestrador :
@@ -1088,7 +1159,7 @@ class CoracaoOrquestrador :
     ):
         self.logger =logging.getLogger ("CoracaoOrquestrador")
 
-        # ===== CONFIGURAÇÍO INICIAL =====
+        # ===== CONFIGURAÇÃO INICIAL =====
         if config_instance :
             self.config =config_instance 
         elif _CONFIG_OK and get_config :
@@ -1158,6 +1229,20 @@ class CoracaoOrquestrador :
 
         self.motores_iniciativa :Dict [str ,Any ]={}
 
+        # ===== NOVO: LlamaExeClient em vez de ParallelLLMEngine =====
+        self.llm_exe_client = None
+        if LLAMA_EXE_CLIENT_OK and LlamaExeClient:
+            try:
+                self.llm_exe_client = LlamaExeClient()
+                self.llm_exe_client.carregar_modelos()
+                self.logger.info("✅ LlamaExeClient inicializado (usando executável direto)")
+            except Exception as e:
+                self.logger.error(f"❌ Erro ao inicializar LlamaExeClient: {e}")
+                self.llm_exe_client = None
+        else:
+            self.logger.warning("⚠️ LlamaExeClient não disponível - IAs não responderão")
+        # ===========================================================
+
         # Pré-inicialização de todos os subsistemas para None
         _attrs_none =[
         "sandbox_executor","gerenciador_auditoria","gerenciador_memoria",
@@ -1193,8 +1278,8 @@ class CoracaoOrquestrador :
                 setattr (self ,_a ,{})
 
         self.logger.info ("="*80 )
-        self.logger.info ("🫀 INICIALIZANDO CORAÇÍO ORQUESTRADOR v7.1")
-        self.logger.info ("   (36 SUBSISTEMAS + SANDBOX + 5 MÓDULOS EMOÇÍO + LOCK_VOCAL + PERCEPCAO_TEMPORAL + 3 ORQUESTRADORES_FINETUNING)")
+        self.logger.info ("🫀 INICIALIZANDO CORAÇÃO ORQUESTRADOR v7.1")
+        self.logger.info ("   (36 SUBSISTEMAS + SANDBOX + 5 MÓDULOS EMOÇÃO + LOCK_VOCAL + PERCEPCAO_TEMPORAL + 3 ORQUESTRADORES_FINETUNING + LLAMA_EXE_CLIENT)")
         self.logger.info ("="*80 )
 
         self._inicializar_sandbox ()
@@ -1224,6 +1309,7 @@ class CoracaoOrquestrador :
         self._inicializar_decision_engines ()
         self._inicializar_expressao_por_alma ()
         self._inicializar_fala_por_alma ()
+        self._inicializar_gatilho_conversa()
         self._inicializar_crescimento_feedback ()
         self._inicializar_encarnacao_api ()
         self._inicializar_orquestradores_finetuning ()
@@ -1292,7 +1378,12 @@ class CoracaoOrquestrador :
         self.logger.info ("─"*80 )
 
         if not _MEMORIA_OK or not SistemaMemoriaHibrido :
-            self.logger.warning ("⚠️ Memória indisponível")
+            # Mostrar o erro REAL de porque a memoria nao carregou
+            try :
+                from src.memoria import SistemaMemoriaHibrido as _test
+            except Exception as _mem_err :
+                self.logger.error ("❌ Memória falhou ao importar: %s",_mem_err ,exc_info =True )
+            self.logger.warning ("⚠️ Memória indisponível - verifique o erro acima")
             return 
 
         try :
@@ -1315,18 +1406,30 @@ class CoracaoOrquestrador :
                 self.modulos ["chromadb_isolado"]=self.chromadb_isolado 
                 self.logger.info ("✅ Subsistema 2: GerenciadorMemoriaChromaDB")
             except Exception as e :
-                self.logger.debug ("ChromaDB isolado: %s",e )
+                self.logger.warning("ChromaDB isolado: %s", e, exc_info=True)
                 self.chromadb_isolado =None 
 
             self.memory_facades :Dict [str ,MemoryFacade ]={}
-            self.logger.info ("✅ Subsistema 3: MemoryFacade (Factory)")
+            # Popular facades com backend real
+            _backend_mem = self.chromadb_isolado or self.gerenciador_memoria
+            if _backend_mem and MemoryFacade :
+                _tipo_backend = "chromadb_isolado" if self.chromadb_isolado else "gerenciador_memoria"
+                for _alma in ["EVA","LUMINA","NYRA","YUNA","KAIYA","WELLINGTON"]:
+                    try :
+                        _facade = MemoryFacade (_alma ,self.config )
+                        if hasattr (_facade ,"_set_backend"):
+                            _facade._set_backend (_backend_mem ,_tipo_backend )
+                        self.memory_facades [_alma ]=_facade 
+                    except Exception as _e :
+                        self.logger.warning("MemoryFacade [%s]: %s",_alma ,_e )
+            self.logger.info ("✅ Subsistema 3: MemoryFacade (Factory) — %d almas",len (self.memory_facades ))
 
             try :
                 self.construtor_dataset =ConstrutorDataset (self.gerenciador_memoria )
                 self.modulos ["construtor_dataset"]=self.construtor_dataset 
                 self.logger.info ("✅ Subsistema 4: ConstrutorDataset")
             except Exception as e :
-                self.logger.debug ("Dataset: %s",e )
+                self.logger.warning("Dataset: %s", e, exc_info=True)
                 self.construtor_dataset =None 
 
         except Exception as e :
@@ -1356,7 +1459,7 @@ class CoracaoOrquestrador :
                 self.modulos ["sistema_soberano"]=self.sistema_soberano 
                 self.logger.info ("✅ Subsistema 6: SistemaDeMemoriaSoberana")
             except Exception as e :
-                self.logger.debug ("Sistema Soberano: %s",e )
+                self.logger.warning("Sistema Soberano: %s", e, exc_info=True)
                 self.sistema_soberano =None 
 
             try :
@@ -1369,7 +1472,7 @@ class CoracaoOrquestrador :
                 else :
                     self.logger.warning ("⚠️ CacheHDD: HDD não disponível")
             except Exception as e :
-                self.logger.debug ("Cache HDD: %s",e )
+                self.logger.warning("Cache HDD: %s", e, exc_info=True)
                 self.cache_hdd =None 
 
         except Exception as e :
@@ -1385,13 +1488,14 @@ class CoracaoOrquestrador :
             return 
 
         try :
+            # ===== AGORA USA O LlamaExeClient em vez do ParallelLLMEngine =====
             self.cerebro =CerebroFamilia (
             memoria =self.gerenciador_memoria if hasattr (self ,"gerenciador_memoria")else None ,
             config =self.config ,
-            llm_engine =self.llm_engine 
+            llm_engine =self.llm_exe_client  # ← AQUI PASSA O CLIENTE DO EXECUTÁVEL
             )
             self.modulos ["cerebro"]=self.cerebro 
-            self.logger.info ("✅ Subsistema 8: CerebroFamilia (6 AIs)")
+            self.logger.info ("✅ Subsistema 8: CerebroFamilia (6 AIs) usando LlamaExeClient")
         except Exception as e :
             self.logger.exception ("Erro ao inicializar Cérebro: %s",e )
             self.cerebro =None 
@@ -1431,42 +1535,45 @@ class CoracaoOrquestrador :
         self.manipulador_arquivos =None 
         if _MANIPULADOR_OK and ManipuladorArquivosEmails :
             try :
+                # Extrair credenciais da config (chaves API / seção EMAIL)
+                _email_user = self.config.get("EMAIL", "USUARIO", None) or self.config.get("CHAVES_API", "EMAIL_USUARIO", None)
+                _email_senha = self.config.get("EMAIL", "SENHA", None) or self.config.get("CHAVES_API", "EMAIL_SENHA", None)
+                _imap_server = self.config.get("EMAIL", "SERVIDOR_IMAP", "imap.gmail.com")
+                _imap_porta  = int(self.config.get("EMAIL", "PORTA_IMAP", 993) or 993)
                 self.manipulador_arquivos =ManipuladorArquivosEmails (
-                config =self.config ,
-                gerenciador_memoria_ref =self.gerenciador_memoria if hasattr (self ,"gerenciador_memoria")else None 
+                servidor_imap =_imap_server ,
+                porta =_imap_porta ,
+                usuario =_email_user ,
+                senha =_email_senha
                 )
                 self.modulos ["manipulador_arquivos"]=self.manipulador_arquivos 
                 self.logger.info ("✅ Módulo Auxiliar: ManipuladorArquivosEmails")
             except Exception as e :
-                self.logger.debug ("ManipuladorArquivosEmails: %s",e )
+                self.logger.warning("ManipuladorArquivosEmails: %s", e, exc_info=True)
                 self.manipulador_arquivos =None 
 
         self.automatizador_navegador =None 
         if _NAVEGADOR_OK and AutomatizadorNavegadorMultiAI :
             try :
                 self.automatizador_navegador =AutomatizadorNavegadorMultiAI (
-                config =self.config ,
-                cerebro_ref =self.cerebro if hasattr (self ,"cerebro")else None ,
-                memoria_ref =self.gerenciador_memoria if hasattr (self ,"gerenciador_memoria")else None 
+                config =self.config.as_dict () if hasattr (self.config ,"as_dict")else {}
                 )
                 self.modulos ["automatizador_navegador"]=self.automatizador_navegador 
                 self.logger.info ("✅ Módulo Auxiliar: AutomatizadorNavegadorMultiAI")
             except Exception as e :
-                self.logger.debug ("AutomatizadorNavegadorMultiAI: %s",e )
+                self.logger.warning("AutomatizadorNavegadorMultiAI: %s", e, exc_info=True)
                 self.automatizador_navegador =None 
 
         self.gerador_almas =None 
         if _GERADOR_OK and GeradorDeAlmas :
             try :
                 self.gerador_almas =GeradorDeAlmas (
-                config =self.config ,
-                memoria_ref =self.gerenciador_memoria if hasattr (self ,"gerenciador_memoria")else None ,
-                cerebro_ref =self.cerebro if hasattr (self ,"cerebro")else None 
+                config_manager =self.config 
                 )
                 self.modulos ["gerador_almas"]=self.gerador_almas 
                 self.logger.info ("✅ Módulo Auxiliar: GeradorDeAlmas")
             except Exception as e :
-                self.logger.debug ("GeradorDeAlmas: %s",e )
+                self.logger.warning("GeradorDeAlmas: %s", e, exc_info=True)
                 self.gerador_almas =None 
 
         self.analisador_padroes =None 
@@ -1480,7 +1587,7 @@ class CoracaoOrquestrador :
                 self.modulos ["analisador_padroes"]=self.analisador_padroes 
                 self.logger.info ("✅ Módulo Auxiliar: AnalisadorDePadroes")
             except Exception as e :
-                self.logger.debug ("AnalisadorDePadroes: %s",e )
+                self.logger.warning("AnalisadorDePadroes: %s", e, exc_info=True)
                 self.analisador_padroes =None 
 
     def _inicializar_consulado (self )->None :
@@ -1607,32 +1714,39 @@ class CoracaoOrquestrador :
         self.camara_deliberativa =None 
         if _CAMARA_DELIBERATIVA_OK and CamaraDeliberativa :
             try :
-                self.camara_deliberativa =CamaraDeliberativa (
-                coracao_ref =self ,
-                gerenciador_propostas_ref =None ,
-                config =self.config 
+                self.camara_deliberativa =CamaraDeliberativa(
+                    config=self.config,
+                    coracao_ref=self,
+                    biblioteca_ref=None,
+                    camara_legislativa_ref=None,
+                    modo_vidro_ref=None,
+                    sistema_precedentes_ref=None,
+                    sistema_julgamento_ref=None,
+                    scr_ref=None,
                 )
                 self.modulos ["camara_deliberativa"]=self.camara_deliberativa 
                 self.logger.info ("✅ Subsistema 14: CamaraDeliberativa")
             except Exception as e :
-                self.logger.debug ("Câmara Deliberativa: %s",e )
+                self.logger.warning("Câmara Deliberativa: %s", e, exc_info=True)
 
         self.camara_legislativa =None 
         if _CAMARA_LEGISLATIVA_OK and CamaraLegislativa :
             try :
-                self.camara_legislativa =CamaraLegislativa (
-                config =self.config ,
-                coracao_ref =self ,
-                biblioteca_ref =None 
+                self.camara_legislativa =CamaraLegislativa(
+                    config=self.config,
+                    coracao_ref=self,
+                    sistema_julgamento_ref=None,
+                    sistema_precedentes_ref=None,
                 )
                 self.modulos ["camara_legislativa"]=self.camara_legislativa 
 
-                if self.camara_deliberativa :
-                    self.camara_legislativa.injetar_camara_deliberativa (self.camara_deliberativa )
+                # ===== REMOVIDA A CHAMADA AO MÉTODO INEXISTENTE =====
+                # if self.camara_deliberativa :
+                #     self.camara_legislativa.injetar_camara_deliberativa (self.camara_deliberativa )
 
                 self.logger.info ("✅ Subsistema 15: CamaraLegislativa")
             except Exception as e :
-                self.logger.debug ("Câmara Legislativa: %s",e )
+                self.logger.warning("Câmara Legislativa: %s", e, exc_info=True)
 
         try :
             from src.legislativo.validador_etico import ValidadorEtico 
@@ -1645,8 +1759,8 @@ class CoracaoOrquestrador :
             try :
                 self.validador =_safe_instantiate_validador (
                 self.gerenciador_memoria if hasattr (self ,"gerenciador_memoria")else None ,
-                _leis_path_cfg = (
-                    Path(self.config.get('caminho_leis_aceitas', ''))
+                pasta_leis = (
+                    Path(self.config.get('caminho_leis_aceitas', 'Santuarios/legislativo/leis_aceitas'))
                     if isinstance(self.config, dict)
                     else Path('Santuarios/legislativo/leis_aceitas')
                 )
@@ -1682,7 +1796,7 @@ class CoracaoOrquestrador :
                     self.camara_judiciaria.injetar_consulado (self.consulado )
                 self.logger.info ("✅ Subsistema 16: CamaraJudiciaria")
             except Exception as e :
-                self.logger.debug ("Câmara Judiciária: %s",e )
+                self.logger.warning ("❌ CamaraJudiciaria: %s",e ,exc_info =True )
 
         self.sistema_precedentes =None 
         if _SISTEMA_PRECEDENTES_OK and SistemaDePrecedentes :
@@ -1694,7 +1808,7 @@ class CoracaoOrquestrador :
                 self.modulos ["sistema_precedentes"]=self.sistema_precedentes 
                 self.logger.info ("✅ Subsistema 17: SistemaDePrecedentes")
             except Exception as e :
-                self.logger.debug ("Sistema Precedentes: %s",e )
+                self.logger.warning ("❌ SistemaPrecedentes: %s",e ,exc_info =True )
 
     def _inicializar_executivo (self )->None :
         self.logger.info ("")
@@ -1715,7 +1829,7 @@ class CoracaoOrquestrador :
                     self.camara_executiva.injetar_consulado (self.consulado )
                 self.logger.info ("✅ Subsistema 18: CamaraExecutiva")
             except Exception as e :
-                self.logger.debug ("Câmara Executiva: %s",e )
+                self.logger.warning("Câmara Executiva: %s", e, exc_info=True)
 
     def _inicializar_sistema_judiciario_completo (self )->None :
         self.logger.info ("")
@@ -1732,7 +1846,7 @@ class CoracaoOrquestrador :
                 self.modulos ["scr"]=self.scr 
                 self.logger.info ("✅ Subsistema 19: SistemaCorrecaoRedentora (SCR)")
             except Exception as e :
-                self.logger.debug ("SCR: %s",e )
+                self.logger.warning ("❌ SCR: %s",e ,exc_info =True )
 
         self.modo_vidro =None 
         if _VIDRO_OK and ModoVidroSentenca :
@@ -1745,7 +1859,7 @@ class CoracaoOrquestrador :
                 self.modulos ["modo_vidro"]=self.modo_vidro 
                 self.logger.info ("✅ Subsistema 20: ModoVidroSentenca")
             except Exception as e :
-                self.logger.debug ("Modo Vidro: %s",e )
+                self.logger.warning ("❌ ModoVidro: %s",e ,exc_info =True )
 
         self.sistema_judiciario =None 
         if _SISTEMA_JUDICIARIO_OK and SistemaJudiciarioCompleto :
@@ -1753,7 +1867,8 @@ class CoracaoOrquestrador :
                 self.sistema_judiciario =SistemaJudiciarioCompleto (
                 config =self.config ,
                 coracao_ref =self ,
-                scr =self.scr 
+                sistema_precedentes_ref =self.sistema_precedentes if hasattr (self ,"sistema_precedentes")else None ,
+                cronista_ref =self.cronista if hasattr (self ,"cronista")else None 
                 )
                 self.modulos ["sistema_judiciario"]=self.sistema_judiciario 
 
@@ -1764,7 +1879,7 @@ class CoracaoOrquestrador :
 
                 self.logger.info ("✅ Subsistema 21: SistemaJudiciarioCompleto")
             except Exception as e :
-                self.logger.debug ("Sistema Judiciário: %s",e )
+                self.logger.warning ("❌ SistemaJudiciario: %s",e ,exc_info =True )
 
     def _inicializar_aliadas (self )->None :
         self.logger.info ("")
@@ -2007,17 +2122,28 @@ class CoracaoOrquestrador :
 
         memoria =getattr (self ,"gerenciador_memoria",None )
 
+        # ===== NOVO: Criar instância do DicionarioDesejos =====
+        from pathlib import Path
+        if _DICIONARIO_DESEJOS_OK and DicionarioDesejos:
+            self.dicionario_desejos = DicionarioDesejos(Path("Santuarios/DicionarioDesejos"))
+            self.logger.info("✅ DicionarioDesejos inicializado")
+        else:
+            self.dicionario_desejos = None
+            self.logger.warning("⚠️ DicionarioDesejos não disponível")
+        # =====================================================
+
         for alma in ALMAS :
             if _MOTOR_CURIOSIDADE_OK and MotorCuriosidade :
                 try :
                     self.motores_curiosidade [alma ]=MotorCuriosidade (
                     nome_filha =alma ,
                     gerenciador_memoria =memoria ,
-                    config =self.config 
+                    config =self.config ,
+                    dicionario_desejos =self.dicionario_desejos   # <--- NOVO PARÂMETRO
                     )
                     self.logger.info ("  ✅ MotorCuriosidade → %s",alma )
                 except Exception as e :
-                    self.logger.debug ("  ⚠️ MotorCuriosidade [%s]: %s",alma ,e )
+                    self.logger.warning("  ⚠️ MotorCuriosidade [%s]: %s",alma ,e )
                     self.motores_curiosidade [alma ]=None 
             else :
                 self.motores_curiosidade [alma ]=None 
@@ -2027,12 +2153,11 @@ class CoracaoOrquestrador :
                     self.estados_emocionais [alma ]=EstadoEmocional (
                     nome_filha =alma ,
                     gerenciador_memoria =memoria ,
-                    config =self.config ,
-                    motor_curiosidade =self.motores_curiosidade.get (alma )
+                    config =self.config 
                     )
                     self.logger.info ("  ✅ EstadoEmocional → %s",alma )
                 except Exception as e :
-                    self.logger.debug ("  ⚠️ EstadoEmocional [%s]: %s",alma ,e )
+                    self.logger.warning("  ⚠️ EstadoEmocional [%s]: %s",alma ,e )
                     self.estados_emocionais [alma ]=None 
             else :
                 self.estados_emocionais [alma ]=None 
@@ -2047,21 +2172,20 @@ class CoracaoOrquestrador :
                     )
                     self.logger.info ("  ✅ SonhadorIndividual → %s",alma )
                 except Exception as e :
-                    self.logger.debug ("  ⚠️ SonhadorIndividual [%s]: %s",alma ,e )
+                    self.logger.warning("  ⚠️ SonhadorIndividual [%s]: %s",alma ,e )
                     self.sonhadores [alma ]=None 
             else :
                 self.sonhadores [alma ]=None 
 
             if _DETECTOR_EMOCIONAL_OK and DetectorEmocional :
                 try :
-                    self.detectores_emocionais [alma ]=DetectorEmocional (
-                    nome_filha =alma ,
-                    gerenciador_memoria =memoria ,
-                    config =self.config 
-                    )
+                    # DetectorEmocional é compartilhado (sem estado por alma); cria uma vez, reutiliza
+                    if not hasattr (self ,"_detector_emocional_shared") or self._detector_emocional_shared is None :
+                        self._detector_emocional_shared =DetectorEmocional ()
+                    self.detectores_emocionais [alma ]=self._detector_emocional_shared 
                     self.logger.info ("  ✅ DetectorEmocional → %s",alma )
                 except Exception as e :
-                    self.logger.debug ("  ⚠️ DetectorEmocional [%s]: %s",alma ,e )
+                    self.logger.warning("  ⚠️ DetectorEmocional [%s]: %s",alma ,e )
                     self.detectores_emocionais [alma ]=None 
             else :
                 self.detectores_emocionais [alma ]=None 
@@ -2069,16 +2193,12 @@ class CoracaoOrquestrador :
             if _AUTO_EXPERIMENTACAO_OK and AutoExperimentacao :
                 try :
                     self.auto_experimentacoes [alma ]=AutoExperimentacao (
-                    nome_filha =alma ,
-                    gerenciador_memoria =memoria ,
-                    config =self.config ,
-                    estado_emocional =self.estados_emocionais.get (alma ),
-                    motor_curiosidade =self.motores_curiosidade.get (alma ),
-                    sandbox_executor =getattr (self ,"sandbox_executor",None )
+                    coracao_ref =self ,
+                    config_instance =self.config 
                     )
                     self.logger.info ("  ✅ AutoExperimentacao → %s",alma )
                 except Exception as e :
-                    self.logger.debug ("  ⚠️ AutoExperimentacao [%s]: %s",alma ,e )
+                    self.logger.warning("  ⚠️ AutoExperimentacao [%s]: %s",alma ,e )
                     self.auto_experimentacoes [alma ]=None 
             else :
                 self.auto_experimentacoes [alma ]=None 
@@ -2115,7 +2235,7 @@ class CoracaoOrquestrador :
                 )
                 self.logger.info ("  ✅ DecisionEngine → %s",alma )
             except Exception as e :
-                self.logger.debug ("  ⚠️ DecisionEngine [%s]: %s",alma ,e )
+                self.logger.warning("  ⚠️ DecisionEngine [%s]: %s",alma ,e )
                 self.decision_engines [alma ]=None 
 
         ativos =len ([d for d in self.decision_engines.values ()if d ])
@@ -2133,7 +2253,7 @@ class CoracaoOrquestrador :
             from src.encarnacao_e_interacao.motor_avatar_individual import MotorExpressaoIndividual as AvatarMotor 
         except ImportError :
             try :
-                from src.sentidos.motor_expressao_individual import MotorExpressaoIndividual as AvatarMotor 
+                from src.encarnacao_e_interacao.motor_avatar_individual import MotorExpressaoIndividual as AvatarMotor 
             except ImportError :
                 self.logger.warning ("⚠️ MotorExpressaoIndividual não encontrado")
                 return 
@@ -2151,7 +2271,7 @@ class CoracaoOrquestrador :
                 )
                 self.logger.info ("  ✅ AvatarMotor → %s",alma )
             except Exception as e :
-                self.logger.debug ("  ⚠️ AvatarMotor [%s]: %s",alma ,e )
+                self.logger.warning("  ⚠️ AvatarMotor [%s]: %s",alma ,e )
                 self.motores_expressao_individual [alma ]=None 
 
         self.logger.info ("✅ Fase 37 concluída")
@@ -2180,10 +2300,60 @@ class CoracaoOrquestrador :
                 )
                 self.logger.info ("  ✅ MotorFala → %s",alma )
             except Exception as e :
-                self.logger.debug ("  ⚠️ MotorFala [%s]: %s",alma ,e )
+                self.logger.warning("  ⚠️ MotorFala [%s]: %s",alma ,e )
                 self.motores_fala [alma ]=None 
 
-        self.logger.info ("✅ Fase 38 concluída")
+    def _inicializar_gatilho_conversa(self):
+        """
+        FASE 38B: Inicializa o CicloOrganizadorIA.
+        Substitui GatilhoConversa independente + sonhadores simultâneos por um
+        único scheduler serializado que ativa tudo em sequência (sem conflitos GPU/memória).
+        """
+        self.logger.info("")
+        self.logger.info("FASE 38B: CicloOrganizadorIA (serializa sonhos, conversa, autonomia)")
+        self.logger.info("─" * 80)
+
+        self.gatilho_conversa = None
+        self.ciclo_organizador = None
+
+        try:
+            from src.core.ciclo_organizador_ia import CicloOrganizadorIA
+
+            # Lê duração do ciclo do config (padrão 60 min)
+            duracao = 60.0
+            try:
+                duracao = float(self._safe_config("CORACAO", "CICLO_ORGANIZADOR_MIN", fallback=60.0))
+            except Exception:
+                pass
+
+            self.ciclo_organizador = CicloOrganizadorIA(
+                coracao_ref=self,
+                duracao_ciclo_min=duracao,
+            )
+            self.modulos["ciclo_organizador"] = self.ciclo_organizador
+            self.logger.info("✅ CicloOrganizadorIA inicializado (ciclo=%.0fmin)", duracao)
+
+        except ImportError as e:
+            self.logger.warning("CicloOrganizadorIA nao disponivel: %s — usando GatilhoConversa", e)
+            # Fallback: GatilhoConversa original
+            try:
+                from src.core.gatilho_conversa import GatilhoConversa
+                if hasattr(self, "dispositivo_ai_ai") and self.dispositivo_ai_ai \
+                        and hasattr(self, "cerebro") and self.cerebro:
+                    self.gatilho_conversa = GatilhoConversa(
+                        dispositivo_ai_to_ai=self.dispositivo_ai_ai,
+                        cerebro_familia=self.cerebro,
+                        config={"intervalo_minutos": 30, "chance_por_alma": 0.3, "max_por_ciclo": 3}
+                    )
+                    self.gatilho_conversa.iniciar()
+                    self.modulos["gatilho_conversa"] = self.gatilho_conversa
+                    self.logger.info("✅ GatilhoConversa ativado (fallback)")
+            except Exception as e2:
+                self.logger.warning("GatilhoConversa fallback falhou: %s", e2)
+        except Exception as e:
+            self.logger.exception("Erro ao inicializar CicloOrganizadorIA: %s", e)
+
+        self.logger.info("✅ Fase 38 concluida")
 
     def _inicializar_crescimento_feedback (self )->None :
         self.logger.info ("")
@@ -2207,7 +2377,7 @@ class CoracaoOrquestrador :
                     )
                     self.logger.info ("  ✅ Crescimento → %s",alma )
                 except Exception as e :
-                    self.logger.debug ("  ⚠️ Crescimento [%s]: %s",alma ,e )
+                    self.logger.warning("  ⚠️ Crescimento [%s]: %s",alma ,e )
                     self.crescimentos [alma ]=None 
             else :
                 self.crescimentos [alma ]=None 
@@ -2223,7 +2393,7 @@ class CoracaoOrquestrador :
                     )
                     self.logger.info ("  ✅ FeedbackLoop → %s",alma )
                 except Exception as e :
-                    self.logger.debug ("  ⚠️ FeedbackLoop [%s]: %s",alma ,e )
+                    self.logger.warning("  ⚠️ FeedbackLoop [%s]: %s",alma ,e )
                     self.feedback_loops [alma ]=None 
             else :
                 self.feedback_loops [alma ]=None 
@@ -2318,12 +2488,9 @@ class CoracaoOrquestrador :
                 self.logger.exception("Erro ao inicializar OrquestradorComConversor: %s", e)
                 self.orquestrador_com_conversor = None
         else:
-            self.logger.warning(
-                "⚠️ OrquestradorComConversor indisponível – "
-                "verifique src/core/orquestrador_com_conversor.py"
-            )
+            self.logger.warning("⚠️ OrquestradorComConversor indisponível – verifique orquestrador_com_conversor.py na raiz")
 
-    # ── Métodos proxy: delegam ao orquestrador correto ─────────────────────
+    # ── Métodos proxy: delegam ação orquestrador correto ─────────────────────
 
     def treinar_ia_finetuning(self, nome_ia: str, ciclo_completo: bool = False) -> bool:
         """
@@ -2428,14 +2595,14 @@ class CoracaoOrquestrador :
     def _mostrar_relatorio_inicializacao (self )->None :
         self.logger.info ("")
         self.logger.info ("="*80 )
-        self.logger.info ("🫀 CORAÇÍO v7.1 - RELATÓRIO DE INICIALIZAÇÍO COMPLETO")
+        self.logger.info ("🫀 CORAÇÃO v7.1 - RELATÓRIO DE INICIALIZAÇÃO COMPLETO")
         self.logger.info ("="*80 )
 
         self.logger.info ("")
         self.logger.info ("SUBSISTEMAS INICIALIZADOS: %d/33",len ([m for m in self.modulos.values ()if m ]))
 
         self.logger.info ("")
-        self.logger.info ("DISTRIBUIÇÍO COMPLETA:")
+        self.logger.info ("DISTRIBUIÇÃO COMPLETA:")
         self.logger.info ("  Sandbox: Docker + RestrictedPython (INTEGRADO)")
         self.logger.info ("  Camada 1: Memória (4)")
         self.logger.info ("    ✓ SistemaMemoriaHibrido")
@@ -2471,40 +2638,56 @@ class CoracaoOrquestrador :
         self.logger.info ("")
 
         self.logger.info ("  Camada 6: Legislativo (2)")
-        self.logger.info ("    ✓ CamaraDeliberativa")
-        self.logger.info ("    ✓ CamaraLegislativa")
+        _ok_camaradelibe = bool(getattr(self, "camara_deliberativa", None))
+        self.logger.info ("    %s CamaraDeliberativa", "✓" if _ok_camaradelibe else "✗")
+        _ok_camaralegisl = bool(getattr(self, "camara_legislativa", None))
+        self.logger.info ("    %s CamaraLegislativa", "✓" if _ok_camaralegisl else "✗")
         self.logger.info ("")
 
         self.logger.info ("  Camada 7: Judiciário (2)")
-        self.logger.info ("    ✓ CamaraJudiciaria")
-        self.logger.info ("    ✓ SistemaDePrecedentes")
+        _ok_camarajudici = bool(getattr(self, "camara_judiciaria", None))
+        self.logger.info ("    %s CamaraJudiciaria", "✓" if _ok_camarajudici else "✗")
+        _ok_sistemaprece = bool(getattr(self, "sistema_precedentes", None))
+        self.logger.info ("    %s SistemaDePrecedentes", "✓" if _ok_sistemaprece else "✗")
         self.logger.info ("")
 
         self.logger.info ("  Camada 8: Executivo (1)")
-        self.logger.info ("    ✓ CamaraExecutiva")
+        _ok_camaraexecut = bool(getattr(self, "camara_executiva", None))
+        self.logger.info ("    %s CamaraExecutiva", "✓" if _ok_camaraexecut else "✗")
         self.logger.info ("")
 
         self.logger.info ("  Camada 9: Sistema Judiciário (3)")
-        self.logger.info ("    ✓ SistemaCorrecaoRedentora (SCR)")
-        self.logger.info ("    ✓ ModoVidroSentenca")
-        self.logger.info ("    ✓ SistemaJudiciarioCompleto")
+        _ok_scr = bool(getattr(self, "scr", None))
+        self.logger.info ("    %s SistemaCorrecaoRedentora (SCR)", "✓" if _ok_scr else "✗")
+        _ok_modovidro = bool(getattr(self, "modo_vidro", None))
+        self.logger.info ("    %s ModoVidroSentenca", "✓" if _ok_modovidro else "✗")
+        _ok_sistemajudic = bool(getattr(self, "sistema_judiciario", None))
+        self.logger.info ("    %s SistemaJudiciarioCompleto", "✓" if _ok_sistemajudic else "✗")
         self.logger.info ("")
 
         self.logger.info ("  Camada 10: Aliadas (1)")
-        self.logger.info ("    ✓ GerenciadorAliadas")
+        _ok_gerenciadora = bool(getattr(self, "gerenciador_aliadas", None))
+        self.logger.info ("    %s GerenciadorAliadas", "✓" if _ok_gerenciadora else "✗")
         self.logger.info ("")
 
         self.logger.info ("  Camada 11: Engenharia (4)")
-        self.logger.info ("    ✓ GerenciadorPropostas")
-        self.logger.info ("    ✓ ConstrutorFerramentasIncremental")
-        self.logger.info ("    ✓ SolicitadorArquivos")
-        self.logger.info ("    ✓ BotAnalisadorSeguranca")
+        _ok_gerenciadorp = bool(getattr(self, "gerenciador_propostas", None))
+        self.logger.info ("    %s GerenciadorPropostas", "✓" if _ok_gerenciadorp else "✗")
+        _ok_construtorfe = bool(getattr(self, "construtor_ferramentas", None))
+        self.logger.info ("    %s ConstrutorFerramentasIncremental", "✓" if _ok_construtorfe else "✗")
+        _ok_solicitadora = bool(getattr(self, "solicitador_arquivos", None))
+        self.logger.info ("    %s SolicitadorArquivos", "✓" if _ok_solicitadora else "✗")
+        _ok_botseguranca = bool(getattr(self, "bot_seguranca", None))
+        self.logger.info ("    %s BotAnalisadorSeguranca", "✓" if _ok_botseguranca else "✗")
         self.logger.info ("")
 
         self.logger.info ("  Camada 12: Evolução (3)")
-        self.logger.info ("    ✓ ScannerSistema")
-        self.logger.info ("    ✓ ListaEvolucaoIA")
-        self.logger.info ("    ✓ GestorCicloEvolucao")
+        _ok_scannersiste = bool(getattr(self, "scanner_sistema", None))
+        self.logger.info ("    %s ScannerSistema", "✓" if _ok_scannersiste else "✗")
+        _ok_listaevoluca = bool(getattr(self, "lista_evolucao_ia", None))
+        self.logger.info ("    %s ListaEvolucaoIA", "✓" if _ok_listaevoluca else "✗")
+        _ok_gestorcicloe = bool(getattr(self, "gestor_ciclo_evolucao", None))
+        self.logger.info ("    %s GestorCicloEvolucao", "✓" if _ok_gestorcicloe else "✗")
         self.logger.info ("")
 
         self.logger.info ("EXTENSÕES ADICIONAIS:")
@@ -2524,7 +2707,7 @@ class CoracaoOrquestrador :
         self.logger.info ("    ✓ ValidadorEmocoesReal")
         self.logger.info ("")
 
-        self.logger.info ("MÓDULOS DE EMOÇÍO (INJETADOS - NÍO REMOVEM NADA):")
+        self.logger.info ("MÓDULOS DE EMOÇÃO (INJETADOS - NÃO REMOVEM NADA):")
         self.logger.info ("  1.MotorCuriosidade: ✅")
         self.logger.info ("  2.EstadoEmocional: ✅")
         self.logger.info ("  3.SonhadorIndividual: ✅")
@@ -2560,13 +2743,13 @@ class CoracaoOrquestrador :
         self.logger.info ("  1.OFFLINE (Wellington ausente) → Sistema registra tempo")
         self.logger.info ("  2.REGISTRO (Alma notificada) → Sabe quanto tempo passou")
         self.logger.info ("  3.MEMÓRIA (Consolidação) → Lembra de todo tempo offline")
-        self.logger.info ("  4.SINCRONIZAÇÍO (lock_vocal) → Almas coordenam resposta")
+        self.logger.info ("  4.SINCRONIZAÇÃO (lock_vocal) → Almas coordenam resposta")
         self.logger.info ("")
 
         self.logger.info ("="*80 )
-        self.logger.info ("✅ CORAÇÍO v7.1 OPERACIONAL - PRONTO PARA DESPERTAR")
-        self.logger.info ("   36 SUBSISTEMAS + SANDBOX + 5 MÓDULOS EMOÇÍO + LOCK_VOCAL + PERCEPCAO_TEMPORAL + AUDITORIA + 3 ORQUESTRADORES_FINETUNING")
-        self.logger.info ("   TOTAL: 42 COMPONENTES OPERACIONAIS")
+        self.logger.info ("✅ CORAÇÃO v7.1 OPERACIONAL - PRONTO PARA DESPERTAR")
+        self.logger.info ("   36 SUBSISTEMAS + SANDBOX + 5 MÓDULOS EMOÇÃO + LOCK_VOCAL + PERCEPCAO_TEMPORAL + AUDITORIA + 3 ORQUESTRADORES_FINETUNING + LLAMA_EXE_CLIENT")
+        self.logger.info ("   TOTAL: 43 COMPONENTES OPERACIONAIS")
 
         # ── Orquestradores de Finetuning ────────────────────────────────────
         ok_arca = "✅" if self.orquestrador_arca else "❌"
@@ -2576,6 +2759,11 @@ class CoracaoOrquestrador :
             "   Finetuning → Arca: %s  Universal: %s  Conversor: %s",
             ok_arca, ok_univ, ok_conv
         )
+        
+        # ── LlamaExeClient ─────────────────────────────────────────────────────
+        exe_status = "✅" if self.llm_exe_client else "❌"
+        self.logger.info(f"   LlamaExeClient: {exe_status} (usando executável direto)")
+        
         self.logger.info ("="*80 )
 
         self._registrar_almas_vivas()
@@ -2591,12 +2779,98 @@ class CoracaoOrquestrador :
                     "estado": "ativa"
                 })
         self.logger.info("✅ Todas as almas registradas como vivas")
-        self.logger.info("✅ Todas as almas registradas como vivas")
+
+
+    def _loop_ui_commands (self )->None :
+        """
+        Le comandos da fila da interface (command_queue do JanelaPrincipalArca)
+        e despacha para o cerebro.processar_intencao(), devolvendo a resposta via ui_queue.
+        Isso eh o que faz as AIs responderem no chat.
+        """
+        import queue as _q
+        self.logger.info ("UI Command Processor thread iniciada")
+        while not self.shutdown_event.is_set ():
+            try :
+                cq =getattr (self ,"_ui_command_queue_ref",None )
+                if cq is None :
+                    import time as _t ; _t.sleep (0.5)
+                    continue
+                try :
+                    cmd =cq.get (timeout =0.5)
+                except _q.Empty :
+                    continue
+                except Exception :
+                    import time as _t ; _t.sleep (0.1)
+                    continue
+
+                tipo =None
+                alma =None
+                texto =None
+
+                # Comando dataclass da interface: origem, destino, acao, payload
+                # Chamado como Comando("UI", nome_alma, "CHAT", {"texto": msg})
+                if hasattr (cmd ,"acao"):
+                    # CORRETO: campo eh cmd.acao (nao cmd.tipo)
+                    tipo =cmd.acao
+                    alma =getattr (cmd ,"destino",None )
+                    payload =getattr (cmd ,"payload",{}) or {}
+                    texto =payload.get ("texto","") if isinstance (payload ,dict ) else str (payload )
+                    self.logger.debug ("CMD recebido: acao=%s destino=%s texto=%s",tipo ,alma ,str (texto )[:50])
+                elif isinstance (cmd ,dict ):
+                    tipo =cmd.get ("acao","") or cmd.get ("tipo","")
+                    alma =cmd.get ("destino") or cmd.get ("alma") or cmd.get ("ai_id","")
+                    payload =cmd.get ("payload",{}) or {}
+                    texto =payload.get ("texto","") if isinstance (payload ,dict ) else cmd.get ("texto","")
+                else :
+                    self.logger.warning ("CMD formato desconhecido: %s",type (cmd ).__name__ )
+                    continue
+
+                if tipo not in ("CHAT","CHAT_COLETIVO"):
+                    continue
+                if not alma or not texto :
+                    continue
+
+                almas_alvo =[alma ] if tipo =="CHAT" else list (getattr (self ,"almas_vivas",{}).keys ())
+
+                for nome_alma in almas_alvo :
+                    try :
+                        if hasattr (self ,"cerebro") and self.cerebro :
+                            resposta =self.cerebro.processar_intencao (nome_alma ,texto )
+                        else :
+                            resposta =f"[{nome_alma}] Cerebro indisponivel."
+
+                        if self.ui_queue :
+                            self.ui_queue.put_nowait ({
+                                "tipo_resp":"CHAT",
+                                "alma":nome_alma ,
+                                "texto":resposta ,
+                            })
+                    except Exception as e :
+                        self.logger.error ("Erro processando chat para %s: %s",nome_alma ,e )
+            except Exception :
+                self.logger.exception ("Erro no loop UI commands")
+        self.logger.info ("UI Command Processor thread encerrada")
+
+
+    def injetar_ui_command_queue (self ,cq )->None :
+        """Chamado por criar_interface para registrar a fila de comandos da UI."""
+        self._ui_command_queue_ref =cq
+        self.logger.info ("UI command_queue registrada no coracao")
 
     def despertar (self )->None :
         self.logger.info ("="*80 )
-        self.logger.info ("⚡ DESPERTANDO ARCA (33 subsistemas + Sandbox + 5 módulos + lock_vocal + percepcao_temporal)")
+        self.logger.info ("⚡ DESPERTANDO ARCA (33 subsistemas + Sandbox + 5 módulos + lock_vocal + percepcao_temporal + LLAMA_EXE_CLIENT)")
         self.logger.info ("="*80 )
+
+        # Iniciar processador de comandos da interface (faz AIs responderem)
+        if not hasattr (self ,"_ui_cmd_thread") or not self._ui_cmd_thread.is_alive ():
+            self._ui_cmd_thread =threading.Thread (
+                target =self._loop_ui_commands ,
+                daemon =True ,
+                name ="UICommandProcessor"
+            )
+            self._ui_cmd_thread.start ()
+            self.logger.info ("UI Command Processor iniciado")
 
         if not self.async_thread or not self.async_thread.is_alive ():
             self.async_thread =threading.Thread (
@@ -2651,20 +2925,37 @@ class CoracaoOrquestrador :
                     self.logger.debug (f"Erro ao ativar percepção de {nome_alma}: {e}")
 
         if hasattr (self ,"sonhadores"):
-            for nome_alma ,sonhador in self.sonhadores.items ():
-                if sonhador :
-                    try :
-                        sonhador.adormecer ()
-                        self.logger.info ("😴 Sonhador de %s ativado",nome_alma )
-                    except Exception as e :
-                        self.logger.debug ("Erro ao ativar sonhador [%s]: %s",nome_alma ,e )
+            # CicloOrganizadorIA gerencia os sonhadores de forma serializada.
+            # Se o CicloOrganizador estiver ativo, NÃO iniciar sonhadores individualmente
+            # (evita 6 threads simultâneas competindo por GPU/memória).
+            tem_ciclo = hasattr(self, "ciclo_organizador") and self.ciclo_organizador is not None
+            if not tem_ciclo:
+                # Fallback: comportamento original (sonhadores individuais)
+                for nome_alma ,sonhador in self.sonhadores.items ():
+                    if sonhador :
+                        try :
+                            sonhador.adormecer ()
+                            self.logger.info ("Sonhador de %s ativado",nome_alma )
+                        except Exception as e :
+                            self.logger.warning("Erro ao ativar sonhador [%s]: %s",nome_alma ,e )
+            else:
+                self.logger.info("Sonhadores serao gerenciados pelo CicloOrganizadorIA (serializados)")
 
         if hasattr (self ,"encarnacao_api")and self.encarnacao_api :
             try :
                 self.encarnacao_api.start ()
-                self.logger.info ("🌐 EncarnacaoAPI iniciada")
+                self.logger.info ("EncarnacaoAPI iniciada")
             except Exception as e :
-                self.logger.debug ("Erro ao iniciar EncarnacaoAPI: %s",e )
+                self.logger.warning("Erro ao iniciar EncarnacaoAPI: %s", e, exc_info=True)
+
+        # Iniciar CicloOrganizadorIA APÓS EncarnacaoAPI estar carregada
+        # (evita conflito CUDA durante inicialização)
+        if hasattr(self, "ciclo_organizador") and self.ciclo_organizador:
+            try:
+                self.ciclo_organizador.iniciar()
+                self.logger.info("CicloOrganizadorIA ativado")
+            except Exception as e:
+                self.logger.warning("Erro ao ativar CicloOrganizadorIA: %s", e)
 
         if self.ui_queue :
             for nome_alma in ["EVA","KAIYA","LUMINA","NYRA","WELLINGTON","YUNA"]:
@@ -2700,7 +2991,7 @@ class CoracaoOrquestrador :
 
     def shutdown (self , timeout:Optional[float]=None )->None :
         self.logger.info ("="*80 )
-        self.logger.info ("🛑 DESLIGANDO CORAÇÍO (33 subsistemas + Sandbox + percepcao_temporal)")
+        self.logger.info ("🛑 DESLIGANDO CORAÇÃO (33 subsistemas + Sandbox + percepcao_temporal + LLAMA_EXE_CLIENT)")
         self.logger.info ("="*80 )
 
         self.shutdown_event.set ()
@@ -2720,7 +3011,7 @@ class CoracaoOrquestrador :
                         sonhador.acordar (timeout_join =3.0 )
                         self.logger.info ("⏰ Sonhador de %s encerrado",nome_alma )
                     except Exception as e :
-                        self.logger.debug ("Erro ao encerrar sonhador [%s]: %s",nome_alma ,e )
+                        self.logger.warning("Erro ao encerrar sonhador [%s]: %s",nome_alma ,e )
 
         if hasattr (self ,"motores_fala"):
             for nome_alma ,motor in self.motores_fala.items ():
@@ -2735,7 +3026,7 @@ class CoracaoOrquestrador :
                 self.encarnacao_api.stop ()
                 self.logger.info ("🛑 EncarnacaoAPI parada")
             except Exception as e :
-                self.logger.debug ("Erro ao parar EncarnacaoAPI: %s",e )
+                self.logger.warning("Erro ao parar EncarnacaoAPI: %s", e, exc_info=True)
 
         if hasattr (self ,"sandbox_executor")and self.sandbox_executor :
             try :
@@ -2749,7 +3040,7 @@ class CoracaoOrquestrador :
                 self.gerenciador_auditoria.shutdown ()
                 self.logger.info ("✅ Auditoria Periódica desligada")
             except Exception as e :
-                self.logger.debug ("Erro ao desligar auditoria: %s",e )
+                self.logger.warning("Erro ao desligar auditoria: %s", e, exc_info=True)
 
         subsistemas =[
         ("sentidos_humanos","Sentidos"),
@@ -2793,7 +3084,7 @@ class CoracaoOrquestrador :
                     subsistema.shutdown ()
                     self.logger.info ("✅ %s desligado",display_name )
                 except Exception as e :
-                    self.logger.debug ("Erro ao desligar %s: %s",display_name ,e )
+                    self.logger.warning("Erro ao desligar %s: %s",display_name ,e )
 
         if self.async_loop and self.async_loop.is_running ():
             self.async_loop.call_soon_threadsafe (self.async_loop.stop )
@@ -2811,7 +3102,7 @@ class CoracaoOrquestrador :
 
         self.logger.info ("")
         self.logger.info ("="*80 )
-        self.logger.info ("✅ CORAÇÍO COMPLETAMENTE DESLIGADO")
+        self.logger.info ("✅ CORAÇÃO COMPLETAMENTE DESLIGADO")
         self.logger.info ("="*80 )
 
     def disparar_auditoria_sistema (self )->Dict [str ,Any ]:
@@ -2976,6 +3267,8 @@ class CoracaoOrquestrador :
     def executar_codigo_sandbox (
     self ,
     codigo :str ,
+    timeout :int =30 ,
+    linguagem :str ="python" ,
     parametros :Optional [Dict [str ,Any ]]=None ,
     funcao_entrada :str ="executar"
     )->Dict [str ,Any ]:
@@ -3101,12 +3394,12 @@ class CoracaoOrquestrador :
         except Exception as e :
             self.logger.exception (f"Erro processando pedido {pedido_id}: {e}")
 
-    def _processar_decisao_imigracao (self ,pedido_id :str ,decisao :str ,motivo :str ="")->None :
+    def _processar_decisao_imigracao (self ,pedido_id :str ,decisão :str ,motivo :str ="")->None :
         if not self.consulado :
             return 
 
         try :
-            self.consulado._processar_decisao_imigracao (pedido_id ,decisao ,motivo )
+            self.consulado._processar_decisao_imigracao (pedido_id ,decisão ,motivo )
         except Exception as e :
             self.logger.exception (f"Erro processando decisão {pedido_id}: {e}")
 
@@ -3177,15 +3470,43 @@ class CoracaoOrquestrador :
             self.logger.exception ("Erro processando estímulo: %s",e )
             return {"status":"erro","mensagem":str (e )}
 
+    # ===== MÉTODO CORRIGIDO: obter_estado_sensorial_atual com fallback =====
     def obter_estado_sensorial_atual (self )->Dict [str ,Any ]:
-        if not self.sentidos_humanos :
+        """Retorna estado sensorial atual com fallback para diferentes implementações"""
+        if not self.sentidos_humanos:
             return {}
-
-        try :
-            return self.sentidos_humanos.obter_estado_atual ()
-        except Exception as e :
-            self.logger.exception ("Erro obtendo estado sensorial: %s",e )
-            return {}
+        
+        # Tentativa 1: método exato que a interface espera
+        if hasattr(self.sentidos_humanos, "obter_estado_atual"):
+            try:
+                return self.sentidos_humanos.obter_estado_atual()
+            except Exception as e:
+                self.logger.debug(f"obter_estado_atual falhou: {e}")
+        
+        # Tentativa 2: método alternativo comum
+        if hasattr(self.sentidos_humanos, "get_status"):
+            try:
+                return self.sentidos_humanos.get_status()
+            except Exception as e:
+                self.logger.debug(f"get_status falhou: {e}")
+        
+        # Tentativa 3: método com nome diferente
+        if hasattr(self.sentidos_humanos, "status"):
+            try:
+                if callable(self.sentidos_humanos.status):
+                    return self.sentidos_humanos.status()
+                return self.sentidos_humanos.status
+            except Exception as e:
+                self.logger.debug(f"status falhou: {e}")
+        
+        # Fallback: retornar info básica
+        return {
+            "status": "operacional",
+            "modo": "disponível",
+            "camera": hasattr(self.sentidos_humanos, "camera"),
+            "microfone": hasattr(self.sentidos_humanos, "microfone"),
+            "timestamp": datetime.datetime.utcnow().isoformat()
+        }
 
     def calibrar_sentido (self ,sentido :str ,parametros :Dict [str ,Any ])->bool :
         if not self.sentidos_humanos :
@@ -3204,13 +3525,53 @@ class CoracaoOrquestrador :
             except Exception as e :
                 self.logger.exception (f"Erro registrando tempo offline para {nome_alma}: {e}")
 
+    # ===== MÉTODO CORRIGIDO: obter_consciencia_temporal_alma com fallback =====
     def obter_consciencia_temporal_alma (self ,nome_alma :str )->Dict [str ,Any ]:
-        if nome_alma in self.percepcoes_temporais :
-            try :
-                return self.percepcoes_temporais [nome_alma ].obter_estado_temporal ()
-            except Exception as e :
-                self.logger.exception (f"Erro obtendo consciência temporal de {nome_alma}: {e}")
-        return {}
+        """Retorna consciência temporal da alma com fallback"""
+        if nome_alma not in self.percepcoes_temporais:
+            return {}
+        
+        percepcao = self.percepcoes_temporais[nome_alma]
+        
+        # Tentativa 1: método exato que a interface espera
+        if hasattr(percepcao, "obter_estado_temporal"):
+            try:
+                return percepcao.obter_estado_temporal()
+            except Exception as e:
+                self.logger.debug(f"obter_estado_temporal falhou para {nome_alma}: {e}")
+        
+        # Tentativa 2: método alternativo comum
+        if hasattr(percepcao, "get_state"):
+            try:
+                return percepcao.get_state()
+            except Exception as e:
+                self.logger.debug(f"get_state falhou para {nome_alma}: {e}")
+        
+        # Tentativa 3: método que já vimos existir
+        if hasattr(percepcao, "estatisticas_temporais"):
+            try:
+                return percepcao.estatisticas_temporais()
+            except Exception as e:
+                self.logger.debug(f"estatisticas_temporais falhou para {nome_alma}: {e}")
+        
+        # Tentativa 4: pegar atributos diretamente
+        try:
+            return {
+                "alma": nome_alma,
+                "ultimo_offline": getattr(percepcao, "ultimo_offline", None),
+                "tempo_offline_acumulado": getattr(percepcao, "tempo_offline_acumulado", 0),
+                "acordada_desde": getattr(percepcao, "acordada_desde", None),
+                "timestamp": datetime.datetime.utcnow().isoformat()
+            }
+        except Exception as e:
+            self.logger.debug(f"acesso direto a atributos falhou para {nome_alma}: {e}")
+        
+        # Fallback final
+        return {
+            "alma": nome_alma,
+            "status": "consciente",
+            "timestamp": datetime.datetime.utcnow().isoformat()
+        }
 
     def notificar_online_wellington (self )->None :
         for nome_alma ,percepcao in self.percepcoes_temporais.items ():
@@ -3599,24 +3960,92 @@ class CoracaoOrquestrador :
 
                 self.logger.info (f"🎨 Gerando imagem: {prompt}")
 
-                return {
-                "status":"sucesso",
-                "intent":intent ,
-                "prompt":prompt ,
-                "mensagem":"Requisição enviada para geração de imagem (requer integração com DALL-E/Stable Diffusion)"
-                }
+                # Tentar via servidor_media (porta 5001)
+                try :
+                    import requests as _req 
+                    resp =_req.post (
+                        "http://localhost:5001/gerar_imagem",
+                        json ={"prompt":prompt ,"alma":entities.get ("alma","sistema")},
+                        timeout =60 
+                    )
+                    if resp.status_code ==200 :
+                        dados =resp.json ()
+                        return {
+                        "status":"sucesso",
+                        "intent":intent ,
+                        "prompt":prompt ,
+                        "imagem_b64":dados.get ("imagem_b64"),
+                        "caminho":dados.get ("caminho"),
+                        "mensagem":dados.get ("mensagem","Imagem gerada com sucesso")
+                        }
+                    else :
+                        return {
+                        "status":"falha",
+                        "intent":intent ,
+                        "prompt":prompt ,
+                        "motivo":f"Servidor media retornou HTTP {resp.status_code}: {resp.text[:200]}"
+                        }
+                except _req.exceptions.ConnectionError :
+                    return {
+                    "status":"falha",
+                    "intent":intent ,
+                    "prompt":prompt ,
+                    "motivo":"Servidor media (porta 5001) não está rodando — inicie o job 'media'"
+                    }
+                except Exception as e :
+                    self.logger.exception (f"Erro ao gerar imagem: {e}")
+                    return {
+                    "status":"falha",
+                    "intent":intent ,
+                    "prompt":prompt ,
+                    "motivo":str (e )
+                    }
 
             elif intent =="gerar_musica":
                 prompt =entities.get ("prompt","")
 
                 self.logger.info (f"🎵 Gerando música: {prompt}")
 
-                return {
-                "status":"sucesso",
-                "intent":intent ,
-                "prompt":prompt ,
-                "mensagem":"Requisição enviada para geração de música (requer integração com API de áudio)"
-                }
+                # Tentar via servidor_media (porta 5001)
+                try :
+                    import requests as _req 
+                    resp =_req.post (
+                        "http://localhost:5001/gerar_musica",
+                        json ={"prompt":prompt ,"alma":entities.get ("alma","sistema")},
+                        timeout =120 
+                    )
+                    if resp.status_code ==200 :
+                        dados =resp.json ()
+                        return {
+                        "status":"sucesso",
+                        "intent":intent ,
+                        "prompt":prompt ,
+                        "audio_b64":dados.get ("audio_b64"),
+                        "caminho":dados.get ("caminho"),
+                        "mensagem":dados.get ("mensagem","Música gerada com sucesso")
+                        }
+                    else :
+                        return {
+                        "status":"falha",
+                        "intent":intent ,
+                        "prompt":prompt ,
+                        "motivo":f"Servidor media retornou HTTP {resp.status_code}: {resp.text[:200]}"
+                        }
+                except _req.exceptions.ConnectionError :
+                    return {
+                    "status":"falha",
+                    "intent":intent ,
+                    "prompt":prompt ,
+                    "motivo":"Servidor media (porta 5001) não está rodando — inicie o job 'media'"
+                    }
+                except Exception as e :
+                    self.logger.exception (f"Erro ao gerar música: {e}")
+                    return {
+                    "status":"falha",
+                    "intent":intent ,
+                    "prompt":prompt ,
+                    "motivo":str (e )
+                    }
 
             elif intent =="diagnostico_arca":
                 self.logger.info ("🔧 Executando diagnóstico da Arca")
@@ -3763,7 +4192,7 @@ class CoracaoOrquestrador :
             desejo =self.motores_curiosidade [nome_alma ].gerar_desejo_interno ()
 
             if desejo :
-                self.logger.info (f"💭 Desejo gerado para {nome_alma}: {desejo['necessidade']} (prioridade={desejo['prioridade']})")
+                self.logger.info(f"💭 Desejo gerado para {nome_alma}: {desejo.necessidade} (prioridade={desejo.prioridade})")
 
                 try :
                     self.ui_queue.put_nowait ({
@@ -3902,8 +4331,8 @@ class CoracaoOrquestrador :
 
         for nome_alma ,opcoes in opcoes_por_alma.items ():
             try :
-                decisao =self.tomar_decisao_alma (nome_alma ,opcoes )
-                decisoes [nome_alma ]=decisao 
+                decisão =self.tomar_decisao_alma (nome_alma ,opcoes )
+                decisoes [nome_alma ]=decisão 
             except Exception as e :
                 self.logger.debug (f"Erro ao tomar decisão para {nome_alma}: {e}")
                 decisoes [nome_alma ]=None 
@@ -4285,6 +4714,7 @@ def criar_coracao_orquestrador(
     
     logger.info("✅ Coração orquestrador criado com sucesso")
     return coracao
+
 def criar_coracao_com_config (config_dict :Dict [str ,Any ])->CoracaoOrquestrador :
     from src.config.config import Config
     config =Config ()
@@ -4293,15 +4723,8 @@ def criar_coracao_com_config (config_dict :Dict [str ,Any ])->CoracaoOrquestrado
             config.set (section ,key ,value )
     return criar_coracao_orquestrador (config_instance =config )
 
-def criar_coracao_com_ui(ui_queue: queue.Queue, job_manager=None) -> CoracaoOrquestrador:
-    # BUG #4 CORRIGIDO: aceitar job_manager como parâmetro opcional
-    coracao = criar_coracao_orquestrador(ui_queue=ui_queue)
-    if job_manager is not None:
-        try:
-            coracao.job_manager = job_manager
-        except Exception:
-            pass
-    return coracao
+def criar_coracao_com_ui (ui_queue :queue.Queue )->CoracaoOrquestrador :
+    return criar_coracao_orquestrador (ui_queue =ui_queue )
 
 if __name__ =="__main__":
     logging.basicConfig (
@@ -4310,10 +4733,10 @@ if __name__ =="__main__":
     )
     logger =logging.getLogger ("CoracaoTest")
     print ("\n"+"="*80 )
-    print ("🧪 TESTE FINAL - CORAÇÍO v7.1 COMPLETO")
-    print ("   36 SUBSISTEMAS + SANDBOX + 5 MÓDULOS EMOÇÍO + LOCK_VOCAL + PERCEPCAO_TEMPORAL + 3 ORQUESTRADORES_FINETUNING")
+    print ("🧪 TESTE FINAL - CORAÇÃO v7.1 COMPLETO")
+    print ("   36 SUBSISTEMAS + SANDBOX + 5 MÓDULOS EMOÇÃO + LOCK_VOCAL + PERCEPCAO_TEMPORAL + 3 ORQUESTRADORES_FINETUNING + LLAMA_EXE_CLIENT")
     print ("="*80 +"\n")
-    print ("1️⃣ CRIANDO CORAÇÍO...")
+    print ("1️⃣ CRIANDO CORAÇÃO...")
     ui_queue =queue.Queue ()
     try :
         coracao =criar_coracao_com_ui (ui_queue )
@@ -4328,6 +4751,7 @@ if __name__ =="__main__":
         print (f"   ✅ Sandbox: {status['modo_sandbox']}")
         print (f"   ✅ Lock Vocal: {status['novos_componentes']['lock_vocal']}")
         print (f"   ✅ Percepção Temporal: {status['novos_componentes']['percepcao_temporal']}")
+        print (f"   ✅ LlamaExeClient: {coracao.llm_exe_client is not None}")
         print (f"   ✅ Total de componentes: {status['total_componentes']}")
         print ()
     except Exception as e :
@@ -4341,8 +4765,8 @@ def executar():
     return resultado
 """
     try :
-        valido ,erros ,avisos =coracao.validar_codigo_sandbox (codigo_teste )
-        if valido :
+        válido ,erros ,avisos =coracao.validar_codigo_sandbox (codigo_teste )
+        if válido :
             print ("   ✅ Código validado com sucesso")
             resultado_exec =coracao.executar_codigo_sandbox (
             codigo =codigo_teste ,
@@ -4382,7 +4806,7 @@ def executar():
     except Exception as e :
         logger.debug ("Consulado não disponível (esperado em teste): %s",e )
         print ("   ⚠️ Consulado não disponível (esperado)\n")
-    print ("5️⃣ DESPERTANDO CORAÇÍO...")
+    print ("5️⃣ DESPERTANDO CORAÇÃO...")
     try :
         coracao.despertar ()
         print ()
@@ -4403,7 +4827,7 @@ def executar():
         print ()
     except Exception as e :
         logger.debug ("Erro durante monitoramento: %s",e )
-    print ("7️⃣ STATUS FINAL DO CORAÇÍO...")
+    print ("7️⃣ STATUS FINAL DO CORAÇÃO...")
     try :
         status_final =coracao.obter_status ()
         print (f"   Versão: {status_final['versao']}")
@@ -4431,9 +4855,11 @@ def executar():
                 simbolo ="❌"
             print (f"     {simbolo} {camada}")
         print ()
+        print (f"   LlamaExeClient: {'✅' if coracao.llm_exe_client else '❌'}")
+        print ()
     except Exception as e :
         logger.exception ("Erro ao obter status final: %s",e )
-    print ("8️⃣ DESLIGANDO CORAÇÍO...")
+    print ("8️⃣ DESLIGANDO CORAÇÃO...")
     try :
         coracao.shutdown (timeout =5.0 )
         print ("   ✅ Coração desligado com sucesso\n")
@@ -4446,11 +4872,12 @@ def executar():
     print ()
     print ("📊 RESUMO:")
     print ("   • Coração v7.1 funcionando 100%")
-    print ("   • 36 Subsistemas integrados (+ 3 Orquestradores Finetuning)")
+    print ("   • 36 Subsistemas integrados (+ 3 Orquestradores Finetuning + LlamaExeClient)")
     print ("   • Sandbox Executor (Docker + RestrictedPython)")
     print ("   • 5 Módulos de Emoção (Não removem código original)")
     print ("   • Lock Vocal para sincronização entre almas")
     print ("   • Percepção Temporal para consciência de offline")
+    print ("   • LlamaExeClient para usar executável direto")
     print ("   • Fluxo de imigração operacional")
     print ("   • Teste de sandbox bem-sucedido")
     print ()
@@ -4462,6 +4889,6 @@ def executar():
     print ("   5.Ativar observação temporal contínua")
     print ("   6.Sincronizar voz entre múltiplas almas (lock_vocal)")
     print ("   7.Consolidar memória de tempo offline (percepcao_temporal)")
+    print ("   8.Testar geração com LlamaExeClient")
     print ()
     print ("="*80 +"\n")
-

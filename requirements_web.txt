@@ -1,0 +1,19 @@
+# ============================================================
+# WEB — Automação de navegadores, scraping, Aliadas web
+# Porta 5003
+# ============================================================
+
+playwright==1.42.0
+selenium==4.18.1
+flask==3.0.0
+requests==2.32.5
+beautifulsoup4==4.12.3
+lxml==5.1.0
+
+# --- ADICIONADOS (estavam faltando) ---
+
+# Servidor (o job web também roda via uvicorn na porta 5003)
+fastapi==0.109.0
+uvicorn==0.27.0
+python-multipart==0.0.6
+pydantic>=2.0.0

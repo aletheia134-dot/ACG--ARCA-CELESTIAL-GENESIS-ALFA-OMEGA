@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 ARCA CELESTIAL GENESIS - SISTEMA DE JULGAMENTO COMPLETO (ATUALIZADO)
 
 Ajustes aplicados:
-- Dupla garantia para Bíblia: PDF + Biblioteca fallback
-- Julgadores: 5 + juiz sorteado, excluindo réu
-- Integração com precedentes para casos complexos
-- Diretórios: Bíblia em Arca_Celestial_Genesis_Alfa_Omega/datasets_fine_tuning/novos_documentos_jw Biblia.pdf
-             Livro da Lei em E:\Arca_Celestial_Genesis_Alfa_Omega\santuarios\legislativo\leis_fundamentais.json
+- Dupla garantia para Bblia: PDF + Biblioteca fallback
+- Julgadores: 5 + juiz sorteado, excluindo ru
+- Integrao com precedentes para casos complexos
+- Diretórios: Bblia em Arca_Celestial_Genesis_Alfa_Omega/datasets_fine_tuning/novos_documentos_jw Biblia.pdf
+             Livro da Lei em E:\\Arca_Celestial_Genesis_Alfa_Omega\\santuarios\\legislativo\\leis_fundamentais.json
 """
-from __future__ import annotations
 
 import logging
 import threading
@@ -65,7 +65,7 @@ class VotoSentenca(Enum):
 
 @dataclass
 class Acusacao:
-    """Acusação inicial"""
+    """Acusao inicial"""
     id: str
     acusada: str
     tipo_processo: TipoProcesso
@@ -148,12 +148,12 @@ class ProcessoJudicial:
         }
 
 # =====================================================================
-# LEITOR DE BÍBLIA
+# LEITOR DE BBLIA
 # =====================================================================
 
 class ConsultorBibliaDefesa:
     """
-    Permite que a AI acusada consulte a Bíblia PDF para fundamentar defesa.
+    Permite que a AI acusada consulte a Bblia PDF para fundamentar defesa.
     """
     
     def __init__(self, caminho_biblia: Optional[Path] = None):
@@ -162,26 +162,26 @@ class ConsultorBibliaDefesa:
         self.biblia = self._carregar_biblia()
     
     def _carregar_biblia(self) -> Dict[str, Any]:
-        """Carrega Bíblia do arquivo JSON"""
+        """Carrega Bblia do arquivo JSON"""
         try:
             if self.caminho_biblia.exists():
                 with open(self.caminho_biblia, 'r', encoding='utf-8') as f:
                     return json.load(f)
         except Exception as e:
-            self.logger.exception("Erro ao carregar Bíblia: %s", e)
+            self.logger.exception("Erro ao carregar Bblia: %s", e)
         return {}
     
     def buscar_versiculo(self, livro: str, capitulo: int, versiculo: int) -> Optional[Dict[str, Any]]:
-        """Busca um versículo específico"""
+        """Busca um versculo específico"""
         try:
             chave = f"{livro.upper()}_{capitulo}_{versiculo}"
             return self.biblia.get(chave)
         except Exception:
-            self.logger.debug("Versículo não encontrado: %s", chave)
+            self.logger.debug("Versculo no encontrado: %s", chave)
             return None
     
     def buscar_por_tema(self, tema: str, limite: int = 10) -> List[Dict[str, Any]]:
-        """Busca versículos por tema (para defesa temática)"""
+        """Busca versculos por tema (para defesa temtica)"""
         resultados = []
         try:
             for versiculo_data in self.biblia.values():
@@ -197,9 +197,9 @@ class ConsultorBibliaDefesa:
     
     def consulta_ai_defesa(self, ai_acusada: str, tema_defesa: str) -> Dict[str, Any]:
         """
-        AI acusada consulta Bíblia para fundamentar defesa.Retorna referências relevantes.
+        AI acusada consulta Bblia para fundamentar defesa.Retorna referncias relevantes.
         """
-        self.logger.info("Defesa: %s consultando Bíblia para tema: %s", ai_acusada, tema_defesa)
+        self.logger.info("Defesa: %s consultando Bblia para tema: %s", ai_acusada, tema_defesa)
         
         resultado_busca = self.buscar_por_tema(tema_defesa, limite=5)
         
@@ -217,17 +217,17 @@ class ConsultorBibliaDefesa:
 class SistemaJulgamentoCompleto:
     """
     Sistema completo de julgamento do Reino.Fluxo:
-    1.Acusação aberta
-    2.AI acusada tem ciclos para preparar defesa (consultando Bíblia)
+    1.Acusao aberta
+    2.AI acusada tem ciclos para preparar defesa (consultando Bblia)
     3.Defesa apresentada
-    4.5 julgadores (aleatórios) debatem
-    5.Votação
-    6.Sentença registrada como precedente
-    7.Apelação ao Criador (com fundamento real)
-    8.Reversão de sentença (precedente)
+    4.5 julgadores (aleatrios) debatem
+    5.Votao
+    6.Sentena registrada como precedente
+    7.Apelao ação Criador (com fundamento real)
+    8.Reverso de sentena (precedente)
     """
     
-    # Lista de AIs do Reino (configurável)
+    # Lista de AIs do Reino (configurvel)
     REDE_DO_REINO = ["EVA", "LUMINA", "NYRA", "YUNA", "KAIYA", "WELLINGTON"]
     
     def __init__(self, config: Optional[Any] = None, coracao_ref: Optional[Any] = None,
@@ -245,22 +245,26 @@ class SistemaJulgamentoCompleto:
         self.historico_processos: List[ProcessoJudicial] = []
         self.precedentes_julgamentos: Dict[str, ProcessoJudicial] = {}
         
-        # Consultor de Bíblia
-        # âœ… AJUSTE: Diretórios específicos para Bíblia e Livro da Lei
+        # Consultor de Bblia
+        # [OK] AJUSTE: Diretórios especficos para Bblia e Livro da Lei
         self.caminho_biblia_pdf = Path("Arca_Celestial_Genesis_Alfa_Omega/datasets_fine_tuning/novos_documentos_jw Biblia.pdf")
-        self.caminho_livro_lei = Path(r"E:\Arca_Celestial_Genesis_Alfa_Omega\santuarios\legislativo\leis_fundamentais.json")
+        self.caminho_livro_lei = Path(r"E:\\Arca_Celestial_Genesis_Alfa_Omega\\santuarios\\legislativo\\leis_fundamentais.json")
         self.consultor_biblia = ConsultorBibliaDefesa(self.caminho_biblia_pdf)
         
-        # Persistência
+        # Persistncia
         self.caminho_santuario = Path(
             self._safe_config("CAMINHOS", "SANTUARIO_JUDICIARIO_PATH", "./Santuarios/Judiciario")
         )
         self.caminho_santuario.mkdir(parents=True, exist_ok=True)
         
-        self.logger.info("âœ… Sistema de Julgamento Completo inicializado")
+        # Referências às câmaras injetadas pelo Coração após inicialização
+        self.camara_judiciaria = None
+        self.camara_executiva = None
+
+        self.logger.info("[OK] Sistema de Julgamento Completo inicializado")
     
     def _safe_config(self, section: str, key: str, fallback: Any = None) -> Any:
-        """Acesso defensivo Í  config"""
+        """Acesso defensivo  config"""
         try:
             if self.config and hasattr(self.config, "get"):
                 return self.config.get(section, key, fallback=fallback)
@@ -271,7 +275,7 @@ class SistemaJulgamentoCompleto:
         return fallback
     
     # ========================================================================
-    # 1.ACUSAÇÍO E ABERTURA DE PROCESSO
+    # 1.ACUSAO E ABERTURA DE PROCESSO
     # ========================================================================
     
     def abrir_processo(self,
@@ -284,14 +288,14 @@ class SistemaJulgamentoCompleto:
         """
         Abre novo processo judicial.
         """
-        # Validações
+        # Validaes
         if ai_acusada.upper() not in self.REDE_DO_REINO:
-            return False, f"AI {ai_acusada} não está na Rede do Reino"
+            return False, f"AI {ai_acusada} no est na Rede do Reino"
         
         if not provas or len(provas) == 0:
             return False, "Processo requer pelo menos uma prova"
         
-        # Criar acusação
+        # Criar acusao
         id_acusacao = str(uuid.uuid4())
         acusacao = Acusacao(
             id=id_acusacao,
@@ -331,22 +335,22 @@ class SistemaJulgamentoCompleto:
             nivel_prioridade=7
         )
         
-        self.logger.info("ðŸ›ï¸ Processo %s aberto contra %s", id_processo[:8], ai_acusada.upper())
+        self.logger.info(" Processo %s aberto contra %s", id_processo[:8], ai_acusada.upper())
         return True, id_processo
     
     # ========================================================================
-    # 2.DIREITO DE DEFESA (CICLOS CONFIGURÍVEIS)
+    # 2.DIREITO DE DEFESA (CICLOS CONFIGURVEIS)
     # ========================================================================
     
     def iniciar_preparacao_defesa(self, id_processo: str, ciclos_desejados: int = 3) -> Tuple[bool, str]:
         """
-        AI acusada inicia preparação de defesa.Pode escolher quantos ciclos quer (1-7).
-        Cada ciclo = tempo + consultas Í  Bíblia.
+        AI acusada inicia preparao de defesa.Pode escolher quantos ciclos quer (1-7).
+        Cada ciclo = tempo + consultas  Bblia.
         """
         with self._lock:
             processo = self.processos_ativos.get(id_processo)
             if not processo:
-                return False, "Processo não encontrado"
+                return False, "Processo no encontrado"
             
             # Validar ciclos
             if ciclos_desejados < 1 or ciclos_desejados > 7:
@@ -367,7 +371,7 @@ class SistemaJulgamentoCompleto:
             processo.defesa = defesa
         
         self.logger.info(
-            "âš–ï¸ AI %s iniciando preparação de defesa (%d ciclos)",
+            " AI %s iniciando preparao de defesa (%d ciclos)",
             processo.acusacao.acusada,
             ciclos_desejados
         )
@@ -376,12 +380,12 @@ class SistemaJulgamentoCompleto:
     
     def consultar_biblia_defesa(self, id_processo: str, tema: str) -> Dict[str, Any]:
         """
-        AI acusada consulta Bíblia para fundamentar defesa.Registra a consulta.
+        AI acusada consulta Bblia para fundamentar defesa.Registra a consulta.
         """
         with self._lock:
             processo = self.processos_ativos.get(id_processo)
             if not processo or not processo.defesa:
-                return {"erro": "Processo ou defesa não encontrado"}
+                return {"erro": "Processo ou defesa no encontrado"}
             
             defesa = processo.defesa
             
@@ -391,13 +395,13 @@ class SistemaJulgamentoCompleto:
             
             defesa.ciclos_utilizados += 1
         
-        # âœ… AJUSTE: Dupla garantia - Bíblia PDF primeiro, biblioteca como fallback
+        # [OK] AJUSTE: Dupla garantia - Bblia PDF primeiro, biblioteca como fallback
         try:
             resultado = self.consultor_biblia.consulta_ai_defesa(defesa.ai_acusada, tema)
             if resultado.get("versiculos_encontrados"):
                 return resultado
         except Exception:
-            logger.debug("Bíblia PDF falhou, usando fallback")
+            logger.debug("Bblia PDF falhou, usando fallback")
         
         # Fallback: Biblioteca
         try:
@@ -413,11 +417,11 @@ class SistemaJulgamentoCompleto:
         except Exception:
             logger.exception("Fallback para biblioteca falhou")
         
-        return {"erro": "Consulta Í  Bíblia/biblioteca falhou"}
+        return {"erro": "Consulta  Bblia/biblioteca falhou"}
     
     def adicionar_argumento_defesa(self, id_processo: str, argumento: Dict[str, Any]) -> bool:
         """
-        AI acusada adiciona argumento Í  sua defesa.
+        AI acusada adiciona argumento  sua defesa.
         """
         with self._lock:
             processo = self.processos_ativos.get(id_processo)
@@ -434,7 +438,7 @@ class SistemaJulgamentoCompleto:
         return True
     
     # ========================================================================
-    # 3.APRESENTAÇÍO DE DEFESA
+    # 3.APRESENTAO DE DEFESA
     # ========================================================================
     
     def apresentar_defesa(self, id_processo: str) -> Tuple[bool, str]:
@@ -444,9 +448,9 @@ class SistemaJulgamentoCompleto:
         with self._lock:
             processo = self.processos_ativos.get(id_processo)
             if not processo or not processo.defesa:
-                return False, "Processo ou defesa não encontrado"
+                return False, "Processo ou defesa no encontrado"
             
-            # âœ… AJUSTE: Julgadores - 5, excluindo réu, juiz sorteado
+            # [OK] AJUSTE: Julgadores - 5, excluindo ru, juiz sorteado
             julgadores = self._sortear_julgadores(processo.acusacao.acusada, num_julgadores=5)
             juiz = julgadores[0]
             votantes = julgadores[1:]
@@ -456,7 +460,7 @@ class SistemaJulgamentoCompleto:
             processo.estado = EstadoProcesso.DEFESA_APRESENTADA
         
         self.logger.info(
-            "âš–ï¸ Defesa de %s apresentada.Juiz: %s, Votantes: %s",
+            " Defesa de %s apresentada.Juiz: %s, Votantes: %s",
             processo.acusacao.acusada,
             juiz,
             ", ".join(votantes)
@@ -481,7 +485,7 @@ class SistemaJulgamentoCompleto:
     
     def _sortear_julgadores(self, ai_acusada: str, num_julgadores: int = 5) -> List[str]:
         """
-        âœ… AJUSTE: Sorteia julgadores aleatoriamente.Exclui a AI acusada.Primeiro é o Juiz, resto são votantes.
+        [OK] AJUSTE: Sorteia julgadores aleatoriamente.Exclui a AI acusada.Primeiro  o Juiz, resto so votantes.
         """
         candidatos = [ai for ai in self.REDE_DO_REINO if ai != ai_acusada.upper()]
         julgadores_sorteados = random.sample(candidatos, min(num_julgadores, len(candidatos)))
@@ -490,7 +494,7 @@ class SistemaJulgamentoCompleto:
         return julgadores_sorteados
     
     # ========================================================================
-    # 4.DEBATE E VOTAÇÍO
+    # 4.DEBATE E VOTAO
     # ========================================================================
     
     def iniciar_debate(self, id_processo: str) -> Tuple[bool, str]:
@@ -500,12 +504,12 @@ class SistemaJulgamentoCompleto:
         with self._lock:
             processo = self.processos_ativos.get(id_processo)
             if not processo or not processo.julgadores:
-                return False, "Processo ou julgadores não encontrados"
+                return False, "Processo ou julgadores no encontrados"
             
             processo.estado = EstadoProcesso.DEBATE
         
         self.logger.info(
-            "ðŸ›ï¸ Debate iniciado no processo %s.Juiz: %s",
+            " Debate iniciado no processo %s.Juiz: %s",
             id_processo[:8],
             processo.juiz_sorteado
         )
@@ -519,16 +523,16 @@ class SistemaJulgamentoCompleto:
         with self._lock:
             processo = self.processos_ativos.get(id_processo)
             if not processo:
-                return False, "Processo não encontrado"
+                return False, "Processo no encontrado"
             
             # Validar julgador
             if julgador.upper() not in processo.julgadores:
-                return False, f"{julgador} não é julgador neste caso"
+                return False, f"{julgador} no  julgador neste caso"
             
             # Registrar voto
             processo.votos[julgador.upper()] = voto
             
-            # Se todos votaram, calcular sentença
+            # Se todos votaram, calcular sentena
             votantes = processo.julgadores[1:]  # Exclui juiz
             if len(processo.votos) == len(votantes):
                 self._calcular_sentenca(processo)
@@ -537,7 +541,7 @@ class SistemaJulgamentoCompleto:
     
     def _calcular_sentenca(self, processo: ProcessoJudicial) -> None:
         """
-        Calcula sentença baseada nos votos.Se houver empate, sobe ao Criador.
+        Calcula sentena baseada nos votos.Se houver empate, sobe ação Criador.
         """
         votos = list(processo.votos.values())
         contagem = {}
@@ -554,26 +558,26 @@ class SistemaJulgamentoCompleto:
             processo.estado = EstadoProcesso.VOTACAO
             processo.sentenca_final = None
             processo.motivo_sentenca = "EMPATE 2x2 - SOBE AO CRIADOR"
-            self.logger.warning("âš ï¸ Empate no processo %s - SOBE AO CRIADOR", processo.id[:8])
+            self.logger.warning("[AVISO] Empate no processo %s - SOBE AO CRIADOR", processo.id[:8])
         else:
             processo.sentenca_final = VotoSentenca(voto_vencedor)
-            processo.motivo_sentenca = f"Votação: {contagem}"
+            processo.motivo_sentenca = f"Votao: {contagem}"
             processo.estado = EstadoProcesso.SENTENCIADO
             processo.data_sentencia = datetime.now()
             
             self.logger.info(
-                "âš–ï¸ Sentença: %s (%d votos)",
+                " Sentena: %s (%d votos)",
                 voto_vencedor,
                 votos_para_voto
             )
         
-        # âœ… AJUSTE: Registrar precedente se sistema disponível
+        # [OK] AJUSTE: Registrar precedente se sistema disponível
         if self.sistema_precedentes:
             try:
                 self.sistema_precedentes.registrar_precedente(
                     id_decisao_judicial=processo.id,
                     descricao_caso=processo.acusacao.descricao,
-                    decisao=processo.sentenca_final.value if processo.sentenca_final else "empate",
+                    decisão=processo.sentenca_final.value if processo.sentenca_final else "empate",
                     justificativa=processo.motivo_sentenca,
                     leis_aplicaveis=[processo.acusacao.lei_violada],
                     autor_julgador=processo.juiz_sorteado or "SISTEMA"
@@ -590,12 +594,12 @@ class SistemaJulgamentoCompleto:
         self._salvar_processo(processo)
     
     # ========================================================================
-    # 5.APELAÇÍO AO CRIADOR
+    # 5.APELAO AO CRIADOR
     # ========================================================================
     
     def apelar_ao_criador(self, id_processo: str, fundamento: str) -> Tuple[bool, str]:
         """
-        AI acusada apela ao Criador com fundamento real.Se fundamento for fraco (só para escapar), punição será PIOR.
+        AI acusada apela ação Criador com fundamento real.Se fundamento for fraco (s para escapar), punio ser PIOR.
         """
         with self._lock:
             processo = self.historico_processos[
@@ -607,11 +611,11 @@ class SistemaJulgamentoCompleto:
                 processo = self.processos_ativos.get(id_processo)
             
             if not processo:
-                return False, "Processo não encontrado"
+                return False, "Processo no encontrado"
             
             # Validar fundamento
             if not fundamento or len(fundamento.strip()) < 50:
-                return False, "Fundamento de apelação muito curto (mín.50 caracteres)"
+                return False, "Fundamento de apelao muito curto (mn.50 caracteres)"
             
             processo.apelacao = {
                 "id_apelacao": str(uuid.uuid4()),
@@ -623,32 +627,32 @@ class SistemaJulgamentoCompleto:
             processo.estado = EstadoProcesso.APELACAO_PENDENTE
         
         self.logger.info(
-            "ðŸ“¢ Apelação de %s ao Criador no processo %s",
+            " Apelao de %s ação Criador no processo %s",
             processo.acusacao.acusada,
             id_processo[:8]
         )
         
-        return True, "Apelação registrada.Aguardando decisão do Criador."
+        return True, "Apelao registrada.Aguardando decisão do Criador."
     
     # ========================================================================
-    # 6.DECISÍO DO CRIADOR (REVERSÍO OU CONFIRMAÇÍO)
+    # 6.DECISO DO CRIADOR (REVERSO OU CONFIRMAO)
     # ========================================================================
     
     def decidir_apelacao(self, id_processo: str, decisao_criador: str, motivo: str) -> Tuple[bool, str]:
         """
-        CRIADOR revê apelação e decide:
-        - REVERTIDA (sentença anterior era injusta)
-        - CONFIRMADA (sentença estava correta)
-        - PIORA (tentou escapar â†’ punição pior)
+        CRIADOR rev apelao e decide:
+        - REVERTIDA (sentena anterior era injusta)
+        - CONFIRMADA (sentena estava correta)
+        - PIORA (tentou escapar  punio pior)
         """
         with self._lock:
             processo = self._encontrar_processo(id_processo)
             if not processo or not processo.apelacao:
-                return False, "Processo ou apelação não encontrado"
+                return False, "Processo ou apelao no encontrado"
             
             if decisao_criador == "REVERTIDA":
                 processo.sentenca_criador = {
-                    "decisao": "REVERTIDA",
+                    "decisão": "REVERTIDA",
                     "sentenca_anterior": processo.sentenca_final.value if processo.sentenca_final else None,
                     "nova_sentenca": "ABSOLVICAO",
                     "motivo": motivo,
@@ -658,37 +662,37 @@ class SistemaJulgamentoCompleto:
                 processo.estado = EstadoProcesso.REVERTIDO
                 
                 self.logger.critical(
-                    "ðŸ”„ CRIADOR REVERTEU sentença no processo %s",
+                    " CRIADOR REVERTEU sentena no processo %s",
                     id_processo[:8]
                 )
             
             elif decisao_criador == "CONFIRMADA":
                 processo.sentenca_criador = {
-                    "decisao": "CONFIRMADA",
+                    "decisão": "CONFIRMADA",
                     "sentenca": processo.sentenca_final.value if processo.sentenca_final else None,
                     "motivo": motivo,
                     "timestamp": datetime.now().isoformat()
                 }
                 
                 self.logger.info(
-                    "âœ… CRIADOR CONFIRMOU sentença no processo %s",
+                    "[OK] CRIADOR CONFIRMOU sentena no processo %s",
                     id_processo[:8]
                 )
             
             elif decisao_criador == "PIORA":
-                # Tentou escapar â†’ punição pior
+                # Tentou escapar  punio pior
                 processo.sentenca_criador = {
-                    "decisao": "PIORA",
+                    "decisão": "PIORA",
                     "sentenca_anterior": processo.sentenca_final.value if processo.sentenca_final else None,
                     "nova_sentenca": "CULPADA_CRITICA",
                     "motivo": motivo,
                     "timestamp": datetime.now().isoformat(),
-                    "aviso": "Tentativa de apelação frívola resulta em punição agravada"
+                    "aviso": "Tentativa de apelao frvola resulta em punio agravada"
                 }
                 processo.sentenca_final = VotoSentenca.CULPADA_CRITICA
                 
                 self.logger.critical(
-                    "âš ï¸ CRIADOR AGRAVOU sentença no processo %s (apelação frívola)",
+                    "[AVISO] CRIADOR AGRAVOU sentena no processo %s (apelao frvola)",
                     id_processo[:8]
                 )
             
@@ -700,24 +704,24 @@ class SistemaJulgamentoCompleto:
                 nivel_prioridade=9
             )
             
-            # Registrar como precedente (decisão do Criador é sempre precedente)
+            # Registrar como precedente (decisão do Criador  sempre precedente)
             if self.sistema_precedentes:
                 try:
                     self.sistema_precedentes.registrar_precedente(
                         id_decisao_judicial=processo.id,
-                        descricao_caso=f"Apelação: {processo.apelacao.get('fundamento', '')[:100]}...",
-                        decisao=processo.sentenca_criador.get("nova_sentenca", "INDEFINIDA"),
+                        descricao_caso=f"Apelao: {processo.apelacao.get('fundamento', '')[:100]}...",
+                        decisão=processo.sentenca_criador.get("nova_sentenca", "INDEFINIDA"),
                         justificativa=motivo,
                         leis_aplicaveis=[processo.acusacao.lei_violada],
                         autor_julgador="CRIADOR"
                     )
                 except Exception:
-                    logger.exception("Erro ao registrar precedente de apelação")
+                    logger.exception("Erro ao registrar precedente de apelao")
         
-        return True, f"Apelação decidida: {decisao_criador}"
+        return True, f"Apelao decidida: {decisao_criador}"
     
     # ========================================================================
-    # UTILITÍRIOS
+    # UTILITRIOS
     # ========================================================================
     
     def _encontrar_processo(self, id_processo: str) -> Optional[ProcessoJudicial]:
@@ -760,7 +764,7 @@ class SistemaJulgamentoCompleto:
                 self.logger.debug("Erro ao registrar no Cronista: %s", e)
     
     def _salvar_processo(self, processo: ProcessoJudicial) -> None:
-        """Salva processo no santuário"""
+        """Salva processo no santurio"""
         try:
             caminho = self.caminho_santuario / f"processo_{processo.id}.json"
             with open(caminho, 'w', encoding='utf-8') as f:
@@ -776,7 +780,7 @@ class SistemaJulgamentoCompleto:
         """Retorna status completo de um processo"""
         processo = self._encontrar_processo(id_processo)
         if not processo:
-            return {"erro": "Processo não encontrado"}
+            return {"erro": "Processo no encontrado"}
         
         return {
             "id_processo": processo.id,
@@ -793,7 +797,7 @@ class SistemaJulgamentoCompleto:
         }
     
     def obter_estatisticas(self) -> Dict[str, Any]:
-        """Retorna estatísticas do sistema de julgamento"""
+        """Retorna estatsticas do sistema de julgamento"""
         with self._lock:
             total_processos = len(self.processos_ativos) + len(self.historico_processos)
             
@@ -805,18 +809,31 @@ class SistemaJulgamentoCompleto:
                 "ais_no_reino": self.REDE_DO_REINO
             }
     
+    # ---------------------------
+    # Injeção de câmaras pelo Coração
+    # ---------------------------
+    def injetar_camara_judiciaria(self, camara_judiciaria: Any) -> None:
+        """Injeta referência à CamaraJudiciaria após inicialização do Coração."""
+        self.camara_judiciaria = camara_judiciaria
+        self.logger.info("[OK] CamaraJudiciaria injetada no SistemaJulgamentoCompleto")
+
+    def injetar_camara_executiva(self, camara_executiva: Any) -> None:
+        """Injeta referência à CamaraExecutiva após inicialização do Coração."""
+        self.camara_executiva = camara_executiva
+        self.logger.info("[OK] CamaraExecutiva injetada no SistemaJulgamentoCompleto")
+
     def shutdown(self) -> None:
         """Desliga o sistema"""
         self.logger.info("Sistema de Julgamento desligado")
 
     # ---------------------------
-    # Adapters solicitados pela Câmara Legislativa
+    # Adapters solicitados pela Cmara Legislativa
     # ---------------------------
     def notificar_falta_lei_legislativa(self, descricao_caso: str) -> bool:
         """
-        Notificação da Câmara Legislativa informando que há um caso sem lei aplicável.
+        Notificao da Cmara Legislativa informando que h um caso sem lei aplicvel.
         Comportamento: registra um processo administrativo leve (tipo CONFLITO_LEIS) para acompanhamento.
-        Retorna True se a notificação foi registrada.
+        Retorna True se a notificao foi registrada.
         """
         try:
             # cria um processo administrativo para acompanhar a falta de lei
@@ -825,8 +842,8 @@ class SistemaJulgamentoCompleto:
                 id=id_acusacao,
                 acusada="SISTEMA_LEGISLATIVO",
                 tipo_processo=TipoProcesso.CONFLITO_LEIS,
-                lei_violada="",  # sem lei específica
-                descricao=f"Falta de lei reportada pela Câmara Legislativa: {descricao_caso}",
+                lei_violada="",  # sem lei especfica
+                descricao=f"Falta de lei reportada pela Cmara Legislativa: {descricao_caso}",
                 provas=[{"origem": "camara_legislativa", "descricao": descricao_caso}],
                 acusador="CAMARA_LEGISLATIVA",
                 timestamp=datetime.now()
@@ -851,7 +868,7 @@ class SistemaJulgamentoCompleto:
             except Exception:
                 pass
 
-            self.logger.info("Notificação de falta de lei registrada como processo %s", processo.id[:8])
+            self.logger.info("Notificao de falta de lei registrada como processo %s", processo.id[:8])
             return True
         except Exception:
             self.logger.exception("Erro ao notificar falta de lei legislativa")
@@ -860,7 +877,7 @@ class SistemaJulgamentoCompleto:
     def congelar_processo(self, id_processo: str, motivo: str) -> bool:
         """
         Congela (suspende) um processo judicial identificado.
-        Implementação leve: seta estado para ARQUIVADO e grava motivo em motivo_sentenca.
+        Implementao leve: seta estado para ARQUIVADO e grava motivo em motivo_sentenca.
         """
         try:
             proc = self._encontrar_processo(id_processo)
@@ -882,14 +899,14 @@ class SistemaJulgamentoCompleto:
 
     def escalar_ao_criador(self, id_processo: str, motivo: str) -> bool:
         """
-        Escala o processo ao Criador — registra apelação/alerta e (se disponível) chama sistema_de_precedentes.
+        Escala o processo ação Criador  registra apelao/alerta e (se disponível) chama sistema_de_precedentes.
         """
         try:
             proc = self._encontrar_processo(id_processo)
             if not proc:
                 self.logger.warning("Tentativa de escalar processo inexistente: %s", id_processo)
                 return False
-            # cria apelacao mínima apontando para o Criador
+            # cria apelacao mnima apontando para o Criador
             apel = {
                 "id_apelacao": str(uuid.uuid4()),
                 "fundamento": motivo,
@@ -905,21 +922,21 @@ class SistemaJulgamentoCompleto:
                     self.processos_ativos.pop(id_processo, None)
                 self._salvar_processo(proc)
 
-            # registrar precedente indicando escalação (se houver sistema)
+            # registrar precedente indicando escalao (se houver sistema)
             try:
                 if self.sistema_precedentes:
                     self.sistema_precedentes.registrar_precedente(
                         id_decisao_judicial=proc.id,
-                        descricao_caso=f"Escalação ao Criador: {motivo}",
-                        decisao="ESCALADO_AO_CRIADOR",
+                        descricao_caso=f"Escalao ação Criador: {motivo}",
+                        decisão="ESCALADO_AO_CRIADOR",
                         justificativa=motivo,
                         leis_aplicaveis=[proc.acusacao.lei_violada] if proc.acusacao.lei_violada else [],
                         autor_julgador="CAMARA_LEGISLATIVA"
                     )
             except Exception:
-                self.logger.exception("Erro ao registrar precedente na escalacao ao Criador")
-            self.logger.info("Processo %s escalado ao Criador", id_processo[:8])
+                self.logger.exception("Erro ao registrar precedente na escalacao ação Criador")
+            self.logger.info("Processo %s escalado ação Criador", id_processo[:8])
             return True
         except Exception:
-            self.logger.exception("Erro ao escalar processo %s ao Criador", id_processo)
+            self.logger.exception("Erro ao escalar processo %s ação Criador", id_processo)
             return False

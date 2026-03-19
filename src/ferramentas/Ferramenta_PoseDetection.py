@@ -1,4 +1,4 @@
-# Ferramenta: Detecção de Pose Corporal
+# Ferramenta: Deteco de Pose Corporal
 # Usa MediaPipe Pose (leve, CPU/GPU)
 
 import sys
@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 
 import cv2
 import mediapipe as mp
@@ -27,7 +27,7 @@ class FerramentaPoseDetection:
         
         self.pose = self.mp_pose.Pose(
             static_image_mode=False,
-            model_complexity=1,  # 0, 1, 2 (2 é mais preciso, mais lento)
+            model_complexity=1,  # 0, 1, 2 (2  mais preciso, mais lento)
             smooth_landmarks=True,
             enable_segmentation=False,
             min_detection_confidence=0.5,
@@ -41,7 +41,7 @@ class FerramentaPoseDetection:
         self.frame_count = 0
         self.last_time = time.time()
         
-        # Conexões para desenho
+        # conexões para desenho
         self.connections = self.mp_pose.POSE_CONNECTIONS
     
     def iniciar(self, indice=0):
@@ -80,20 +80,20 @@ class FerramentaPoseDetection:
                     landmark_drawing_spec=self.mp_drawing_styles.get_default_pose_landmarks_style()
                 )
             
-            # Adiciona info de ângulos
+            # Adiciona info de ngulos
             self._calcular_angulos(frame, results.pose_landmarks.landmark, w, h)
         
         return frame
     
     def _calcular_angulos(self, frame, landmarks, w, h):
-        """Calcula e mostra ângulos das articulações"""
-        # Índices dos landmarks
+        """Calcula e mostra ngulos das articulaes"""
+        # índices dos landmarks
         # Ombro, cotovelo, punho
         ombro_d = landmarks[self.mp_pose.PoseLandmark.RIGHT_SHOULDER]
         cotovelo_d = landmarks[self.mp_pose.PoseLandmark.RIGHT_ELBOW]
         punho_d = landmarks[self.mp_pose.PoseLandmark.RIGHT_WRIST]
         
-        # Calcula ângulo do cotovelo direito
+        # Calcula ngulo do cotovelo direito
         if ombro_d and cotovelo_d and punho_d:
             angulo = self._calcular_angulo_3pontos(
                 (ombro_d.x, ombro_d.y),
@@ -101,10 +101,10 @@ class FerramentaPoseDetection:
                 (punho_d.x, punho_d.y)
             )
             
-            # Mostra ângulo
+            # Mostra ngulo
             x = int(cotovelo_d.x * w)
             y = int(cotovelo_d.y * h)
-            cv2.putText(frame, f"{angulo:.0f}°", (x, y-20),
+            cv2.putText(frame, f"{angulo:.0f}", (x, y-20),
                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
         
         # Joelho direito
@@ -121,11 +121,11 @@ class FerramentaPoseDetection:
             
             x = int(joelho_d.x * w)
             y = int(joelho_d.y * h)
-            cv2.putText(frame, f"{angulo:.0f}°", (x, y-20),
+            cv2.putText(frame, f"{angulo:.0f}", (x, y-20),
                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
     
     def _calcular_angulo_3pontos(self, p1, p2, p3):
-        """Calcula ângulo entre três pontos"""
+        """Calcula ngulo entre trs pontos"""
         a = np.array(p1)
         b = np.array(p2)
         c = np.array(p3)
@@ -165,7 +165,7 @@ class FerramentaPoseDetection:
 
 class InterfacePoseDetection(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸƒ Detecção de Pose", "900x700")
+        super().__init__(" Deteco de Pose", "900x700")
         self.ferramenta = FerramentaPoseDetection()
         self.thread_webcam = None
         self.setup_interface()
@@ -173,12 +173,12 @@ class InterfacePoseDetection(InterfaceBase):
     def setup_interface(self):
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸƒ Detecção de Pose Corporal",
+            text=" Deteco de Pose Corporal",
             font=("Arial", 24, "bold")
         )
         titulo.pack(pady=10)
         
-        # Frame de vídeo
+        # Frame de vdeo
         self.frame_video = ctk.CTkFrame(self.frame, width=800, height=600)
         self.frame_video.pack(pady=10)
         
@@ -191,7 +191,7 @@ class InterfacePoseDetection(InterfaceBase):
         
         self.btn_iniciar = ctk.CTkButton(
             self.frame_controles,
-            text="â–¶ï¸ Iniciar Webcam",
+            text=" Iniciar Webcam",
             command=self.iniciar_webcam,
             width=120,
             height=35,
@@ -201,7 +201,7 @@ class InterfacePoseDetection(InterfaceBase):
         
         self.btn_parar = ctk.CTkButton(
             self.frame_controles,
-            text="â¹ï¸ Parar",
+            text=" Parar",
             command=self.parar_webcam,
             width=80,
             height=35,
@@ -212,7 +212,7 @@ class InterfacePoseDetection(InterfaceBase):
         
         self.btn_foto = ctk.CTkButton(
             self.frame_controles,
-            text="ðŸ“¸ Foto",
+            text=" Foto",
             command=self.tirar_foto,
             width=80,
             height=35,
@@ -262,7 +262,7 @@ class InterfacePoseDetection(InterfaceBase):
         
         self.lbl_info = ctk.CTkLabel(
             self.frame_info,
-            text="33 pontos corporais detectados\nÂngulos calculados automaticamente",
+            text="33 pontos corporais detectados\nngulos calculados automaticamente",
             justify="left"
         )
         self.lbl_info.pack()

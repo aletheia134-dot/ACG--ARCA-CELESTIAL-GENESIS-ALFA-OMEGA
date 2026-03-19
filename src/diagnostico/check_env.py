@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # tools/check_env.py
-# Verificação de dependências essenciais (não exaustiva).
-# Melhorias: versões, comandos externos, CLI, grupos, relatório.import importlib
+# Verificao de dependncias essenciais (no exaustiva).
+# Melhorias: verses, comandos externos, CLI, grupos, relatrio.import importlib
 import json
 import sys
 import subprocess
@@ -22,13 +22,13 @@ EXTERNAL_COMMANDS = [
 ]
 
 def check_package(pkg: str) -> Dict[str, Any]:
-    """Verifica pacote: import e versão."""
+    """Verifica pacote: import e verso."""
     result = {"status": "unknown", "version": None, "error": None}
     try:
         mod = importlib.import_module(pkg)
         result["status"] = "ok"
         try:
-            # Tenta obter versão
+            # Tenta obter verso
             from importlib.metadata import version  # Python 3.8+
             result["version"] = version(pkg)
         except Exception:
@@ -45,7 +45,7 @@ def check_command(cmd: str) -> Dict[str, Any]:
         proc = subprocess.run([cmd, "--version"], capture_output=True, text=True, timeout=5)
         if proc.returncode == 0:
             result["status"] = "ok"
-            # Extrai versão da primeira linha
+            # Extrai verso da primeira linha
             lines = proc.stdout.strip().split("\n")
             if lines:
                 result["version"] = lines[0]
@@ -61,7 +61,7 @@ def check_command(cmd: str) -> Dict[str, Any]:
     return result
 
 def generate_report(results: Dict[str, Any]) -> Dict[str, Any]:
-    """Gera relatório resumido."""
+    """Gera relatrio resumido."""
     total = 0
     ok = 0
     for category in ["packages", "commands"]:
@@ -72,11 +72,11 @@ def generate_report(results: Dict[str, Any]) -> Dict[str, Any]:
     return {"total_checked": total, "ok": ok, "errors": total - ok}
 
 def main():
-    parser = argparse.ArgumentParser(description="Verifica dependências essenciais.")
+    parser = argparse.ArgumentParser(description="Verifica dependncias essenciais.")
     parser.add_argument("--packages", nargs="*", help="Pacotes extras para checar")
     parser.add_argument("--commands", nargs="*", help="Comandos extras para checar")
-    parser.add_argument("--output", type=argparse.FileType("w"), default=sys.stdout, help="Arquivo de saída")
-    parser.add_argument("--no-groups", action="store_true", help="Não usar grupos (checar todos)")
+    parser.add_argument("--output", type=argparse.FileType("w"), default=sys.stdout, help="Arquivo de sada")
+    parser.add_argument("--no-groups", action="store_true", help="No usar grupos (checar todos)")
 
     args = parser.parse_args()
 

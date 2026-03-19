@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 Gerenciador de GPU (robusto e defensivo).
-Detecta disponibilidade de CUDA/Torch, expõe informações de VRAM e utilitários para limpeza/otimização.
+Detecta disponibilidade de CUDA/Torch, expe informações de VRAM e utilitrios para limpeza/otimizao.
 """
-from __future__ import annotations
 import logging
 import gc
 import time
@@ -40,7 +40,7 @@ class GPUManager:
             self.torch = torch
             self.torch_available = True
         except Exception as e:
-            logger.info("Torch não disponível: %s", e)
+            logger.info("Torch no disponível: %s", e)
             self.torch_available = False
 
         if self.torch_available:
@@ -54,7 +54,7 @@ class GPUManager:
                         # set device defensively
                         self.torch.cuda.set_device(self.device_index)
                     except Exception:
-                        logger.debug("Não foi possível setar device explicitamente (não crítico).", exc_info=True)
+                        logger.debug("No foi possível setar device explicitamente (no crítico).", exc_info=True)
                     self._warmup_gpu()
                 else:
                     self.device = self.torch.device("cpu")
@@ -63,7 +63,7 @@ class GPUManager:
                 self.gpu_available = False
                 self.device = self.torch.device("cpu")
         else:
-            # torch não disponível -> CPU-only
+            # torch no disponível -> CPU-only
             try:
                 # emulate a device attribute for callers
                 import torch as _torch  # may still fail; ignore
@@ -72,7 +72,7 @@ class GPUManager:
                 self.device = "cpu"
 
     def _get_gpu_info(self) -> Dict:
-        """Obtém informações da GPU de forma segura (retorna dicionário)."""
+        """Obtm informações da GPU de forma segura (retorna dicionrio)."""
         info = {
             "available": False,
             "name": "N/A",
@@ -108,9 +108,9 @@ class GPUManager:
                         if major is not None and minor is not None:
                             info["compute_capability"] = f"{major}.{minor}"
                     except Exception:
-                        logger.debug("Falha ao obter propriedades do device (não crítico).", exc_info=True)
+                        logger.debug("Falha ao obter propriedades do device (no crítico).", exc_info=True)
 
-                    # memory API (defensiva — alguns atributos podem não existir dependendo da versão)
+                    # memory API (defensiva  alguns atributos podem no existir dependendo da verso)
                     try:
                         allocated = float(self.torch.cuda.memory_allocated(device)) / 1024 ** 3
                     except Exception:
@@ -144,7 +144,7 @@ class GPUManager:
         return info
 
     def _warmup_gpu(self):
-        """Aquece a GPU para evitar lentidão inicial (opera em try/except)."""
+        """Aquece a GPU para evitar lentido inicial (opera em try/except)."""
         if not (self.torch_available and self.gpu_available):
             return
         try:
@@ -157,32 +157,32 @@ class GPUManager:
             except Exception:
                 pass
         except Exception:
-            logger.debug("Warmup GPU falhou (não crítico).", exc_info=True)
+            logger.debug("Warmup GPU falhou (no crítico).", exc_info=True)
 
     def get_status(self) -> str:
-        """Retorna status da GPU em formato legível."""
+        """Retorna status da GPU em formato legvel."""
         try:
             if not (self.torch_available and self.gpu_info.get("available", False)):
-                return "âš ï¸ GPU não disponível (CPU)"
+                return "[AVISO] GPU no disponível (CPU)"
             info = self._get_gpu_info() or self.gpu_info
             name = info.get("name", "N/A")
             total = info.get("memory_total_gb", 0.0)
             allocated = info.get("memory_allocated_gb", 0.0)
             free = info.get("memory_free_gb", 0.0)
-            status = f"ðŸ–¥ï¸ GPU: {name}\nðŸ’¾ VRAM: {total:.1f} GB total\n"
+            status = f" GPU: {name}\n VRAM: {total:.1f} GB total\n"
             if total > 0:
-                status += f"    ðŸ“ˆ {allocated:.1f} GB alocado\n"
-                status += f"    ðŸ“‰ {free:.1f} GB livre"
+                status += f"     {allocated:.1f} GB alocado\n"
+                status += f"     {free:.1f} GB livre"
             return status
         except Exception as e:
             logger.error("Erro em get_status: %s", e, exc_info=True)
-            return f"âš ï¸ Erro no status: {e}"
+            return f"[AVISO] Erro no status: {e}"
 
     def get_short_status(self) -> str:
         """Status resumido para barra de status."""
         try:
             if not (self.torch_available and self.gpu_info.get("available", False)):
-                return "GPU: âŒ"
+                return "GPU: [ERRO]"
             name = (self.gpu_info.get("name") or "GPU")[:30]
             free_gb = self.gpu_info.get("memory_free_gb", 0.0)
             return f"GPU: {name} ({free_gb:.1f}GB livre)"
@@ -190,7 +190,7 @@ class GPUManager:
             return "GPU: Erro"
 
     def get_vram_info(self) -> Optional[Dict[str, float]]:
-        """Informações detalhadas da VRAM (ou None se indisponível)."""
+        """informações detalhadas da VRAM (ou None se indisponível)."""
         if not (self.torch_available and self.gpu_info.get("available", False)):
             return None
         try:
@@ -225,7 +225,7 @@ class GPUManager:
             return False
 
     def has_enough_memory(self, required_gb: float) -> bool:
-        """Verifica de forma conservadora se há memória livre suficiente."""
+        """Verifica de forma conservadora se h memória livre suficiente."""
         if not (self.torch_available and self.gpu_info.get("available", False)):
             return False
         try:
@@ -237,7 +237,7 @@ class GPUManager:
             return False
 
     def get_memory_usage_percent(self) -> float:
-        """Obtém porcentagem de uso da memória (0..100)."""
+        """Obtm porcentagem de uso da memória (0..100)."""
         try:
             vram = self.get_vram_info()
             if vram and vram.get("total", 0) > 0:
@@ -247,12 +247,12 @@ class GPUManager:
         return 0.0
 
     def optimize_for_llm(self):
-        """Tenta aplicar otimizações úteis para cargas LLM (defensivo)."""
+        """Tenta aplicar otimizaes teis para cargas LLM (defensivo)."""
         if not (self.torch_available and self.gpu_info.get("available", False)):
-            logger.debug("Optimize skipped: GPU não disponível")
+            logger.debug("Optimize skipped: GPU no disponível")
             return
         try:
-            # permissões TF32/CuDNN podem ou não existir; set em try/except
+            # permisses TF32/CuDNN podem ou no existir; set em try/except
             try:
                 self.torch.backends.cudnn.benchmark = True
             except Exception:
@@ -275,24 +275,24 @@ class GPUManager:
 
             vram = self.get_vram_info()
             if vram:
-                logger.info("ðŸ”§ GPU otimizada: %.1fGB livre", vram.get("free", 0.0))
+                logger.info(" GPU otimizada: %.1fGB livre", vram.get("free", 0.0))
         except Exception as e:
-            logger.warning("Erro na otimização da GPU: %s", e, exc_info=True)
+            logger.warning("Erro na otimizao da GPU: %s", e, exc_info=True)
 
     def print_detailed_info(self):
         """Imprime informações detalhadas no console (uso para debug)."""
         print("\n" + "=" * 50)
-        print("INFORMAÇÕES DETALHADAS DA GPU")
+        print("informações DETALHADAS DA GPU")
         print("=" * 50)
         if not (self.torch_available and self.gpu_info.get("available", False)):
-            print("âŒ GPU não disponível")
+            print("[ERRO] GPU no disponível")
             return
         info = self._get_gpu_info()
         print(f"Dispositivo: {info.get('name', 'N/A')}")
         print(f"CUDA Version: {info.get('cuda_version', 'N/A')}")
         print(f"Compute Capability: {info.get('compute_capability', 'N/A')}")
         print(f"Dispositivos CUDA: {info.get('device_count', 0)}")
-        print("\nMemória:")
+        print("\nMemria:")
         print(f"  Total: {info.get('memory_total_gb', 0):.2f} GB")
         print(f"  Alocada: {info.get('memory_allocated_gb', 0):.2f} GB")
         print(f"  Reservada: {info.get('memory_reserved_gb', 0):.2f} GB")
@@ -303,7 +303,7 @@ class GPUManager:
         print("=" * 50)
 
 
-# Teste rápido quando executado diretamente
+# Teste rpido quando executado diretamente
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     gm = GPUManager()

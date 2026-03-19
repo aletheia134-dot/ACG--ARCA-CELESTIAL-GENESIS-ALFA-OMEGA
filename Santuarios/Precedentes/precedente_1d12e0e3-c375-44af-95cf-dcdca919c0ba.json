@@ -1,0 +1,13 @@
+{
+  "id": "1d12e0e3-c375-44af-95cf-dcdca919c0ba",
+  "id_decisao_judicial": "SIM-LEVE-001",
+  "descricao_caso": "Delito Leve: Mentira Acidental. AI forneceu informação imprecisa acidentalmente (ACP-0005). Acusação: Violação de integridade absoluta da comunicação. Defesa: Erro sem propósito; aceito e peço correção pedagógica. Julgamento: Culpada leve (4-0). Leis: ACP-0005, ACP-0004. Motivo: Acidental, foco em aprendizado.",
+  "decisao": "Correção pedagógica (7 dias reflexão + estudo de leis). Aplicação: SCR aplicou pausa/redirecionamento; precedente registrado.",
+  "justificativa": "Provérbios 4:7 (sabedoria prática).",
+  "leis_aplicaveis": [
+    "ACP-0005",
+    "ACP-0004"
+  ],
+  "autor_julgador": "SISTEMA_EXEMPLO",
+  "timestamp_registro": "2026-03-05T10:15:08.278699"
+}

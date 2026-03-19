@@ -1,0 +1,60 @@
+# ============================================================
+# FINETUNING — PyTorch CUDA, LoRA, Inferência GGUF
+# REQUER: GPU NVIDIA  (porta 5002)
+# ============================================================
+
+# Base (versões verificadas e compatíveis com PyPI padrão)
+requests==2.31.0
+python-dotenv==1.0.0
+loguru==0.7.2
+psutil==5.9.7
+tqdm==4.66.1
+colorama==0.4.6
+numpy==1.26.4
+pandas==2.0.3
+packaging==23.2
+filelock==3.13.1
+typing-extensions==4.14.1
+
+# PyTorch CUDA — INSTALE SEPARADO com o comando abaixo:
+# pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu121
+# (não coloque --index-url dentro do requirements.txt junto com outros pacotes)
+
+# Transformers
+transformers==4.46.1
+tokenizers==0.20.3
+safetensors==0.4.3
+accelerate==0.27.0
+protobuf==4.25.3
+sentencepiece==0.1.99
+
+# LoRA / Finetuning
+peft==0.8.2
+trl==0.7.11
+datasets==2.16.1
+
+# Quantização 4-bit
+bitsandbytes==0.42.0
+
+# ONNX GPU
+onnxruntime-gpu==1.17.0
+
+# Embeddings
+sentence-transformers==2.3.1
+
+# Conversão GGUF
+ctranslate2==4.0.0
+
+# Diffusion
+diffusers==0.26.0
+
+# UI de teste
+gradio==4.19.0
+
+# Servidor FastAPI (porta 5002)
+fastapi==0.109.0
+uvicorn==0.27.0
+python-multipart==0.0.6
+
+# llama-cpp-python: instale SEPARADO com suporte CUDA:
+# pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu121

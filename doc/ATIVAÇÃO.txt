@@ -1,0 +1,43 @@
+.\iniciar_arca.ps1
+
+cd E:\Arca_Celestial_Genesis_Alfa_Omega
+python main.py
+
+
+
+
+cd E:\Arca_Celestial_Genesis_Alfa_Omega
+.\venvs\core\Scripts\Activate.ps1
+# Agora você está no ambiente core
+
+
+cd E:\Arca_Celestial_Genesis_Alfa_Omega
+.\venvs\llm\Scripts\Activate.ps1
+# Agora você está no ambiente llm
+
+
+cd E:\Arca_Celestial_Genesis_Alfa_Omega
+.\venvs\media\Scripts\Activate.ps1
+# Agora você está no ambiente media
+
+
+cd E:\Arca_Celestial_Genesis_Alfa_Omega
+.\venvs\web\Scripts\Activate.ps1
+
+
+🎯 QUAL AMBIENTE USAR PARA QUÊ
+Ambiente	Quando usar
+core	Para rodar a Arca principal (main.py)
+llm	Para treinar modelos, fine-tuning, testar GGUF
+media	Para testar câmera, áudio, TTS, expressão
+web	Para automação de navegadores
+
+A Arca principal (main.py) deve ser executada no ambiente CORE.
+
+
+🔴 SÓ MUDA DE AMBIENTE QUANDO:
+Se você quer...	Ambiente	Comando
+Rodar a Arca	✅ CORE	.\venvs\core\Scripts\Activate.ps1
+Treinar/finetunar	🔴 LLM	.\venvs\llm\Scripts\Activate.ps1
+Testar câmera/áudio	🟣 MEDIA	.\venvs\media\Scripts\Activate.ps1
+Acessar web/navegador	🟡 WEB	.\venvs\web\Scripts\Activate.ps1

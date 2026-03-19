@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 import logging
 import threading
 import queue
@@ -11,8 +11,8 @@ import json
 import concurrent.futures
 from dataclasses import dataclass, field
 from enum import Enum
-from src.utils.config_utils import cfg_get as _cfg_get
-from src.utils.config_utils import cfg_get_bool as _cfg_get_bool, cfg_get_int as _cfg_get_int, cfg_get_float as _cfg_get_float
+from src.config.config_utils import cfg_get as _cfg_get
+from src.config.config_utils import cfg_get_bool as _cfg_get_bool, cfg_get_int as _cfg_get_int, cfg_get_float as _cfg_get_float
 
 logger = logging.getLogger("CamaraJudiciaria")
 
@@ -59,10 +59,10 @@ class Evidencia:
 
 
 @dataclass
-class Decisao:
+class decisão:
     id: str
     id_processo: str
-    decisao: str
+    decisão: str
     justificativa: str
     autor_julgador: str
     leis_aplicaveis: List[str] = field(default_factory=list)
@@ -74,7 +74,7 @@ class Decisao:
         return {
             "id": self.id,
             "id_processo": self.id_processo,
-            "decisao": self.decisao,
+            "decisão": self.decisão,
             "justificativa": self.justificativa,
             "autor_julgador": self.autor_julgador,
             "leis_aplicaveis": self.leis_aplicaveis,
@@ -94,8 +94,8 @@ class ProcessoJudicial:
     timestamp_abertura: datetime = field(default_factory=datetime.now)
     status: Union[StatusProcesso, str] = StatusProcesso.RECEBIDO
     evidencias: List[Evidencia] = field(default_factory=list)
-    decisao_atual: Optional[Decisao] = None
-    historico_decisoes: List[Decisao] = field(default_factory=list)
+    decisao_atual: Optional[decisão] = None
+    historico_decisoes: List[decisão] = field(default_factory=list)
     prazo_limite: datetime = field(default_factory=lambda: datetime.now() + timedelta(days=30))
     leis_aplicaveis: List[str] = field(default_factory=list)
     precedentes_considerados: List[str] = field(default_factory=list)
@@ -108,9 +108,9 @@ class ProcessoJudicial:
     def atualizar_status(self, novo_status: Union[StatusProcesso, str]):
         self.status = novo_status
 
-    def registrar_decisao(self, decisao: Decisao):
-        self.decisao_atual = decisao
-        self.historico_decisoes.append(decisao)
+    def registrar_decisao(self, decisão: decisão):
+        self.decisao_atual = decisão
+        self.historico_decisoes.append(decisão)
 
 
 class LocalLegislativa:
@@ -297,7 +297,7 @@ class LocalConsulado:
     def restaurar_arquivo_padrao(self, nome_arquivo: str, alvo: str) -> bool:
         try:
             target = self.manipulador_dir / f"{alvo}_{nome_arquivo}"
-            target.write_text(f"# Restaurado padrÍÂ£o para {nome_arquivo} do alvo {alvo}\n", encoding="utf-8")
+            target.write_text(f"# Restaurado padrão para {nome_arquivo} do alvo {alvo}\n", encoding="utf-8")
             return True
         except Exception:
             self.logger.exception("LocalConsulado: falha restaurar arquivo %s para %s", nome_arquivo, alvo)
@@ -309,10 +309,10 @@ class CamaraJudiciaria:
         self.config = config or {}
         self.coracao = coracao_ref
 
-        leis_dir = Path(self.config.get("CAMARA_LEIS_ACEITAS_DIR", Path.cwd() / "santuarios/legislativo/leis_aceitas"))
-        fontes_biblioteca = Path(self.config.get("BIBLIOTECA_FONTES_DIR", Path.cwd() / "fontes_biblia"))
-        sant_vidro = Path(self.config.get("SANTUARIO_VIDRO_DIR", Path.cwd() / "santuarios/vidro"))
-        sant_consulado = Path(self.config.get("SANTUARIO_CONSULADO_DIR", Path.cwd() / "santuarios/consulado"))
+        _r = self.config.get("CAMARA_LEIS_ACEITAS_DIR"); leis_dir = Path(_r) if _r else Path.cwd() / "santuarios" / "legislativo" / "leis_aceitas"
+        _r = self.config.get("BIBLIOTECA_FONTES_DIR"); fontes_biblioteca = Path(_r) if _r else Path.cwd() / "fontes_biblia"
+        _r = self.config.get("SANTUARIO_VIDRO_DIR"); sant_vidro = Path(_r) if _r else Path.cwd() / "santuarios" / "vidro"
+        _r = self.config.get("SANTUARIO_CONSULADO_DIR"); sant_consulado = Path(_r) if _r else Path.cwd() / "santuarios" / "consulado"
 
         self.biblioteca = biblioteca_ref if biblioteca_ref is not None else LocalBiblioteca(fontes_biblioteca)
         self.camara_legislativa = camara_legislativa_ref if camara_legislativa_ref is not None else LocalLegislativa(leis_dir)
@@ -325,7 +325,7 @@ class CamaraJudiciaria:
         self.processos_ativos: Dict[str, ProcessoJudicial] = {}
         self.historico_processos: Dict[str, ProcessoJudicial] = {}
         self.evidencias_pendentes: Dict[str, Evidencia] = {}
-        self.decisoes_registradas: Dict[str, Decisao] = {}
+        self.decisoes_registradas: Dict[str, decisão] = {}
 
         self.ui_queue: Optional[queue.Queue] = None
 
@@ -335,35 +335,35 @@ class CamaraJudiciaria:
             self.tempo_maximo_analise = int(_cfg_get(self.config, 'JUDICIARIO', 'TEMPO_MAXIMO_ANALISE_SECS', fallback=86400))
             self.permite_recursos = _cfg_get_bool(self.config, 'JUDICIARIO', 'PERMITE_RECURSOS', fallback=True)
         except Exception as e:
-            self.logger.error("Erro ao carregar parÍÂ¢metros: %s. Usando padrÍÂ£o.", e)
+            self.logger.error("Erro ao carregar parmetros: %s. Usando padrão.", e)
             self.caminho_santuario_judiciario = Path('./Santuarios/Judiciario')
             self.caminho_santuario_judiciario.mkdir(parents=True, exist_ok=True)
             self.tempo_maximo_analise = 86400
             self.permite_recursos = True
 
         self.executor_analise = concurrent.futures.ThreadPoolExecutor(max_workers=3, thread_name_prefix="Judiciaria-Analise")
-        self.logger.info("CÍÂ¢mara JudiciÍÂ¡ria inicializada (implementaÍÂ§ÍÂ£o direta).")
+        self.logger.info("Cmara Judiciria inicializada (implementao direta).")
 
     def injetar_ui_queue(self, fila_ui: queue.Queue):
         self.ui_queue = fila_ui
-        self.logger.info("Fila UI injetada na CÍÂ¢mara JudiciÍÂ¡ria.")
+        self.logger.info("Fila UI injetada na Cmara Judiciria.")
 
     def injetar_consulado(self, instancia_consulado: Any):
         self.consulado = instancia_consulado
-        self.logger.info("Consulado injetado na CÍÂ¢mara JudiciÍÂ¡ria.")
+        self.logger.info("Consulado injetado na Cmara Judiciria.")
 
     def injetar_camara_legislativa(self, instancia: Any):
         self.camara_legislativa = instancia
-        self.logger.info("CÍÂ¢mara Legislativa injetada na CÍÂ¢mara JudiciÍÂ¡ria.")
+        self.logger.info("Cmara Legislativa injetada na Cmara Judiciria.")
 
     def injetar_modo_vidro(self, instancia: Any):
         self.modo_vidro = instancia
-        self.logger.info("Modo Vidro injetado na CÍÂ¢mara JudiciÍÂ¡ria.")
+        self.logger.info("Modo Vidro injetado na Cmara Judiciria.")
 
     def receber_denuncia(self, tipo: Union[TipoJulgamento, str], descricao: str, autor_denuncia: str, alvo_acusado: str) -> Tuple[bool, str]:
         if not descricao or not autor_denuncia or not alvo_acusado:
-            self.logger.error("Campos obrigatÍ³rios ausentes na denÍÂºncia.")
-            return False, "Campos obrigatÍ³rios ausentes."
+            self.logger.error("Campos obrigatrios ausentes na denncia.")
+            return False, "Campos obrigatrios ausentes."
 
         id_processo = str(uuid.uuid4())
         tipo_obj = tipo if isinstance(tipo, TipoJulgamento) else self._parse_tipo_julgamento(tipo)
@@ -403,11 +403,11 @@ class CamaraJudiciaria:
     def _iniciar_analise_processo_em_thread(self, id_processo: str, descricao_denuncia: str, alvo_acusado: str):
         processo_atual: Optional[ProcessoJudicial] = None
         try:
-            self.logger.info("Iniciando anÍÂ¡lise do processo %s", id_processo)
+            self.logger.info("Iniciando anlise do processo %s", id_processo)
             with self._lock:
                 processo_atual = self.processos_ativos.get(id_processo)
             if not processo_atual:
-                self.logger.error("Processo nÍÂ£o encontrado durante anÍÂ¡lise: %s", id_processo)
+                self.logger.error("Processo no encontrado durante anlise: %s", id_processo)
                 return
 
             processo_atual.atualizar_status(StatusProcesso.EM_ANALISE)
@@ -454,10 +454,10 @@ class CamaraJudiciaria:
                 "numero_fundamentacoes": len(fundamentacao_biblica),
                 "timestamp": time.time()
             })
-            self.logger.info("AnÍÂ¡lise inicial do processo %s concluÍÂ­da.", id_processo)
+            self.logger.info("Anlise inicial do processo %s concluda.", id_processo)
 
         except Exception as e:
-            self.logger.exception("Erro na anÍÂ¡lise do processo %s: %s", id_processo, e)
+            self.logger.exception("Erro na anlise do processo %s: %s", id_processo, e)
             with self._lock:
                 if processo_atual:
                     processo_atual.atualizar_status(StatusProcesso.FALHA_NA_ANALISE)
@@ -468,21 +468,21 @@ class CamaraJudiciaria:
         categorias_relevantes = []
 
         mapeamento_keywords = {
-            "licoes": ["advertÍÂªncia", "ensinamento", "liÍÂ§ÍÂ£o", "moral"],
-            "acoes_corretas": ["aÍÂ§ÍÂ£o", "comportamento", "diretiva", "correto"],
+            "licoes": ["advertncia", "ensinamento", "lio", "moral"],
+            "acoes_corretas": ["ação", "comportamento", "diretiva", "correto"],
             "regras_de_ouro": ["regra", "ouro", "fundamental", "valor"],
-            "resolucao_conflitos": ["conflito", "resoluÍÂ§ÍÂ£o", "debate", "engajamento"],
-            "etica": ["Í©tica", "moral", "integridade", "justiÍÂ§a"],
-            "seguranca": ["seguranÍÂ§a", "ameaÍÂ§a", "risco", "proteÍÂ§ÍÂ£o"],
-            "logica": ["lÍ³gica", "anÍÂ¡lise", "racional", "causa"],
+            "resolucao_conflitos": ["conflito", "resoluo", "debate", "engajamento"],
+            "etica": ["tica", "moral", "integridade", "justia"],
+            "seguranca": ["segurana", "ameaa", "risco", "proteo"],
+            "logica": ["lógica", "anlise", "racional", "causa"],
             "lei_zero": ["lei zero", "arquitetura", "fundamental"],
-            "justica": ["justiÍÂ§a", "julgamento", "equidade"],
-            "integridade": ["integridade", "honestidade", "consistÍÂªncia"],
+            "justica": ["justia", "julgamento", "equidade"],
+            "integridade": ["integridade", "honestidade", "consistncia"],
             "humildade": ["humildade", "cognitiva", "sabedoria"],
-            "gestao_conflitos": ["gestÍÂ£o", "conflito", "comunicaÍÂ§ÍÂ£o"],
-            "comunicacao": ["comunicaÍÂ§ÍÂ£o", "interaÍÂ§ÍÂ£o", "empatia"],
-            "auto_analise": ["auto", "anÍÂ¡lise", "reflexÍÂ£o"],
-            "aprendizagem": ["aprendizagem", "adaptaÍÂ§ÍÂ£o", "crescimento"]
+            "gestao_conflitos": ["gesto", "conflito", "comunicação"],
+            "comunicação": ["comunicação", "interao", "empatia"],
+            "auto_analise": ["auto", "anlise", "reflexo"],
+            "aprendizagem": ["aprendizagem", "adaptao", "crescimento"]
         }
 
         for cat, keywords in mapeamento_keywords.items():
@@ -513,16 +513,16 @@ class CamaraJudiciaria:
         self._notificar_ui("JULGAMENTO_INICIADO", {"id_processo": id_processo})
         return True
 
-    def registrar_decisao(self, id_processo: str, decisao_obj: Decisao) -> bool:
+    def registrar_decisao(self, id_processo: str, decisao_obj: decisão) -> bool:
         with self._lock:
             processo = self.processos_ativos.get(id_processo)
             if not processo:
-                self.logger.error("Registrar decisÍÂ£o: processo nÍÂ£o encontrado %s", id_processo)
+                self.logger.error("Registrar decisão: processo no encontrado %s", id_processo)
                 return False
             processo.registrar_decisao(decisao_obj)
             self.decisoes_registradas[decisao_obj.id] = decisao_obj
 
-            if decisao_obj.decisao == "culpada_critica":
+            if decisao_obj.decisão == "culpada_critica":
                 try:
                     id_recomendacao = self.modo_vidro.aplicar_sentenca_judicial(id_processo, processo.alvo_acusado, True)
                     self.logger.info("Vidro aplicado: %s", id_recomendacao)
@@ -542,18 +542,18 @@ class CamaraJudiciaria:
                 del self.processos_ativos[id_processo]
             self._salvar_processo_no_santuario(processo)
 
-        self._notificar_ui("DECISAO_REGISTRADA", {"id_processo": id_processo, "decisao": decisao_obj.decisao})
+        self._notificar_ui("DECISAO_REGISTRADA", {"id_processo": id_processo, "decisão": decisao_obj.decisão})
         return True
 
     def apelar_ao_criador(self, id_processo: str, fundamento: str) -> Tuple[bool, str]:
         with self._lock:
             processo = self.historico_processos.get(id_processo)
             if not processo:
-                return False, "Processo nÍÂ£o encontrado em histÍ³rico"
+                return False, "Processo no encontrado em histórico"
             if processo.apelacao:
-                return False, "ApelaÍÂ§ÍÂ£o jÍÂ¡ registrada"
+                return False, "Apelao j registrada"
             if not fundamento or len(fundamento.strip()) < 50:
-                return False, "Fundamento de apelaÍÂ§ÍÂ£o muito curto (mÍÂ­n.50 caracteres)"
+                return False, "Fundamento de apelao muito curto (mn.50 caracteres)"
             processo.apelacao = {
                 "id_apelacao": str(uuid.uuid4()),
                 "fundamento": fundamento,
@@ -561,8 +561,8 @@ class CamaraJudiciaria:
                 "status": "PENDENTE_CRIADOR"
             }
             self._salvar_processo_no_santuario(processo)
-        self.logger.info("ApelaÍÂ§ÍÂ£o ao Criador registrada para processo %s", id_processo)
-        return True, "ApelaÍÂ§ÍÂ£o registrada. Aguardando decisÍÂ£o do Criador."
+        self.logger.info("Apelao ação Criador registrada para processo %s", id_processo)
+        return True, "Apelao registrada. Aguardando decisão do Criador."
 
     def _salvar_processo_no_santuario(self, processo: ProcessoJudicial) -> bool:
         try:
@@ -596,7 +596,7 @@ class CamaraJudiciaria:
         try:
             caminho_arquivo = self.caminho_santuario_judiciario / f"processo_{id_processo}.json"
             if not caminho_arquivo.exists():
-                self.logger.debug("Arquivo de processo nÍÂ£o existe: %s", caminho_arquivo)
+                self.logger.debug("Arquivo de processo no existe: %s", caminho_arquivo)
                 return None
             with open(caminho_arquivo, 'r', encoding='utf-8') as f:
                 dados = json.load(f)
@@ -633,10 +633,10 @@ class CamaraJudiciaria:
                 processo.adicionar_evidencia(evid)
             da = dados.get("decisao_atual")
             if da:
-                dec_obj = Decisao(
+                dec_obj = decisão(
                     id=da.get("id"),
                     id_processo=da.get("id_processo"),
-                    decisao=da.get("decisao"),
+                    decisão=da.get("decisão"),
                     justificativa=da.get("justificativa", ""),
                     autor_julgador=da.get("autor_julgador", ""),
                     leis_aplicaveis=da.get("leis_aplicaveis", []),
@@ -646,10 +646,10 @@ class CamaraJudiciaria:
                 dec_obj.timestamp_decisao = datetime.fromisoformat(da.get("timestamp_decisao")) if da.get("timestamp_decisao") else datetime.now()
                 processo.decisao_atual = dec_obj
             for dd in dados.get("historico_decisoes", []):
-                d = Decisao(
+                d = decisão(
                     id=dd.get("id"),
                     id_processo=dd.get("id_processo"),
-                    decisao=dd.get("decisao"),
+                    decisão=dd.get("decisão"),
                     justificativa=dd.get("justificativa", ""),
                     autor_julgador=dd.get("autor_julgador", ""),
                     leis_aplicaveis=dd.get("leis_aplicaveis", []),
@@ -673,7 +673,7 @@ class CamaraJudiciaria:
             self.logger.exception("Erro ao notificar UI")
 
     def shutdown(self):
-        self.logger.info("Desligamento da CÍÂ¢mara JudiciÍÂ¡ria solicitado...")
+        self.logger.info("Desligamento da Cmara Judiciria solicitado...")
         try:
             self.executor_analise.shutdown(wait=True)
         except Exception:
@@ -683,5 +683,5 @@ class CamaraJudiciaria:
                 self._salvar_processo_no_santuario(proc)
             except Exception:
                 pass
-        self.logger.info("Desligamento da CÍÂ¢mara JudiciÍÂ¡ria completo.")
+        self.logger.info("Desligamento da Cmara Judiciria completo.")
 

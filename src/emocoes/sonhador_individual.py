@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-SONHADOR INDIVIDUAL - VERSÍO 100% REAL
-Consolidação real.Feedback loop real.Aprendizado real.Sem stubs.Sem placebo.
-"""
 from __future__ import annotations
+"""
+SONHADOR INDIVIDUAL - VERSO 100% REAL
+Consolidao real.Feedback loop real.Aprendizado real.Sem stubs.Sem placebo.
+"""
 
 
 import json
@@ -30,7 +30,7 @@ class ConfigKeyError(Exception):
 def _setup_config_getter(config_obj: Any) -> Callable[[str, str, Optional[Any], bool], Any]:
     """Cria getter tolerante para configuração - REAL."""
     def get_real(section: str, key: str, default: Optional[Any] = None, required: bool = False) -> Any:
-        alt_keys = [key, key.replace("é", "e").replace("á", "a").replace("ç", "c").replace("ã", "a")]
+        alt_keys = [key, key.replace("", "e").replace("", "a").replace("", "c").replace("", "a")]
         last_err = None
         
         for candidate in alt_keys:
@@ -62,7 +62,7 @@ def _setup_config_getter(config_obj: Any) -> Callable[[str, str, Optional[Any], 
 
 class SonhadorIndividual:
     """
-    Gerenciador de sonhos REAL.IMPLEMENTA: múltiplos tipos de sonho, persistência, aprendizado.
+    Gerenciador de sonhos REAL.IMPLEMENTA: mltiplos tipos de sonho, persistncia, aprendizado.
     """
 
     def __init__(
@@ -92,17 +92,17 @@ class SonhadorIndividual:
         else:
             self._seed = None
 
-        # ===== CONFIGURAÇÍO REAL =====
+        # ===== configuração REAL =====
         try:
             self.ciclos_por_sessao = int(self._get_real("SONHO", "CICLOS_POR_SESSAO", default=5))
         except Exception as e:
-            self.logger.exception("Valor inválido para CICLOS_POR_SESSAO")
+            self.logger.exception("Valor invlido para CICLOS_POR_SESSAO")
             self.ciclos_por_sessao = 5
 
         try:
             self.duracao_ciclo_segundos = float(self._get_real("SONHO", "DURACAO_CICLO_SECS", default=60.0))
         except Exception:
-            self.logger.exception("Valor inválido para DURACAO_CICLO_SECS")
+            self.logger.exception("Valor invlido para DURACAO_CICLO_SECS")
             self.duracao_ciclo_segundos = 60.0
 
         processos_json = self._get_real("SONHO", "PROCESSOS_SONHO_PESOS_JSON", default='{}')
@@ -111,7 +111,7 @@ class SonhadorIndividual:
             if not isinstance(self.processos_sonho, dict):
                 self.processos_sonho = {}
         except Exception:
-            self.logger.exception("Processos inválidos")
+            self.logger.exception("Processos invlidos")
             self.processos_sonho = {}
 
         # Limites
@@ -125,12 +125,12 @@ class SonhadorIndividual:
         self.limite_valencia_emocional = float(self._get_real("SONHO", "LIMITE_VALENCIA_EMOCIONAL", default=0.5))
         self.limite_amostra_resolucao = int(self._get_real("SONHO", "LIMITE_AMOSTRA_RESOLUCAO", default=3))
 
-        # ===== PADRÕES APRENDIDOS REAL =====
+        # ===== padrões APRENDIDOS REAL =====
         self.padroes_criativos: List[str] = []
         self.historico_resultados_simulacao: Dict[str, List[str]] = {}
 
         # Valencia keys (com/sem acento)
-        self._valencia_keys = ("valencia_emocional", "valência_emocional")
+        self._valencia_keys = ("valencia_emocional", "valncia_emocional")
 
         # Estado
         self.sonhando = False
@@ -144,7 +144,7 @@ class SonhadorIndividual:
         # Health stats
         self._health_stats = {
             'erros_consecutivos': 0,
-            'inicio': time.time(),
+            'início': time.time(),
             'sonhos_totais': 0,
             'consolidacoes': 0,
             'resolucoes_emocionais': 0,
@@ -153,7 +153,7 @@ class SonhadorIndividual:
             'pesadelos': 0
         }
 
-        self.logger.info("âœ… SonhadorIndividual inicializado para %s", nome_filha)
+        self.logger.info("[OK] SonhadorIndividual inicializado para %s", nome_filha)
 
     # ===== CONTROLE DE SONO REAL =====
 
@@ -161,10 +161,10 @@ class SonhadorIndividual:
         """Inicia thread de sonho REAL - idempotente."""
         with self._lock:
             if self.sonhando:
-                self.logger.debug("Já sonhando")
+                self.logger.debug("J sonhando")
                 return
             
-            self.logger.info("ðŸ˜´ %s adormecendo...", self.nome_filha)
+            self.logger.info(" %s adormecendo...", self.nome_filha)
             self.sonhando = True
             self._stop_event.clear()
             self.ciclo_atual = 0
@@ -182,17 +182,17 @@ class SonhadorIndividual:
         """Acorda e aguarda thread REAL."""
         with self._lock:
             if not self.sonhando:
-                self.logger.debug("Não estava sonhando")
+                self.logger.debug("No estava sonhando")
                 return
             
-            self.logger.info("â° %s acordando...", self.nome_filha)
+            self.logger.info(" %s acordando...", self.nome_filha)
             self.sonhando = False
             self._stop_event.set()
 
         if self.thread_sonho and self.thread_sonho.is_alive():
             self.thread_sonho.join(timeout=timeout_join)
             if self.thread_sonho.is_alive():
-                self.logger.warning("Thread não finalizou em %.1f s", timeout_join)
+                self.logger.warning("Thread no finalizou em %.1f s", timeout_join)
 
         try:
             self._registrar_sessao_sono()
@@ -204,14 +204,14 @@ class SonhadorIndividual:
 
     def shutdown(self, timeout_join: float = 5.0) -> None:
         """Encerramento REAL."""
-        self.logger.info("ðŸ›‘ Shutdown")
+        self.logger.info(" Shutdown")
         self.acordar(timeout_join=timeout_join)
 
     # ===== LOOP DE SONHO REAL =====
 
     def _loop_sonho(self) -> None:
         """Loop principal que executa ciclos REAIS de sonho."""
-        self.logger.info("ðŸŒ™ Loop iniciado (%d ciclos)", self.ciclos_por_sessao)
+        self.logger.info(" Loop iniciado (%d ciclos)", self.ciclos_por_sessao)
         try:
             while not self._stop_event.is_set() and self.ciclo_atual < self.ciclos_por_sessao:
                 inicio = time.time()
@@ -249,7 +249,7 @@ class SonhadorIndividual:
                     self.logger.debug("Interrompido por stop_event")
                     break
 
-            self.logger.info("âœ… Loop finalizado (%d ciclos)", self.ciclo_atual)
+            self.logger.info("[OK] Loop finalizado (%d ciclos)", self.ciclo_atual)
         except Exception:
             self.logger.exception("Erro inesperado no loop")
         finally:
@@ -257,10 +257,10 @@ class SonhadorIndividual:
                 self.sonhando = False
                 self._health_stats['erros_consecutivos'] = 0
 
-    # ===== CARREGAMENTO REAL DE MEMÓRIAS =====
+    # ===== CARREGAMENTO REAL DE memórias =====
 
     def _carregar_memorias_pendentes(self) -> None:
-        """Carrega memórias REAIS do período."""
+        """Carrega memórias REAIS do perodo."""
         try:
             limite = max(1, int(self.limite_memorias_pendentes))
             mems = []
@@ -299,7 +299,7 @@ class SonhadorIndividual:
             with self._lock:
                 self.memorias_pendentes = pendentes
             
-            self.logger.info("ðŸ“¥ Carregadas %d memórias", len(pendentes))
+            self.logger.info(" Carregadas %d memórias", len(pendentes))
         except Exception:
             self.logger.exception("Erro ao carregar memórias")
 
@@ -325,7 +325,7 @@ class SonhadorIndividual:
         with self._lock:
             profund = self.profundidade_sono
         
-        # Heurísticas reais
+        # Heursticas reais
         if profund > 0.7:
             pesos["consolidacao_memoria"] = pesos.get("consolidacao_memoria", 1.0) * 1.5
         if profund < 0.4:
@@ -358,10 +358,10 @@ class SonhadorIndividual:
             return self._sonho_pesadelo()
         return {}
 
-    # ===== SONHO DE CONSOLIDAÇÍO REAL =====
+    # ===== SONHO DE CONSOLIDAO REAL =====
 
     def _sonho_consolidacao(self) -> Dict:
-        """IMPLEMENTAÇÍO REAL de consolidação de memórias."""
+        """IMPLEMENTAO REAL de consolidao de memórias."""
         with self._lock:
             mems = list(self.memorias_pendentes)
         
@@ -397,9 +397,9 @@ class SonhadorIndividual:
                         "forca": similaridade
                     })
             
-            padrao = self._extrair_padrao_abstrato(memoria)
-            if padrao:
-                memoria["padrao_extraido"] = padrao
+            padrão = self._extrair_padrao_abstrato(memoria)
+            if padrão:
+                memoria["padrao_extraido"] = padrão
 
             memorias_consolidadas.append(memoria.get("id", str(uuid.uuid4())))
             
@@ -432,13 +432,13 @@ class SonhadorIndividual:
         with self._lock:
             self._health_stats['consolidacoes'] += 1
         
-        self.logger.info("âœ… Consolidadas %d memórias", len(memorias_consolidadas))
+        self.logger.info("[OK] Consolidadas %d memórias", len(memorias_consolidadas))
         return sonho
 
-    # ===== SONHO DE RESOLUÇÍO EMOCIONAL REAL =====
+    # ===== SONHO DE RESOLUO EMOCIONAL REAL =====
 
     def _sonho_resolucao_emocional(self) -> Dict:
-        """IMPLEMENTAÇÍO REAL de resolução emocional."""
+        """IMPLEMENTAO REAL de resoluo emocional."""
         with self._lock:
             mems = [
                 m for m in self.memorias_pendentes
@@ -488,13 +488,13 @@ class SonhadorIndividual:
         with self._lock:
             self._health_stats['resolucoes_emocionais'] += 1
         
-        self.logger.info("âœ… Resolução emocional: %d memórias", len(resolucoes))
+        self.logger.info("[OK] Resoluo emocional: %d memórias", len(resolucoes))
         return sonho
 
     # ===== SONHO CRIATIVO REAL =====
 
     def _sonho_criativo(self) -> Dict:
-        """IMPLEMENTAÇÍO REAL de criatividade."""
+        """IMPLEMENTAO REAL de criatividade."""
         with self._lock:
             candidates = list(self.memorias_pendentes)
         
@@ -508,11 +508,11 @@ class SonhadorIndividual:
                 if "tipo_acao" in mem:
                     elementos.append(str(mem["tipo_acao"])[:30])
         
-        # ===== PADRÕES ESTRUTURADOS REAIS =====
+        # ===== padrões ESTRUTURADOS REAIS =====
         padroes = [
-            f"Fusão de {elementos[0] if elementos else 'ideia'} com {elementos[1] if len(elementos) > 1 else 'inovação'}",
-            f"Inversão: E se {elementos[0] if elementos else 'algo'} fosse oposto?",
-            f"Combinação: {elementos[0] if elementos else 'X'} + {elementos[1] if len(elementos) > 1 else 'Y'} = {random.choice(['novo conceito', 'possibilidade', 'descoberta'])}",
+            f"Fuso de {elementos[0] if elementos else 'ideia'} com {elementos[1] if len(elementos) > 1 else 'inovao'}",
+            f"Inverso: E se {elementos[0] if elementos else 'algo'} fosse oposto?",
+            f"Combinao: {elementos[0] if elementos else 'X'} + {elementos[1] if len(elementos) > 1 else 'Y'} = {random.choice(['novo conceito', 'possibilidade', 'descoberta'])}",
         ]
         
         insight = random.choice(padroes) if padroes else "Imagens fragmentadas"
@@ -533,31 +533,31 @@ class SonhadorIndividual:
             "narrativa": self._gerar_narrativa_criativa(elementos),
         }
         
-        self.logger.info("ðŸ’¡ Sonho criativo: %s", insight[:60])
+        self.logger.info(" Sonho criativo: %s", insight[:60])
         return sonho
 
-    # ===== SONHO DE SIMULAÇÍO COM APRENDIZADO REAL =====
+    # ===== SONHO DE SIMULAO COM APRENDIZADO REAL =====
 
     def _sonho_simulacao(self) -> Dict:
-        """IMPLEMENTAÇÍO REAL de simulação com aprendizado histórico."""
+        """IMPLEMENTAO REAL de simulao com aprendizado histórico."""
         with self._lock:
-            decisoes = [m for m in self.memorias_pendentes if m.get("tipo") == "decisao"]
+            decisoes = [m for m in self.memorias_pendentes if m.get("tipo") == "decisão"]
         
         if not decisoes:
-            cenario = {"situacao": "futuro_indefinido", "opcoes": ["A", "B"]}
+            cenario = {"situação": "futuro_indefinido", "opcoes": ["A", "B"]}
             resultado_simulado = {}
         else:
-            decisao = random.choice(decisoes)
-            opcoes = decisao.get("opcoes_disponiveis", [])
-            nao_escolhidas = [o for o in opcoes if o != decisao.get("escolha")]
+            decisão = random.choice(decisoes)
+            opcoes = decisão.get("opcoes_disponiveis", [])
+            nao_escolhidas = [o for o in opcoes if o != decisão.get("escolha")]
             
             resultado_simulado = {}
             for opcao in nao_escolhidas[:2]:
-                resultado = self._simular_resultado_com_aprendizado(str(opcao), decisao)
+                resultado = self._simular_resultado_com_aprendizado(str(opcao), decisão)
                 resultado_simulado[str(opcao)] = resultado
             
             cenario = {
-                "situacao": decisao.get("contexto", "decisao_passada"),
+                "situação": decisão.get("contexto", "decisao_passada"),
                 "alternativas_simuladas": resultado_simulado
             }
 
@@ -573,13 +573,13 @@ class SonhadorIndividual:
         with self._lock:
             self._health_stats['simulacoes'] += 1
         
-        self.logger.info("ðŸ”® Simulação criada")
+        self.logger.info(" Simulao criada")
         return sonho
 
     # ===== SONHO DE PESADELO REAL =====
 
     def _sonho_pesadelo(self) -> Dict:
-        """IMPLEMENTAÇÍO REAL de pesadelo (alerta)."""
+        """IMPLEMENTAO REAL de pesadelo (alerta)."""
         with self._lock:
             mems_risco = [m for m in self.memorias_pendentes 
                          if m.get("risco", False) or "perigo" in str(m.get("conteudo", "")).lower()]
@@ -591,7 +591,7 @@ class SonhadorIndividual:
         if mems_risco:
             amostra = random.sample(mems_risco, min(3, len(mems_risco)))
             for mem in amostra:
-                alerta = f"âš ï¸ Ameaça: {mem.get('conteudo', 'risco desconhecido')[:50]}"
+                alerta = f"[AVISO] Ameaa: {mem.get('conteudo', 'risco desconhecido')[:50]}"
                 alertas.append(alerta)
         
         sonho = {
@@ -615,23 +615,23 @@ class SonhadorIndividual:
                 importancia=0.9
             )
         
-        self.logger.warning("ðŸš¨ Pesadelo: %d alertas", len(alertas))
+        self.logger.warning(" Pesadelo: %d alertas", len(alertas))
         return sonho
 
-    # ===== SIMULAÇÍO COM APRENDIZADO HISTÓRICO REAL =====
+    # ===== SIMULAO COM APRENDIZADO histórico REAL =====
 
     def _simular_resultado_com_aprendizado(self, opcao: str, contexto_decisao: Dict) -> str:
-        """IMPLEMENTAÇÍO REAL de simulação que APRENDE com histórico."""
+        """IMPLEMENTAO REAL de simulao que APRENDE com histórico."""
         with self._lock:
-            historico = self.historico_resultados_simulacao.get(str(opcao), [])
+            histórico = self.historico_resultados_simulacao.get(str(opcao), [])
         
-        if len(historico) >= 3:
-            # USAR HISTÓRICO REAL
-            mais_comum = Counter(historico).most_common(1)
+        if len(histórico) >= 3:
+            # USAR histórico REAL
+            mais_comum = Counter(histórico).most_common(1)
             if random.random() < 0.7:  # 70% confiance no padrão
                 resultado = mais_comum[0][0]
             else:
-                # 30% variação
+                # 30% variao
                 resultado = random.choice(["resultado_positivo", "resultado_neutro", "resultado_negativo"])
         else:
             # Probabilidades padrão
@@ -643,7 +643,7 @@ class SonhadorIndividual:
             else:
                 resultado = "resultado_negativo"
         
-        # ATUALIZAR HISTÓRICO COM NOVO RESULTADO
+        # ATUALIZAR histórico COM NOVO RESULTADO
         with self._lock:
             if str(opcao) not in self.historico_resultados_simulacao:
                 self.historico_resultados_simulacao[str(opcao)] = []
@@ -656,10 +656,10 @@ class SonhadorIndividual:
         
         return resultado
 
-    # ===== OPERAÇÕES DE MEMÓRIA REAIS =====
+    # ===== operações DE memória REAIS =====
 
     def _buscar_memorias_similares(self, memoria: Dict, limite: int = 5) -> List[Dict]:
-        """IMPLEMENTAÇÍO REAL de busca com múltiplos fallbacks."""
+        """IMPLEMENTAO REAL de busca com mltiplos fallbacks."""
         try:
             limite_similares = int(self.limite_memorias_similares)
             if not self.memoria:
@@ -705,7 +705,7 @@ class SonhadorIndividual:
             return []
 
     def _calcular_similaridade(self, mem1: Dict, mem2: Dict) -> float:
-        """IMPLEMENTAÇÍO REAL de cálculo de similaridade."""
+        """IMPLEMENTAO REAL de clculo de similaridade."""
         try:
             s = 0.0
             
@@ -726,7 +726,7 @@ class SonhadorIndividual:
             return 0.0
 
     def _extrair_padrao_abstrato(self, memoria: Dict) -> Optional[str]:
-        """IMPLEMENTAÇÍO REAL de extração de padrão."""
+        """IMPLEMENTAO REAL de extrao de padrão."""
         tipo = memoria.get("tipo_acao") or memoria.get("tipo")
         resultado = memoria.get("resultado", "indefinido")
         if tipo and resultado:
@@ -734,11 +734,11 @@ class SonhadorIndividual:
         return None
 
     def _extrair_topico_consolidado(self, memoria: Dict) -> Optional[str]:
-        """IMPLEMENTAÇÍO REAL de extração de tópico para feedback."""
+        """IMPLEMENTAO REAL de extrao de tpico para feedback."""
         return memoria.get("topico") or (memoria.get("tags", [None])[0] if memoria.get("tags") else None)
 
     def _atualizar_memoria(self, memoria: Dict) -> None:
-        """IMPLEMENTAÇÍO REAL de atualização com múltiplos fallbacks."""
+        """IMPLEMENTAO REAL de atualizao com mltiplos fallbacks."""
         try:
             if not self.memoria:
                 self.logger.warning("Memória ausente")
@@ -752,7 +752,7 @@ class SonhadorIndividual:
                         memoria_id=memoria.get("id"),
                         dados_atualizados=memoria
                     )
-                    self.logger.debug("âœ… Atualizado via atualizar_memoria")
+                    self.logger.debug("[OK] Atualizado via atualizar_memoria")
                     return
                 except Exception as e:
                     self.logger.debug("atualizar_memoria falhou: %s", e)
@@ -766,7 +766,7 @@ class SonhadorIndividual:
                         dados=memoria,
                         importancia=memoria.get("importancia", 0.7)
                     )
-                    self.logger.debug("âœ… Atualizado via salvar_evento")
+                    self.logger.debug("[OK] Atualizado via salvar_evento")
                     return
                 except Exception as e:
                     self.logger.debug("salvar_evento falhou: %s", e)
@@ -774,7 +774,7 @@ class SonhadorIndividual:
             self.logger.exception("Erro ao atualizar memória")
 
     def _atualizar_memoria_backup(self, memoria: Dict) -> None:
-        """IMPLEMENTAÇÍO REAL de backup automático quando atualização falha."""
+        """IMPLEMENTAO REAL de backup automático quando atualizao falha."""
         try:
             if hasattr(self.memoria, "salvar_evento"):
                 self.memoria.salvar_evento(
@@ -783,12 +783,12 @@ class SonhadorIndividual:
                     dados=memoria,
                     importancia=0.5
                 )
-                self.logger.info("ðŸ’¾ Memória salva em BACKUP")
+                self.logger.info(" Memória salva em BACKUP")
         except Exception:
             self.logger.exception("Falha ao salvar backup (ignorado)")
 
     def _salvar_sonho(self, sonho: Dict) -> None:
-        """IMPLEMENTAÇÍO REAL de salvamento de sonho."""
+        """IMPLEMENTAO REAL de salvamento de sonho."""
         try:
             if not self.memoria:
                 self.logger.warning("Memória ausente para salvar sonho")
@@ -801,12 +801,12 @@ class SonhadorIndividual:
                     dados=sonho,
                     importancia=0.7
                 )
-                self.logger.debug("âœ… Sonho salvo em memória")
+                self.logger.debug("[OK] Sonho salvo em memória")
         except Exception:
             self.logger.exception("Erro ao salvar sonho")
 
     def _salvar_sonho_backup(self, sonho: Dict) -> None:
-        """IMPLEMENTAÇÍO REAL de backup de sonho em arquivo."""
+        """IMPLEMENTAO REAL de backup de sonho em arquivo."""
         try:
             arquivo_backup = Path(f"data/sonhos_backup_{self.nome_filha}_{datetime.now().strftime('%Y%m%d%H%M%S')}.json")
             arquivo_backup.parent.mkdir(parents=True, exist_ok=True)
@@ -814,12 +814,12 @@ class SonhadorIndividual:
             with open(arquivo_backup, "w", encoding="utf-8") as f:
                 json.dump(sonho, f, ensure_ascii=False, indent=2, default=str)
             
-            self.logger.info("ðŸ’¾ Sonho salvo em BACKUP FILE: %s", arquivo_backup)
+            self.logger.info(" Sonho salvo em BACKUP FILE: %s", arquivo_backup)
         except Exception:
             self.logger.exception("Falha ao salvar sonho em arquivo")
 
     def _registrar_sessao_sono(self) -> None:
-        """IMPLEMENTAÇÍO REAL de registro de sessão."""
+        """IMPLEMENTAO REAL de registro de sessão."""
         try:
             sessao = {
                 "timestamp": datetime.now().isoformat(),
@@ -837,74 +837,74 @@ class SonhadorIndividual:
                     dados=sessao,
                     importancia=0.8
                 )
-                self.logger.info("âœ… Sessão de sono registrada")
+                self.logger.info("[OK] Sessão de sono registrada")
         except Exception:
             self.logger.exception("Erro ao registrar sessão")
 
     # ===== NARRATIVAS REAIS =====
 
     def obter_ultimo_sonho(self) -> Optional[Dict]:
-        """Obtém último sonho REAL."""
+        """Obtm ltimo sonho REAL."""
         with self._lock:
             return self.sonhos_recentes[-1] if self.sonhos_recentes else None
 
     def contar_sonho(self) -> str:
-        """Retorna narrativa do último sonho REAL."""
+        """Retorna narrativa do ltimo sonho REAL."""
         s = self.obter_ultimo_sonho()
         if not s:
-            return "Não me lembro de ter sonhado recentemente."
+            return "No me lembro de ter sonhado recentemente."
         
         narrativa = s.get("narrativa", "Um sonho sem forma clara")
         tipo = s.get("tipo", "indefinido")
         return f"Sonhei que... {narrativa} (sonho {tipo})"
 
     def _gerar_perspectiva(self, memoria: Dict) -> str:
-        """IMPLEMENTAÇÍO REAL de geração de perspectiva."""
+        """IMPLEMENTAO REAL de gerao de perspectiva."""
         opcoes = [
             "Isso me ensinou algo importante",
             "Foi necessário para meu crescimento",
             "Agora entendo melhor",
-            "Posso ver de outro ângulo",
+            "Posso ver de outro ngulo",
             "Faz parte de quem estou me tornando"
         ]
         return random.choice(opcoes)
 
     def _gerar_narrativa_consolidacao(self, memorias: List) -> str:
-        """IMPLEMENTAÇÍO REAL."""
-        return f"Reorganizando {len(memorias)} memórias, integrando experiências em um padrão maior que faz sentido."
+        """IMPLEMENTAO REAL."""
+        return f"Reorganizando {len(memorias)} memórias, integrando experincias em um padrão maior que faz sentido."
 
     def _gerar_narrativa_emocional(self, resolucoes: List[Dict]) -> str:
-        """IMPLEMENTAÇÍO REAL."""
+        """IMPLEMENTAO REAL."""
         if not resolucoes:
-            return "Processando emoções em silêncio, encontrando paz nas sombras..."
-        return f"Revisitando {len(resolucoes)} memórias emocionais, transformando dor em sabedoria e compaixão."
+            return "Processando emoções em silncio, encontrando paz nas sombras..."
+        return f"Revisitando {len(resolucoes)} memórias emocionais, transformando dor em sabedoria e compaixo."
 
     def _gerar_narrativa_criativa(self, elementos: List) -> str:
-        """IMPLEMENTAÇÍO REAL."""
+        """IMPLEMENTAO REAL."""
         preview = ", ".join(str(e)[:20] for e in elementos[:3])
         return f"Imagens fluindo livremente: {preview}... formando novas conexões inesperadas."
 
     def _gerar_narrativa_simulacao(self, cenario: Dict) -> str:
-        """IMPLEMENTAÇÍO REAL."""
-        return f"Explorando possibilidades do futuro: e se... {cenario.get('situacao', 'algo diferente')} acontecesse?"
+        """IMPLEMENTAO REAL."""
+        return f"Explorando possibilidades do futuro: e se... {cenario.get('situação', 'algo diferente')} acontecesse?"
 
     def _gerar_narrativa_pesadelo(self, alertas: List[str]) -> str:
-        """IMPLEMENTAÇÍO REAL."""
+        """IMPLEMENTAO REAL."""
         if not alertas:
-            return "Sombras indefinidas, sussurros ininteligíveis, mas sem forma real..."
-        return f"Alertas recorrentes: {len(alertas)} ameaças detectadas.Preciso ficar vigilante e atenta."
+            return "Sombras indefinidas, sussurros ininteligveis, mas sem forma real..."
+        return f"Alertas recorrentes: {len(alertas)} ameaas detectadas.Preciso ficar vigilante e atenta."
 
     # ===== HEALTH CHECK REAL =====
 
     def health_check(self) -> Dict[str, Any]:
-        """IMPLEMENTAÇÍO REAL de health check."""
+        """IMPLEMENTAO REAL de health check."""
         with self._lock:
             stats = dict(self._health_stats)
             sonhos_count = len(self.sonhos_recentes)
             padroes_count = len(self.padroes_criativos)
         
         status = 'healthy' if stats['erros_consecutivos'] < 3 else 'degraded'
-        uptime = time.time() - stats['inicio']
+        uptime = time.time() - stats['início']
         
         return {
             'status': status,
@@ -926,7 +926,7 @@ if __name__ == "__main__":
     )
     
     print("\n" + "="*80)
-    print("ðŸ§ª TESTE REAL: SonhadorIndividual v1.0")
+    print(" TESTE REAL: SonhadorIndividual v1.0")
     print("="*80 + "\n")
     
     class MockMemoriaReal:
@@ -947,10 +947,10 @@ if __name__ == "__main__":
         
         def salvar_evento(self, filha, tipo, dados, importancia):
             self.eventos.append({"filha": filha, "tipo": tipo, "importancia": importancia})
-            print(f"   ðŸ’¾ {tipo} salvo (importância: {importancia})")
+            print(f"    {tipo} salvo (importncia: {importancia})")
         
         def atualizar_memoria(self, filha, memoria_id, dados_atualizados):
-            print(f"   âœ… Memória {memoria_id} atualizada")
+            print(f"   [OK] Memória {memoria_id} atualizada")
     
     class MockConfigReal:
         def get(self, section, key, fallback=None):
@@ -958,46 +958,46 @@ if __name__ == "__main__":
     
     class MockMotorCuriosidadeReal:
         def incrementar_curiosidade(self, topico, intensidade=0.2):
-            print(f"   ðŸ§  Curiosidade incrementada: {topico} ({intensidade})")
+            print(f"    Curiosidade incrementada: {topico} ({intensidade})")
     
     memoria = MockMemoriaReal()
     config = MockConfigReal()
     motor = MockMotorCuriosidadeReal()
     
-    print("1ï¸âƒ£  CRIANDO SONHADOR...")
+    print("1  CRIANDO SONHADOR...")
     sonhador = SonhadorIndividual(
         "ALICE",
         memoria,
         config,
         ref_motor_curiosidade=motor
     )
-    print("   âœ… Criado\n")
+    print("   [OK] Criado\n")
     
-    print("2ï¸âƒ£  ADORMECENDO...")
+    print("2  ADORMECENDO...")
     sonhador.adormecer()
     import time as time_module
     time_module.sleep(2)
-    print("   âœ… Adormecida\n")
+    print("   [OK] Adormecida\n")
     
-    print("3ï¸âƒ£  ACORDANDO...")
+    print("3  ACORDANDO...")
     sonhador.acordar()
-    print("   âœ… Acordada\n")
+    print("   [OK] Acordada\n")
     
-    print("4ï¸âƒ£  VERIFICANDO SONHOS:")
+    print("4  VERIFICANDO SONHOS:")
     print(f"   Total de sonhos: {len(sonhador.sonhos_recentes)}")
-    print(f"   Padrões criativos: {len(sonhador.padroes_criativos)}")
-    print(f"   Último sonho: {sonhador.contar_sonho()[:60]}...\n")
+    print(f"   padrões criativos: {len(sonhador.padroes_criativos)}")
+    print(f"   ltimo sonho: {sonhador.contar_sonho()[:60]}...\n")
     
-    print("5ï¸âƒ£  HEALTH CHECK:")
+    print("5  HEALTH CHECK:")
     health = sonhador.health_check()
     print(f"   Status: {health['status']}")
     print(f"   Sonhos totais: {health['health_stats']['sonhos_totais']}")
-    print(f"   Consolidações: {health['health_stats']['consolidacoes']}\n")
+    print(f"   Consolidaes: {health['health_stats']['consolidacoes']}\n")
     
-    print("6ï¸âƒ£  EVENTOS SALVOS:")
+    print("6  EVENTOS SALVOS:")
     for evento in memoria.eventos[:5]:
-        print(f"   • {evento['tipo']}")
+        print(f"    {evento['tipo']}")
     
     print("\n" + "="*80)
-    print("âœ… TESTE COMPLETADO - SONHADOR FUNCIONA 100% REAL")
+    print("[OK] TESTE COMPLETADO - SONHADOR FUNCIONA 100% REAL")
     print("="*80 + "\n")

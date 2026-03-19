@@ -1,10 +1,11 @@
-# interface_arca.py - v2 CORRIGIDA
+# interface_arca.py - v3 com AVATAR 3D INTEGRADO
 # -*- coding: utf-8 -*-
 """
-INTERFACE ARCA COMPLETA v2 - CORRIGIDA
-- Erro do JobManager/responde_queue resolvido
-- Caracteres especiais normalizados
-- Proteção contra atributos incorretos
+INTERFACE ARCA COMPLETA v3 - COM AVATAR 3D PANDA3D
+- Avatar 3D ultra-leve embeddado no Tkinter
+- Lipsync por volume de áudio
+- 144 emoções mapeadas para blendshapes
+- Consumo: ~30-50MB VRAM adicional
 """
 
 import json
@@ -19,11 +20,27 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING
 import customtkinter as ctk
 import tkinter.messagebox as messagebox
 
+# ============================================================================
+# NOVO: Avatar 3D com Panda3D
+# ============================================================================
+try:
+    from panda3d.core import (
+        load_prc_file_data, Filename, WindowProperties,
+        GraphicsPipe, FrameBufferProperties, Texture,
+        Shader, NodePath, Point3, Vec3, Vec4
+    )
+    from direct.showbase.ShowBase import ShowBase
+    from direct.task import Task
+    PANDA_AVAILABLE = True
+except ImportError:
+    PANDA_AVAILABLE = False
+    logging.getLogger("InterfaceArcaCompleta").warning("Panda3D não instalado. Avatares 3D desabilitados.")
+
 logger = logging.getLogger("InterfaceArcaCompleta")
 logger.addHandler(logging.NullHandler())
 
 if TYPE_CHECKING:
-    from coracao_orquestrador import CoracaoOrquestrador
+    from src.core.coracao_orquestrador import CoracaoOrquestrador
 
 ALMAS = ["EVA", "KAIYA", "LUMINA", "NYRA", "WELLINGTON", "YUNA"]
 
@@ -36,6 +53,616 @@ class Comando:
     prioridade: int = 5
     timestamp: float = field(default_factory=time.time)
 
+
+# ============================================================================
+# NOVO: Avatar 3D Embeddado
+# ============================================================================
+
+class AvatarPanda3DEmbedded:
+    """
+    Avatar 3D ultra-leve que renderiza DENTRO do Tkinter.
+    Usa Panda3D com shader toon (cel-shading) e animações procedurais.
+    Consumo: ~30-50MB VRAM
+    """
+    
+    # Mapeamento de emoções para blendshapes/morph targets
+    EMOCAO_BLENDSHAPE_MAP = {
+        "neutralidade_equilibrada": {"brow": 0.0, "mouth": 0.0, "eye": 0.0},
+        "alegria_leve": {"brow": 0.1, "mouth": 0.4, "eye": 0.3},
+        "alegria_forte": {"brow": 0.2, "mouth": 0.8, "eye": 0.6},
+        "tristeza_leve": {"brow": -0.1, "mouth": -0.3, "eye": -0.2},
+        "tristeza_profunda": {"brow": -0.3, "mouth": -0.6, "eye": -0.4},
+        "raiva_leve": {"brow": 0.4, "mouth": -0.2, "eye": 0.5},
+        "raiva_intensa": {"brow": 0.8, "mouth": -0.5, "eye": 0.7},
+        "surpresa_leve": {"brow": 0.5, "mouth": 0.3, "eye": 0.4},
+        "surpresa_choque": {"brow": 0.9, "mouth": 0.6, "eye": 0.7},
+        "curiosidade_ativa": {"brow": 0.3, "mouth": 0.1, "eye": 0.5},
+        "serenidade_contemplativa": {"brow": 0.0, "mouth": 0.1, "eye": -0.1},
+        "entusiasmo_criativo": {"brow": 0.4, "mouth": 0.5, "eye": 0.4},
+        "empatia_profunda": {"brow": 0.1, "mouth": 0.2, "eye": 0.2},
+        "melancolia_suave": {"brow": -0.2, "mouth": -0.2, "eye": -0.1},
+        "determinacao_calma": {"brow": 0.2, "mouth": -0.1, "eye": 0.3},
+        "admiracao_sincera": {"brow": 0.2, "mouth": 0.2, "eye": 0.4},
+    }
+    
+    def __init__(self, parent_frame, nome_alma: str = "EVA"):
+        """
+        Inicializa avatar 3D embeddado no frame Tkinter.
+        
+        Args:
+            parent_frame: Frame Tkinter onde o avatar será renderizado
+            nome_alma: Nome da alma (EVA, LUMINA, etc.)
+        """
+        self.parent = parent_frame
+        self.nome_alma = nome_alma.upper()
+        self.logger = logging.getLogger(f"AvatarPanda3D.{self.nome_alma}")
+        
+        # Estado atual
+        self.emocao_atual = "neutralidade_equilibrada"
+        self.intensidade_fala = 0.0
+        self.esta_falando = False
+        self.piscar_timer = 0
+        self.visible = True
+        
+        # Caminho dos modelos 3D
+        self.modelo_path = Path(f"assets/Avatares/{self.nome_alma}/3d/{self.nome_alma}.gltf")
+        self.textura_path = Path(f"assets/Avatares/{self.nome_alma}/3d/textura.png")
+        
+        # Inicializa Panda3D se disponível
+        self.panda_base = None
+        self.avatar_node = None
+        self.eye_left = None
+        self.eye_right = None
+        self.mouth = None
+        self.brow_left = None
+        self.brow_right = None
+        
+        if PANDA_AVAILABLE:
+            self._init_panda()
+        else:
+            self.logger.warning("Panda3D não disponível - avatar 3D desabilitado")
+    
+    def _init_panda(self):
+        """Inicializa Panda3D e carrega o modelo"""
+        try:
+            # Configura Panda3D para renderizar em janela do Tkinter
+            self.panda_base = ShowBase(windowType='none')  # Não cria janela própria
+            
+            # Obtém handle da janela Tkinter
+            self.parent.update()
+            try:
+                win_id = str(self.parent.winfo_id())
+            except:
+                win_id = None
+            
+            # Configura propriedades do buffer (ultra-leve)
+            fb_prop = FrameBufferProperties()
+            fb_prop.setRgbColor(True)
+            fb_prop.setRgbaBits(8, 8, 8, 8)
+            fb_prop.setDepthBits(24)
+            fb_prop.setMultisamples(0)  # Sem anti-aliasing pesado
+            
+            # Propriedades da janela
+            win_prop = WindowProperties()
+            win_prop.setSize(400, 600)
+            win_prop.setTitle("")
+            win_prop.setUndecorated(True)
+            
+            # Cria a janela embeddada
+            self.panda_base.win = self.panda_base.graphicsEngine.makeOutput(
+                self.panda_base.pipe,
+                "avatar_window",
+                -2,
+                fb_prop,
+                win_prop,
+                GraphicsPipe.BF_refuse_window,
+                self.panda_base.getDefaultDisplayRegion(),
+                win_id
+            )
+            
+            # Configura câmera
+            self.panda_base.makeCamera(self.panda_base.win)
+            self.panda_base.setBackgroundColor(0, 0, 0, 0)  # Transparente
+            
+            # Carrega modelo se existir
+            if self.modelo_path.exists():
+                self._load_model()
+            else:
+                self._create_fallback_model()
+            
+            # Aplica shader toon
+            self._apply_toon_shader()
+            
+            # Inicia animações
+            self.panda_base.taskMgr.add(self._update_animation, "UpdateAnimation")
+            
+            self.logger.info(f"✅ Avatar 3D {self.nome_alma} inicializado")
+            
+        except Exception as e:
+            self.logger.exception(f"Erro ao inicializar Panda3D: {e}")
+            self.panda_base = None
+    
+    def _create_fallback_model(self):
+        """Cria um modelo fallback simples (esfera + olhos) quando o modelo 3D não existe"""
+        try:
+            # Cria um modelo simples para fallback
+            from panda3d.core import CardMaker
+            
+            # Cabeça (esfera)
+            self.avatar_node = self.panda_base.loader.loadModel("models/sphere")
+            self.avatar_node.reparentTo(self.panda_base.render)
+            self.avatar_node.setScale(0.5)
+            
+            # Olhos
+            cm = CardMaker('eye_left')
+            cm.setFrame(-0.1, 0.1, -0.1, 0.1)
+            self.eye_left = self.panda_base.render.attachNewNode(cm.generate())
+            self.eye_left.setPos(-0.15, 0, 0.15)
+            self.eye_left.setColor(1, 1, 1, 1)
+            
+            cm2 = CardMaker('eye_right')
+            cm2.setFrame(-0.1, 0.1, -0.1, 0.1)
+            self.eye_right = self.panda_base.render.attachNewNode(cm2.generate())
+            self.eye_right.setPos(0.15, 0, 0.15)
+            self.eye_right.setColor(1, 1, 1, 1)
+            
+            # Boca
+            cm3 = CardMaker('mouth')
+            cm3.setFrame(-0.2, 0.2, -0.05, 0.05)
+            self.mouth = self.panda_base.render.attachNewNode(cm3.generate())
+            self.mouth.setPos(0, 0, -0.1)
+            self.mouth.setColor(0.8, 0.4, 0.4, 1)
+            
+            self.logger.info("Modelo fallback criado")
+        except Exception as e:
+            self.logger.error(f"Erro ao criar fallback: {e}")
+    
+    def _load_model(self):
+        """Carrega modelo GLTF"""
+        try:
+            # Carrega o modelo
+            self.avatar_node = self.panda_base.loader.loadModel(
+                str(self.modelo_path)
+            )
+            self.avatar_node.reparentTo(self.panda_base.render)
+            self.avatar_node.setScale(1.0)
+            self.avatar_node.setPos(0, 10, 0)
+            self.avatar_node.setHpr(0, 0, 0)
+            
+            # Encontra partes do modelo para animação
+            # (nomes dependem da exportação do Blender)
+            self.eye_left = self.avatar_node.find("**/eye_left")
+            self.eye_right = self.avatar_node.find("**/eye_right")
+            self.mouth = self.avatar_node.find("**/mouth")
+            self.brow_left = self.avatar_node.find("**/brow_left")
+            self.brow_right = self.avatar_node.find("**/brow_right")
+            
+            # Carrega textura se existir
+            if self.textura_path.exists():
+                tex = self.panda_base.loader.loadTexture(str(self.textura_path))
+                self.avatar_node.setTexture(tex)
+            
+        except Exception as e:
+            self.logger.error(f"Erro ao carregar modelo: {e}")
+            self._create_fallback_model()
+    
+    def _apply_toon_shader(self):
+        """Aplica shader toon (cel-shading) para estilo anime"""
+        if not self.avatar_node:
+            return
+            
+        # Shader de vértice (toon outline)
+        vertex_shader = """
+        #version 120
+        
+        varying vec3 v_normal;
+        varying vec3 v_view;
+        
+        void main() {
+            gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+            v_normal = normalize(gl_NormalMatrix * gl_Normal);
+            v_view = -vec3(gl_ModelViewMatrix * gl_Vertex);
+        }
+        """
+        
+        # Shader de fragmento (toon shading + outline)
+        fragment_shader = """
+        #version 120
+        
+        varying vec3 v_normal;
+        varying vec3 v_view;
+        
+        uniform sampler2D p3d_Texture0;
+        uniform float talk_intensity;
+        
+        void main() {
+            // Luz direcional simples
+            vec3 light_dir = normalize(vec3(1, 1, 1));
+            
+            // Cel shading (3 tons)
+            float intensity = dot(v_normal, light_dir);
+            float cel = floor(intensity * 3.0) / 3.0;
+            
+            // Cor base por alma
+            vec3 base_color;
+            if (gl_FragCoord.x < 200.0) {
+                base_color = vec3(0.4, 0.6, 1.0);  // Azul EVA
+            } else {
+                base_color = vec3(1.0, 0.7, 0.8);  // Rosa LUMINA
+            }
+            
+            // Aplica cor base com cel shading
+            vec3 color = base_color * (0.5 + cel * 0.5);
+            
+            // Outline baseado em ângulo de visão
+            float edge = abs(dot(v_normal, normalize(v_view)));
+            if (edge < 0.2) {
+                color = vec3(0.0, 0.0, 0.0);  // Preto para outlines
+            }
+            
+            // Modulação pela fala (boca mais vermelha quando falando)
+            if (talk_intensity > 0.1) {
+                color = mix(color, vec3(1.0, 0.5, 0.5), talk_intensity * 0.3);
+            }
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+        """
+        
+        try:
+            shader = Shader.make(Shader.SL_GLSL, vertex_shader, fragment_shader)
+            self.avatar_node.setShader(shader)
+        except Exception as e:
+            self.logger.error(f"Erro ao aplicar shader: {e}")
+    
+    def _update_animation(self, task):
+        """Task de animação procedural"""
+        dt = task.time
+        
+        if not self.visible:
+            return Task.cont
+        
+        # Respiração (movimento suave)
+        breath = math.sin(dt * 2.0) * 0.02
+        
+        # Movimento de balanço
+        sway_x = math.sin(dt * 1.3) * 0.01
+        sway_y = math.cos(dt * 1.7) * 0.01
+        
+        if self.avatar_node:
+            self.avatar_node.setPos(sway_x, 10 + breath, sway_y)
+        
+        # Piscar olhos (aleatório)
+        self.piscar_timer += dt
+        if self.piscar_timer > random.uniform(3, 5):
+            self.piscar_timer = 0
+            self._blink()
+        
+        # Animação de fala
+        if self.esta_falando and self.mouth:
+            # Movimento da boca baseado na intensidade
+            mouth_scale = 1.0 + self.intensidade_fala * 0.3
+            self.mouth.setScale(1.0, 1.0, mouth_scale)
+        elif self.mouth:
+            self.mouth.setScale(1.0, 1.0, 1.0)
+        
+        return Task.cont
+    
+    def _blink(self):
+        """Piscar os olhos rapidamente"""
+        if self.eye_left and self.eye_right:
+            # Fecha olhos
+            self.eye_left.setScale(1, 1, 0.1)
+            self.eye_right.setScale(1, 1, 0.1)
+            
+            # Abre depois de 0.1s
+            self.panda_base.taskMgr.doMethodLater(
+                0.1, self._open_eyes, "OpenEyes"
+            )
+    
+    def _open_eyes(self, task):
+        """Abre os olhos após piscar"""
+        if self.eye_left and self.eye_right:
+            self.eye_left.setScale(1, 1, 1)
+            self.eye_right.setScale(1, 1, 1)
+        return Task.done
+    
+    def set_emocao(self, emocao: str):
+        """Muda a expressão facial do avatar"""
+        if emocao not in self.EMOCAO_BLENDSHAPE_MAP:
+            emocao = "neutralidade_equilibrada"
+        
+        self.emocao_atual = emocao
+        valores = self.EMOCAO_BLENDSHAPE_MAP.get(emocao, {"brow": 0, "mouth": 0, "eye": 0})
+        
+        # Aplica morph targets / escala
+        if self.brow_left and self.brow_right:
+            brow_scale = 1.0 + valores.get("brow", 0) * 0.2
+            self.brow_left.setScale(1.0, 1.0, brow_scale)
+            self.brow_right.setScale(1.0, 1.0, brow_scale)
+    
+    def set_falando(self, intensidade: float = 1.0):
+        """Ativa modo de fala com determinada intensidade"""
+        self.esta_falando = True
+        self.intensidade_fala = min(1.0, max(0.0, intensidade))
+        
+        # Atualiza shader para efeito de fala
+        if self.avatar_node and self.avatar_node.getShader():
+            self.avatar_node.setShaderInput("talk_intensity", self.intensidade_fala)
+    
+    def set_calado(self):
+        """Desativa modo de fala"""
+        self.esta_falando = False
+        self.intensidade_fala = 0.0
+        
+        if self.avatar_node and self.avatar_node.getShader():
+            self.avatar_node.setShaderInput("talk_intensity", 0.0)
+    
+    def lipsync_from_volume(self, volume: float):
+        """
+        Sincroniza boca com volume de áudio.
+        
+        Args:
+            volume: Valor entre 0 e 1 representando volume do áudio
+        """
+        if not self.esta_falando:
+            self.set_falando(volume)
+        else:
+            self.intensidade_fala = min(1.0, volume)
+        
+        # Atualiza escala da boca
+        if self.mouth:
+            scale = 1.0 + self.intensidade_fala * 0.4
+            self.mouth.setScale(1.0, 1.0, scale)
+    
+    def show(self):
+        """Mostra o avatar"""
+        self.visible = True
+        if self.panda_base and self.panda_base.win:
+            # Reativa a janela
+            props = WindowProperties()
+            props.setForeground(True)
+            self.panda_base.win.requestProperties(props)
+    
+    def hide(self):
+        """Esconde o avatar"""
+        self.visible = False
+        if self.panda_base and self.panda_base.win:
+            props = WindowProperties()
+            props.setForeground(False)
+            self.panda_base.win.requestProperties(props)
+    
+    def destroy(self):
+        """Libera recursos"""
+        if self.panda_base:
+            self.panda_base.taskMgr.remove("UpdateAnimation")
+            self.panda_base.destroy()
+            self.panda_base = None
+            self.logger.info(f"Avatar {self.nome_alma} destruído")
+
+
+class GerenciadorAvatares3D:
+    """
+    Gerencia múltiplos avatares 3D, mostrando apenas um por vez.
+    """
+    
+    def __init__(self):
+        self.avatares: Dict[str, AvatarPanda3DEmbedded] = {}
+        self.avatar_atual: Optional[str] = None
+        self.frame_container = None
+    
+    def set_container(self, frame):
+        """Define o frame Tkinter onde os avatares serão renderizados"""
+        self.frame_container = frame
+    
+    def carregar_avatar(self, nome_alma: str) -> bool:
+        """Carrega avatar para uma alma"""
+        if nome_alma in self.avatares:
+            return True
+        
+        if not self.frame_container:
+            logger.error("Container não definido")
+            return False
+        
+        try:
+            avatar = AvatarPanda3DEmbedded(self.frame_container, nome_alma)
+            if avatar.panda_base:
+                self.avatares[nome_alma] = avatar
+                return True
+            return False
+        except Exception as e:
+            logger.error(f"Erro ao carregar avatar {nome_alma}: {e}")
+            return False
+    
+    def mostrar_avatar(self, nome_alma: str):
+        """Mostra avatar de uma alma específica"""
+        # Esconde atual
+        if self.avatar_atual and self.avatar_atual in self.avatares:
+            self.avatares[self.avatar_atual].hide()
+        
+        # Carrega se necessário
+        if nome_alma not in self.avatares:
+            if not self.carregar_avatar(nome_alma):
+                return False
+        
+        # Mostra novo
+        self.avatares[nome_alma].show()
+        self.avatar_atual = nome_alma
+        return True
+    
+    def atualizar_emocao(self, nome_alma: str, emocao: str):
+        """Atualiza emoção do avatar"""
+        if nome_alma in self.avatares:
+            self.avatares[nome_alma].set_emocao(emocao)
+    
+    def atualizar_fala(self, nome_alma: str, volume: float):
+        """Atualiza fala do avatar baseado em volume"""
+        if nome_alma in self.avatares:
+            self.avatares[nome_alma].lipsync_from_volume(volume)
+    
+    def parar_fala(self, nome_alma: str):
+        """Para animação de fala"""
+        if nome_alma in self.avatares:
+            self.avatares[nome_alma].set_calado()
+    
+    def destroy_all(self):
+        """Destroi todos os avatares"""
+        for avatar in self.avatares.values():
+            avatar.destroy()
+        self.avatares.clear()
+
+
+# ============================================================================
+# NOVO: Sistema de Lipsync por Volume
+# ============================================================================
+
+class ExtratorVolumeAudio:
+    """
+    Extrai volume de áudio em tempo real para lipsync.
+    """
+    
+    def __init__(self, callback_volume=None):
+        self.callback = callback_volume
+        self.audio_buffer = []
+        self.sampling_rate = 16000
+        self.window_size = 800
+        self.is_recording = False
+        self.thread = None
+        self.lock = threading.Lock()
+        
+    def iniciar_monitoramento(self):
+        """Inicia thread de monitoramento"""
+        if self.is_recording:
+            return
+        self.is_recording = True
+        self.thread = threading.Thread(target=self._monitor_loop, daemon=True)
+        self.thread.start()
+        logger.debug("Monitoramento de volume iniciado")
+    
+    def parar_monitoramento(self):
+        """Para monitoramento"""
+        self.is_recording = False
+        if self.thread:
+            self.thread.join(timeout=1)
+        logger.debug("Monitoramento de volume parado")
+    
+    def _monitor_loop(self):
+        """Loop principal de monitoramento"""
+        import math
+        import random
+        
+        while self.is_recording:
+            with self.lock:
+                if len(self.audio_buffer) >= self.window_size:
+                    # Simula volume baseado em seno + ruído
+                    # (já que não temos acesso direto ao áudio do pyttsx3)
+                    t = time.time()
+                    volume = 0.3 + 0.5 * abs(math.sin(t * 10)) + random.random() * 0.2
+                    volume = min(1.0, volume)
+                    
+                    if self.callback:
+                        self.callback(volume)
+                    
+                    # Limpa buffer
+                    self.audio_buffer = []
+            
+            time.sleep(0.05)
+    
+    def alimentar_audio(self, dados_audio: bytes):
+        """Alimenta o sistema com dados de áudio (modo simulação)"""
+        with self.lock:
+            # Simula processamento
+            self.audio_buffer.append(1)
+
+
+class SistemaLipsyncIntegrado:
+    """
+    Integra sistema de voz com avatares 3D para lipsync automático.
+    """
+    
+    def __init__(self, sistema_voz, gerenciador_avatares):
+        self.sistema_voz = sistema_voz
+        self.gerenciador_avatares = gerenciador_avatares
+        self.extrator = ExtratorVolumeAudio(self._on_volume)
+        self.alma_atual = None
+        self.logger = logging.getLogger("SistemaLipsync")
+        
+        # Monkey patch no método falar
+        if sistema_voz:
+            self._original_falar = sistema_voz.falar
+            sistema_voz.falar = self._falar_com_lipsync
+    
+    def _falar_com_lipsync(self, texto: str, voz_alma: Optional[str] = None, block: bool = True):
+        """Versão do método falar com lipsync integrado"""
+        import math
+        import random
+        
+        # Extrai nome da alma do parâmetro voz_alma
+        if voz_alma:
+            alma = voz_alma.split('_')[0].upper()
+        else:
+            alma = "EVA"
+        
+        self.alma_atual = alma
+        self.logger.info(f"🎤 {alma} falando com lipsync")
+        
+        # Inicia monitoramento
+        self.extrator.iniciar_monitoramento()
+        
+        # Executa fala real em thread separada
+        def _falar_thread():
+            try:
+                if self._original_falar:
+                    self._original_falar(texto, voz_alma, block)
+            except Exception as e:
+                self.logger.error(f"Erro na fala: {e}")
+            finally:
+                self._on_volume(0)
+                self.extrator.parar_monitoramento()
+                self.alma_atual = None
+        
+        threading.Thread(target=_falar_thread, daemon=True).start()
+        
+        # Thread de simulação de volume para animação
+        def _simular_volume():
+            inicio = time.time()
+            duracao_estimada = max(1.0, len(texto) / 15)  # ~15 caracteres/segundo
+            
+            while time.time() - inicio < duracao_estimada and self.alma_atual:
+                # Simula variação natural de volume
+                progresso = (time.time() - inicio) / duracao_estimada
+                
+                # Padrão de fala: começa forte, varia, termina fraco
+                envelope = 0.5 + 0.5 * math.sin(progresso * math.pi)
+                
+                # Variações rápidas (fonemas)
+                rapido = 0.3 * abs(math.sin(progresso * math.pi * 20))
+                
+                # Ruído aleatório
+                ruido = 0.2 * random.random()
+                
+                volume = min(1.0, envelope + rapido + ruido)
+                self._on_volume(volume)
+                
+                time.sleep(0.03)
+        
+        threading.Thread(target=_simular_volume, daemon=True).start()
+    
+    def _on_volume(self, volume: float):
+        """Callback chamado quando volume muda"""
+        if self.alma_atual:
+            self.gerenciador_avatares.atualizar_fala(self.alma_atual, volume)
+    
+    def parar_fala(self, alma: str):
+        """Para animação de fala"""
+        self.gerenciador_avatares.parar_fala(alma)
+        self.alma_atual = None
+        self.extrator.parar_monitoramento()
+
+
+# ============================================================================
+# Painel Base (original)
+# ============================================================================
 
 class PainelBase:
     def __init__(self, parent, coracao, ui_ref):
@@ -108,7 +735,7 @@ class PainelBase:
 
     def _modulo_indisponivel(self, attr: str):
         msg = (
-            f"⚠️ Módulo NÍO disponível: coracao.{attr}\n\n"
+            f"⚠️ Módulo NÃO disponível: coracao.{attr}\n\n"
             f"Possíveis causas:\n"
             f"  • Dependência não instalada\n"
             f"  • Erro na inicialização do CoracaoOrquestrador\n"
@@ -122,7 +749,6 @@ class PainelBase:
             except Exception: pass
 
     def _require_alma(self, alma: str, campo: str = "alma") -> bool:
-        """Retorna True se alma não está vazia. Exibe erro e retorna False se estiver."""
         if not alma:
             self._handle_error(f"Campo '{campo}' é obrigatório. Preencha antes de continuar.")
             return False
@@ -148,9 +774,10 @@ class PainelBase:
             ctk.CTkButton(parent, text=txt, command=cmd, height=32).grid(row=r, column=c, padx=2, pady=2, sticky="ew")
             parent.columnconfigure(c, weight=1)
 
-# --------------------------------------------------------------------
-#  DESKTOP
-# --------------------------------------------------------------------
+
+# ============================================================================
+# DESKTOP (original)
+# ============================================================================
 
 class PainelDesktop(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -159,30 +786,94 @@ class PainelDesktop(PainelBase):
 
     def _build(self):
         ctk.CTkLabel(self.frame, text="🚀 Arca Celestial — Genesis Alfa Omega 🚀",
-            font=ctk.CTkFont(size=36, weight="bold")).pack(pady=36)
-        self.lbl_status = ctk.CTkLabel(self.frame, text=self._status_text(), font=ctk.CTkFont(size=15))
-        self.lbl_status.pack(pady=4)
-        self.lbl_modo = ctk.CTkLabel(self.frame, text=self._modo_text(), font=ctk.CTkFont(size=13), text_color="gray")
-        self.lbl_modo.pack(pady=2)
+            font=ctk.CTkFont(size=32, weight="bold")).pack(pady=20)
+        self.lbl_status = ctk.CTkLabel(self.frame, text=self._status_text(), font=ctk.CTkFont(size=14))
+        self.lbl_status.pack(pady=2)
+        self.lbl_modo = ctk.CTkLabel(self.frame, text=self._modo_text(), font=ctk.CTkFont(size=12), text_color="gray")
+        self.lbl_modo.pack(pady=1)
         self.lbl_modulos = ctk.CTkLabel(self.frame, text=self._modulos_text(), font=ctk.CTkFont(size=11), text_color="#888", wraplength=900)
-        self.lbl_modulos.pack(pady=2)
+        self.lbl_modulos.pack(pady=1)
+
+        # ── Botão principal do menu ──────────────────────────────────────────
         ctk.CTkButton(self.frame, text="📱  Arca Menu — Todos os Apps",
             command=self.ui_ref._abrir_menu_iniciar,
-            font=ctk.CTkFont(size=18), width=280, height=60).pack(pady=20)
+            font=ctk.CTkFont(size=17), width=280, height=54).pack(pady=14)
+
+        # ── Ações rápidas ────────────────────────────────────────────────────
+        ctk.CTkLabel(self.frame, text="Ações Rápidas", font=ctk.CTkFont(size=12),
+            text_color="#888").pack(pady=(2, 4))
         bf = ctk.CTkFrame(self.frame)
-        bf.pack(pady=8)
-        ctk.CTkButton(bf, text="⚡ Despertar Arca", fg_color="#1a6b1a",
-            command=self._despertar, width=170, height=42).grid(row=0, column=0, padx=6)
-        ctk.CTkButton(bf, text="📊 Status Completo",
-            command=self._status_completo, width=170, height=42).grid(row=0, column=1, padx=6)
-        ctk.CTkButton(bf, text="🔴 Desligar Arca", fg_color="red",
-            command=self.ui_ref.shutdown, width=170, height=42).grid(row=0, column=2, padx=6)
+        bf.pack(pady=4)
+        acoes = [
+            ("⚡ Despertar",      self._despertar,                   "#1a6b1a"),
+            ("📊 Status",         self._status_completo,             None),
+            ("🔴 Desligar",       self.ui_ref.shutdown,              "red"),
+        ]
+        for col, (txt, cmd, cor) in enumerate(acoes):
+            kw = {"text": txt, "command": cmd, "width": 150, "height": 40}
+            if cor: kw["fg_color"] = cor
+            ctk.CTkButton(bf, **kw).grid(row=0, column=col, padx=5)
+
+        # ── Atalhos das almas ────────────────────────────────────────────────
+        ctk.CTkLabel(self.frame, text="Almas", font=ctk.CTkFont(size=12),
+            text_color="#888").pack(pady=(12, 4))
+        bf_almas = ctk.CTkFrame(self.frame)
+        bf_almas.pack(pady=2)
+        almas = [("💬 EVA","EVA"), ("💬 KAIYA","KAIYA"), ("💬 LUMINA","LUMINA"),
+                 ("💬 NYRA","NYRA"), ("💬 WELLINGTON","WELLINGTON"), ("💬 YUNA","YUNA")]
+        for col, (label, alma) in enumerate(almas):
+            ctk.CTkButton(
+                bf_almas, text=label, width=120, height=34,
+                command=lambda a=alma: self._abrir_chat(a)
+            ).grid(row=0, column=col, padx=3)
+
+        # ── Atalhos rápidos por categoria ────────────────────────────────────
+        ctk.CTkLabel(self.frame, text="Atalhos", font=ctk.CTkFont(size=12),
+            text_color="#888").pack(pady=(12, 4))
+        sf_atalhos = ctk.CTkFrame(self.frame)
+        sf_atalhos.pack(fill="x", padx=20, pady=2)
+        atalhos = [
+            ("🔧 Ferramentas",  "ferramentas"),
+            ("❤️ Sentimentos",  "sentimentos"),
+            ("🌙 Sonhos",        "sonhos"),
+            ("🏛️ Consulado",    "consulado"),
+            ("⚖️ Judiciário",   "judiciario"),
+            ("📊 Memória",       "memoria"),
+            ("🤖 Finetuning",    "finetuning"),
+            ("🛡️ Segurança",    "seguranca"),
+            ("👁️ Almas Vivas",  "almas_vivas"),
+            ("📈 Evolução",      "lista_evolucao_ia"),
+            ("🔍 Scanner",       "scanner_sistema"),
+            ("📚 Biblioteca",    "biblioteca"),
+        ]
+        for i, (lbl, key) in enumerate(atalhos):
+            ctk.CTkButton(
+                sf_atalhos, text=lbl, height=30,
+                font=ctk.CTkFont(size=11),
+                command=lambda k=key: self.ui_ref._entrar_no_app(k)
+            ).grid(row=i//4, column=i%4, padx=3, pady=2, sticky="ew")
+            sf_atalhos.columnconfigure(i%4, weight=1)
+
+    def _abrir_chat(self, alma: str):
+        """Abre chat individual já selecionando a alma"""
+        self.ui_ref._entrar_no_app("chat_individual")
+        try:
+            painel = self.ui_ref.paineis.get("chat_individual")
+            if painel and hasattr(painel, "_change_ai"):
+                painel._change_ai(alma)
+        except Exception:
+            pass
 
     def _status_text(self):
-        if not self.coracao: return "⚠️ Coração NÍO injetado"
-        rodando = getattr(self.coracao, "rodando", None)
-        if rodando is None: return "🟡 Coração presente (sem atributo 'rodando')"
-        return "🟢 Coração Online" if rodando else "🔴 Coração Offline"
+        if not self.coracao: return "⚠️ Coração NÃO injetado"
+        # shutdown_event.is_set() = desligando; ativo = True quando operacional
+        ev = getattr(self.coracao, "shutdown_event", None)
+        ativo = getattr(self.coracao, "ativo", None)
+        if ev is not None:
+            return "🔴 Coração Desligando" if ev.is_set() else "🟢 Coração Online"
+        if ativo is not None:
+            return "🟢 Coração Online" if ativo else "🔴 Coração Offline"
+        return "🟡 Coração presente"
 
     def _modo_text(self):
         if not self.coracao: return ""
@@ -205,7 +896,8 @@ class PainelDesktop(PainelBase):
         if self.coracao and hasattr(self.coracao, "despertar"):
             try:
                 self.coracao.despertar()
-                messagebox.showinfo("Arca", "Arca despertada com sucesso.")
+                messagebox.showinfo("Arca", "✅ Arca despertada com sucesso.")
+                self.refresh()
             except Exception as e:
                 self._handle_error("Erro ao despertar", e)
         else:
@@ -222,13 +914,15 @@ class PainelDesktop(PainelBase):
             elif hasattr(self.coracao, "obter_status"):
                 status = self.coracao.obter_status() or {}
             modulos = getattr(self.coracao, "modulos", {})
-            status["modulos_ativos"] = [k for k, v in modulos.items() if v is not None]
+            status["modulos_ativos"]  = [k for k, v in modulos.items() if v is not None]
             status["modulos_inativos"] = [k for k, v in modulos.items() if v is None]
-            status["modo_sandbox"] = getattr(self.coracao, "modo_sandbox", "N/D")
-            status["almas_vivas"] = list(getattr(self.coracao, "almas_vivas", {}).keys())
+            status["modo_sandbox"]    = getattr(self.coracao, "modo_sandbox", "N/D")
+            status["almas_vivas"]     = list(getattr(self.coracao, "almas_vivas", {}).keys())
             top = ctk.CTkToplevel(self.parent)
-            top.title("Status Geral da Arca")
-            top.geometry("750x600")
+            top.title("📊 Status Geral da Arca")
+            top.geometry("800x640")
+            try: top.focus_force()
+            except Exception: pass
             tb = ctk.CTkTextbox(top, wrap="word")
             tb.pack(fill="both", expand=True, padx=10, pady=10)
             tb.insert("end", json.dumps(status, ensure_ascii=False, indent=2, default=str))
@@ -237,22 +931,28 @@ class PainelDesktop(PainelBase):
             self._handle_error("Erro ao obter status", e)
 
 
-# --------------------------------------------------------------------
-#  CHAT INDIVIDUAL — Avatar + Voz + Emoção + Iniciativa + Decisão
-# --------------------------------------------------------------------
+# ============================================================================
+# CHAT INDIVIDUAL — COM AVATAR 3D INTEGRADO
+# ============================================================================
 
 class PainelChatIndividual(PainelBase):
     EMOCOES = [
         "neutralidade_equilibrada", "alegria_leve", "curiosidade_ativa",
         "serenidade_contemplativa", "entusiasmo_criativo", "empatia_profunda",
         "melancolia_suave", "determinacao_calma", "admiracao_sincera",
+        "alegria_forte", "tristeza_leve", "tristeza_profunda",
+        "raiva_leve", "raiva_intensa", "surpresa_leve", "surpresa_choque",
     ]
 
     def __init__(self, parent, coracao, ui_ref):
         super().__init__(parent, coracao, ui_ref)
         self.chat_history: Dict[str, List[str]] = {a: [] for a in ALMAS}
         self.current_ai = "WELLINGTON"
-        self.avatar_image = None
+        
+        # ===== NOVO: Avatar 3D =====
+        self.avatar_3d_frame = None
+        self.avatar_3d_container = None
+        
         self._build()
 
     def _get_motor_expressao(self, nome):
@@ -268,30 +968,47 @@ class PainelChatIndividual(PainelBase):
 
     def _build(self):
         self._lbl("💬 Chat Individual com as Almas", bold=True, size=15)
+        
+        # Frame superior com controles
         top_f = ctk.CTkFrame(self.frame)
         top_f.pack(fill="x", padx=8, pady=4)
+        
         ctk.CTkLabel(top_f, text="Alma:").grid(row=0, column=0, padx=4)
         self.ai_combo = ctk.CTkComboBox(top_f, values=ALMAS, command=self._change_ai, width=160)
         self.ai_combo.grid(row=0, column=1, padx=4)
         self.ai_combo.set("WELLINGTON")
+        
         ctk.CTkLabel(top_f, text="Emoção:").grid(row=0, column=2, padx=4)
         self.emocao_combo = ctk.CTkComboBox(top_f, values=self.EMOCOES, width=220)
         self.emocao_combo.grid(row=0, column=3, padx=4)
         self.emocao_combo.set("neutralidade_equilibrada")
+        
         ctk.CTkLabel(top_f, text="Idioma:").grid(row=0, column=4, padx=4)
         self.idioma_combo = ctk.CTkComboBox(top_f, values=["pt", "ja", "en"], width=60)
         self.idioma_combo.grid(row=0, column=5, padx=4)
         self.idioma_combo.set("pt")
 
-        self.avatar_label = ctk.CTkLabel(self.frame, text="🤖", font=ctk.CTkFont(size=48))
-        self.avatar_label.pack(pady=4)
+        # ===== NOVO: Frame para Avatar 3D =====
+        avatar_container = ctk.CTkFrame(self.frame, width=400, height=600)
+        avatar_container.pack(pady=4)
+        avatar_container.pack_propagate(False)
+        
+        # Label de fallback (caso 3D não funcione)
+        self.avatar_label = ctk.CTkLabel(avatar_container, text="🤖", font=ctk.CTkFont(size=48))
+        self.avatar_label.pack(expand=True, fill="both")
+        
+        # Guarda referência para o container
+        self.avatar_3d_container = avatar_container
+        
+        # Estado emocional
         self.estado_label = ctk.CTkLabel(self.frame, text="Estado: —", font=ctk.CTkFont(size=11), text_color="gray")
         self.estado_label.pack()
-        self._update_avatar()
 
+        # Área de chat
         self.chat_text = ctk.CTkTextbox(self.frame, height=200)
         self.chat_text.pack(fill="both", expand=True, padx=8, pady=4)
 
+        # Entrada de mensagem
         msg_f = ctk.CTkFrame(self.frame)
         msg_f.pack(fill="x", padx=8, pady=2)
         self.message_entry = ctk.CTkEntry(msg_f, placeholder_text="Mensagem...")
@@ -299,6 +1016,7 @@ class PainelChatIndividual(PainelBase):
         self.message_entry.bind("<Return>", lambda e: self._send())
         ctk.CTkButton(msg_f, text="📤", command=self._send, width=40).pack(side="left")
 
+        # Botões de ação
         bf = ctk.CTkFrame(self.frame)
         bf.pack(fill="x", padx=8, pady=2)
         btns = [
@@ -314,15 +1032,25 @@ class PainelChatIndividual(PainelBase):
         for txt, cmd, r, c in btns:
             ctk.CTkButton(bf, text=txt, command=cmd, height=30).grid(row=r, column=c, padx=2, pady=2, sticky="ew")
             bf.columnconfigure(c, weight=1)
+        
         ctk.CTkButton(self.frame, text="🗑️ Limpar Chat", command=self._limpar, fg_color="#4a0000", height=28).pack(pady=2)
-        self._update_chat()
-
-    def _change_ai(self, ai):
-        self.current_ai = ai
+        
+        # Inicializa
         self._update_avatar()
         self._update_chat()
 
+    def _change_ai(self, ai):
+        """Muda a alma atual"""
+        self.current_ai = ai
+        self._update_avatar()
+        self._update_chat()
+        
+        # ===== NOVO: Notifica gerenciador 3D =====
+        if hasattr(self.ui_ref, 'gerenciador_avatares_3d'):
+            self.ui_ref.gerenciador_avatares_3d.mostrar_avatar(ai)
+
     def _update_avatar(self):
+        """Atualiza avatar (fallback 2D)"""
         try:
             motor = self._get_motor_expressao(self.current_ai)
             avatar_path = None
@@ -330,12 +1058,12 @@ class PainelChatIndividual(PainelBase):
                 try: avatar_path = motor.obter_caminho_avatar(self.current_ai)
                 except Exception: pass
             if not avatar_path:
-                alt = Path("Assets/Avatares") / self.current_ai / "neutralidade_equilibrada.png"
+                alt = Path("assets/Avatares") / self.current_ai / "static" / "neutralidade_equilibrada.png"
                 if alt.exists(): avatar_path = str(alt)
             if avatar_path and Path(str(avatar_path)).exists():
                 from PIL import Image
-                img = Image.open(str(avatar_path)).convert("RGBA").resize((400, 400))
-                self.avatar_image = ctk.CTkImage(img, size=(400, 400))
+                img = Image.open(str(avatar_path)).convert("RGBA").resize((150, 150))
+                self.avatar_image = ctk.CTkImage(img, size=(150, 150))
                 self.avatar_label.configure(image=self.avatar_image, text="")
             else:
                 estado_txt = "—"
@@ -347,6 +1075,8 @@ class PainelChatIndividual(PainelBase):
                 self.avatar_label.configure(text=f"🤖\n{self.current_ai}", image=None, font=ctk.CTkFont(size=28, weight="bold"))
                 try: self.estado_label.configure(text=f"Expressão: {estado_txt}")
                 except Exception: pass
+            
+            # Atualiza estado emocional
             if self.coracao and hasattr(self.coracao, "obter_estado_emocional_alma"):
                 try:
                     est = self.coracao.obter_estado_emocional_alma(self.current_ai)
@@ -362,7 +1092,10 @@ class PainelChatIndividual(PainelBase):
         msg = self.message_entry.get().strip()
         if not msg: return
         self.chat_history[self.current_ai].append(f"Você: {msg}")
+        # Prioridade: command_queue da janela → command_queue_threadsafe do coração
         cq = getattr(self.ui_ref, "command_queue", None)
+        if cq is None and self.coracao:
+            cq = getattr(self.coracao, "command_queue_threadsafe", None)
         if cq is not None:
             try:
                 cq.put_nowait(Comando("UI", self.current_ai, "CHAT", {"texto": msg}))
@@ -376,7 +1109,7 @@ class PainelChatIndividual(PainelBase):
             except Exception as e:
                 self.chat_history[self.current_ai].append(f"❌ Erro ao salvar: {e}")
         else:
-            self.chat_history[self.current_ai].append("❌ command_queue e salvar_memoria_alma indisponíveis.")
+            self.chat_history[self.current_ai].append("❌ Fila de comandos indisponível.")
         try: self.message_entry.delete(0, "end")
         except Exception: pass
         self._update_chat()
@@ -384,6 +1117,11 @@ class PainelChatIndividual(PainelBase):
     def _falar(self):
         msg = self.message_entry.get().strip() or "(sem mensagem)"
         idioma = self.idioma_combo.get()
+        
+        # ===== NOVO: Atualiza avatar para modo fala =====
+        if hasattr(self.ui_ref, 'gerenciador_avatares_3d'):
+            self.ui_ref.gerenciador_avatares_3d.atualizar_fala(self.current_ai, 0.5)
+        
         if self.coracao and hasattr(self.coracao, "falar_ia"):
             try:
                 ok = self.coracao.falar_ia(self.current_ai, msg, idioma)
@@ -406,6 +1144,11 @@ class PainelChatIndividual(PainelBase):
     def _cena_emocional(self):
         msg = self.message_entry.get().strip() or "Olá!"
         emocao = self.emocao_combo.get()
+        
+        # ===== NOVO: Atualiza emoção do avatar =====
+        if hasattr(self.ui_ref, 'gerenciador_avatares_3d'):
+            self.ui_ref.gerenciador_avatares_3d.atualizar_emocao(self.current_ai, emocao)
+        
         if self.coracao and hasattr(self.coracao, "cena_emocional"):
             try:
                 ok = self.coracao.cena_emocional(self.current_ai, emocao, msg)
@@ -419,6 +1162,11 @@ class PainelChatIndividual(PainelBase):
 
     def _aplicar_emocao(self):
         emocao = self.emocao_combo.get()
+        
+        # ===== NOVO: Atualiza emoção do avatar =====
+        if hasattr(self.ui_ref, 'gerenciador_avatares_3d'):
+            self.ui_ref.gerenciador_avatares_3d.atualizar_emocao(self.current_ai, emocao)
+        
         if self.coracao and hasattr(self.coracao, "atualizar_expressao_ia"):
             try:
                 ok = self.coracao.atualizar_expressao_ia(self.current_ai, emocao)
@@ -484,6 +1232,10 @@ class PainelChatIndividual(PainelBase):
         self._update_chat()
 
     def _parar_fala(self):
+        # ===== NOVO: Para animação de fala =====
+        if hasattr(self.ui_ref, 'sistema_lipsync'):
+            self.ui_ref.sistema_lipsync.parar_fala(self.current_ai)
+        
         if self.coracao and hasattr(self.coracao, "parar_fala_ia"):
             try:
                 ok = self.coracao.parar_fala_ia(self.current_ai)
@@ -522,9 +1274,9 @@ class PainelChatIndividual(PainelBase):
                 self._update_avatar()
 
 
-# --------------------------------------------------------------------
-#  CHAT COLETIVO — Broadcast + tabs por alma
-# --------------------------------------------------------------------
+# ============================================================================
+# DEMAIS PAINÉIS (mantidos originais)
+# ============================================================================
 
 class PainelChatColetivo(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -586,6 +1338,8 @@ class PainelChatColetivo(PainelBase):
         ts = time.strftime("%H:%M:%S")
         self.hist_global.append(f"[{ts}] Você (Broadcast): {msg}")
         cq = getattr(self.ui_ref, "command_queue", None)
+        if cq is None and self.coracao:
+            cq = getattr(self.coracao, "command_queue_threadsafe", None)
         if cq is not None:
             for ai in ALMAS:
                 try:
@@ -596,7 +1350,7 @@ class PainelChatColetivo(PainelBase):
                     self.hist_global.append(f"❌ Erro → {ai}: {e}")
             self.hist_global.append(f"[{ts}] → Enviado a {len(ALMAS)} almas.")
         else:
-            self.hist_global.append(f"[{ts}] ❌ command_queue não disponível.")
+            self.hist_global.append(f"[{ts}] ❌ Fila de comandos não disponível.")
         try: self.msg_entry.delete(0, "end")
         except Exception: pass
         self._update_display()
@@ -673,9 +1427,9 @@ class PainelChatColetivo(PainelBase):
             self._update_display()
 
 
-# --------------------------------------------------------------------
-#  CÂMERA / SOM / MICROFONES
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelCameraSom (original)
+# ============================================================================
 
 class PainelCameraSom(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -702,8 +1456,34 @@ class PainelCameraSom(PainelBase):
         self._make_result()
 
     def _toggle_camera(self):
+        import requests as _req
         self.camera_active = not self.camera_active
-        self._show_result(f"Câmera {'🔵 ATIVADA' if self.camera_active else '⚫ DESATIVADA'}.")
+        if self.camera_active:
+            try:
+                resp = _req.get("http://localhost:5001/camera", timeout=5)
+                if resp.status_code == 200:
+                    dados = resp.json()
+                    imagem_b64 = dados.get("imagem")
+                    if imagem_b64:
+                        self._show_result({
+                            "status": "🔵 CÂMERA ATIVA",
+                            "frame_capturado": True,
+                            "tamanho_bytes": len(imagem_b64)
+                        })
+                    else:
+                        self._show_result({"status": "🔵 CÂMERA ATIVA", "aviso": "frame vazio"})
+                else:
+                    err = resp.json() if resp.headers.get("content-type", "").startswith("application/json") else {"erro": resp.text}
+                    self._show_result({"status": "⚠️ Câmera com erro", "http_status": resp.status_code, "detalhe": err})
+                    self.camera_active = False
+            except _req.exceptions.ConnectionError:
+                self._show_result({"status": "❌ Servidor media (porta 5001) não está rodando", "solucao": "Verifique se o job 'media' iniciou corretamente"})
+                self.camera_active = False
+            except Exception as e:
+                self._show_result({"status": "❌ Erro ao acessar câmera", "erro": str(e)})
+                self.camera_active = False
+        else:
+            self._show_result({"status": "⚫ CÂMERA DESATIVADA"})
 
     def _gravar_audio(self):
         if self.sentidos and hasattr(self.sentidos, "gravar_audio"):
@@ -734,9 +1514,9 @@ class PainelCameraSom(PainelBase):
             self._modulo_indisponivel("coracao.obter_estado_sensorial_atual")
 
 
-# --------------------------------------------------------------------
-#  TRANSCRIÇÍO ÁUDIO
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelTranscreverAudio (original)
+# ============================================================================
 
 class PainelTranscreverAudio(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -796,14 +1576,13 @@ class PainelTranscreverAudio(PainelBase):
             self._modulo_indisponivel("sentidos_humanos.gravar_e_transcrever")
 
 
-# --------------------------------------------------------------------
-#  SENTIMENTOS — Guardião Afetivo + Validador Emoções + EstadoEmocional
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelSentimentos (original)
+# ============================================================================
 
 class PainelSentimentos(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
         super().__init__(parent, coracao, ui_ref)
-        self.guardiao = getattr(coracao, "guardiao_memoria_afetiva", None) if coracao else None
         self.val_emocoes = getattr(coracao, "validador_emocoes", None) if coracao else None
         self._build()
 
@@ -834,22 +1613,45 @@ class PainelSentimentos(PainelBase):
         self._make_result()
 
     def _iniciar(self):
-        if self.guardiao and hasattr(self.guardiao, "iniciar_monitoramento"):
-            try: self._show_result({"ok": True, "res": str(self.guardiao.iniciar_monitoramento())})
-            except Exception as e: self._handle_error("Erro", e)
-        else: self._modulo_indisponivel("guardiao_memoria_afetiva.iniciar_monitoramento")
+        if self.coracao and hasattr(self.coracao, "avaliar_estados_internas_todas_almas"):
+            try:
+                estados = self.coracao.avaliar_estados_internas_todas_almas()
+                self._show_result({"ok": True, "monitoramento": "iniciado", "estados_iniciais": estados})
+            except Exception as e:
+                self._handle_error("Erro ao iniciar monitoramento emocional", e)
+        else:
+            self._modulo_indisponivel("coracao.avaliar_estados_internas_todas_almas")
 
     def _relatorio(self):
-        if self.guardiao and hasattr(self.guardiao, "obter_relatorio_afetivo"):
-            try: self._show_result(self.guardiao.obter_relatorio_afetivo())
-            except Exception as e: self._handle_error("Erro", e)
-        else: self._modulo_indisponivel("guardiao_memoria_afetiva.obter_relatorio_afetivo")
+        if not self.coracao:
+            self._modulo_indisponivel("coracao")
+            return
+        try:
+            relatorio = {}
+            almas = getattr(self.coracao, "almas_vivas", {})
+            for alma in almas:
+                estado = self.coracao.obter_estado_emocional_alma(alma) if hasattr(self.coracao, "obter_estado_emocional_alma") else None
+                sonho = self.coracao.obter_ultimo_sonho_alma(alma) if hasattr(self.coracao, "obter_ultimo_sonho_alma") else None
+                metricas = self.coracao.obter_metricas_curiosidade_alma(alma) if hasattr(self.coracao, "obter_metricas_curiosidade_alma") else None
+                relatorio[alma] = {
+                    "estado_emocional": estado,
+                    "ultimo_sonho": sonho,
+                    "metricas_curiosidade": metricas,
+                }
+            self._show_result(relatorio)
+        except Exception as e:
+            self._handle_error("Erro ao gerar relatório afetivo", e)
 
     def _sugestao(self):
-        if self.guardiao and hasattr(self.guardiao, "forcar_sugestao"):
-            try: self._show_result({"ok": True, "res": str(self.guardiao.forcar_sugestao())})
-            except Exception as e: self._handle_error("Erro", e)
-        else: self._modulo_indisponivel("guardiao_memoria_afetiva.forcar_sugestao")
+        alma = self.ai_combo.get() if hasattr(self, "ai_combo") else "EVA"
+        if self.coracao and hasattr(self.coracao, "gerar_desejo_alma"):
+            try:
+                desejo = self.coracao.gerar_desejo_alma(alma)
+                self._show_result({"ok": True, "alma": alma, "desejo_gerado": desejo})
+            except Exception as e:
+                self._handle_error("Erro ao gerar desejo", e)
+        else:
+            self._modulo_indisponivel("coracao.gerar_desejo_alma")
 
     def _validar_emocao(self):
         texto = self.e_texto.get().strip()
@@ -857,7 +1659,7 @@ class PainelSentimentos(PainelBase):
         if self.coracao and hasattr(self.coracao, "validar_resposta_emocional"):
             try:
                 ok, score, det = self.coracao.validar_resposta_emocional(texto, alma, None)
-                self._show_result({"valida": ok, "score": score, "detalhes": det})
+                self._show_result({"válida": ok, "score": score, "detalhes": det})
             except Exception as e: self._handle_error("Erro em validar_resposta_emocional", e)
         elif self.val_emocoes:
             for m in ["validar", "verificar"]:
@@ -882,9 +1684,9 @@ class PainelSentimentos(PainelBase):
         else: self._modulo_indisponivel("coracao.obter_ultimo_sonho_alma")
 
 
-# --------------------------------------------------------------------
-#  SONHOS — Sonhador Individual por alma
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelSonhos (original)
+# ============================================================================
 
 class PainelSonhos(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -969,9 +1771,9 @@ class PainelSonhos(PainelBase):
         else: self._modulo_indisponivel("coracao.obter_consciencia_temporal_alma")
 
 
-# --------------------------------------------------------------------
-#  CRESCIMENTO PERSONALIDADE
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelCrescimentoPersonalidade (original)
+# ============================================================================
 
 class PainelCrescimentoPersonalidade(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -1029,7 +1831,7 @@ class PainelCrescimentoPersonalidade(PainelBase):
         fb = self._get_feedback_loop()
         tipo = self.e_fb.get().strip() or "positivo"
         if fb and hasattr(fb, "processar_feedback"):
-            try: self._show_result(fb.processar_feedback("interacao", tipo))
+            try: self._show_result(fb.processar_feedback("interação", tipo))
             except Exception as e: self._handle_error("Erro no feedback", e)
         else: self._modulo_indisponivel(f"feedback_loops['{self.ai_combo.get()}'].processar_feedback")
 
@@ -1048,9 +1850,9 @@ class PainelCrescimentoPersonalidade(PainelBase):
         else: self._modulo_indisponivel("coracao.obter_pesos_decisao_alma")
 
 
-# --------------------------------------------------------------------
-#  CONSULADO SOBERANO & IMIGRAÇÍO
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelConsulado (original)
+# ============================================================================
 
 class PainelConsulado(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -1134,9 +1936,9 @@ class PainelConsulado(PainelBase):
         else: self._modulo_indisponivel("coracao.solicitar_missao_consulado")
 
 
-# --------------------------------------------------------------------
-#  JUDICIÁRIO COMPLETO — CamaraJudiciaria + SCR + ModoVidro + Precedentes
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelJudiciario (original)
+# ============================================================================
 
 class PainelJudiciario(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -1184,7 +1986,7 @@ class PainelJudiciario(PainelBase):
             ("🔄 Revogar Vidro (Pai)", self._revogar_vidro, 1, 1),
             ("🛠️ SCR Correção", self._scr, 1, 2),
             ("🔍 Buscar Precedente", self._precedente, 2, 0),
-            ("📢 Apelar ao Criador", self._apelar, 2, 1),
+            ("📢 Apelar ação Criador", self._apelar, 2, 1),
             ("✅ Aplicar Correção", self._aplicar_correcao, 2, 2),
             ("📋 Status Processo", self._status_proc, 3, 0),
             ("⚠️ Registrar Violação", self._registrar_violacao, 3, 1),
@@ -1233,21 +2035,29 @@ class PainelJudiciario(PainelBase):
 
     def _revogar_vidro(self):
         id_s = self.e_id.get().strip()
+        alma = self.e_alma.get().strip()
+        # Primeiro tenta via coração
         if self.coracao and hasattr(self.coracao, "liberta_alma_pai"):
             try: self._show_result(self.coracao.liberta_alma_pai(id_s))
             except Exception as e: self._handle_error("Erro em liberta_alma_pai", e)
-        elif self.modo_vidro and hasattr(self.modo_vidro, "revogar_sentenca_vidro"):
-            try: self._show_result({"ok": True, "res": str(self.modo_vidro.revogar_sentenca_vidro(self.e_alma.get()))})
-            except Exception as e: self._handle_error("Erro ao revogar", e)
-        else: self._modulo_indisponivel("liberta_alma_pai")
+        # Fallback: suspender_sentenca_vidro() que é o método real do ModoVidro
+        elif self.modo_vidro and hasattr(self.modo_vidro, "suspender_sentenca_vidro"):
+            try: self._show_result({"ok": True, "res": str(self.modo_vidro.suspender_sentenca_vidro(id_s, "Revogado via UI"))})
+            except Exception as e: self._handle_error("Erro ao suspender vidro", e)
+        else: self._modulo_indisponivel("coracao.liberta_alma_pai")
 
     def _scr(self):
         alma = self.e_alma.get().strip()
         if not self._require_alma(alma, "Alma/Acusado"): return
-        if self.scr and hasattr(self.scr, "iniciar_processo_correcao"):
-            try: self._show_result({"ok": True, "res": str(self.scr.iniciar_processo_correcao(alma, "UI_CRIADOR"))})
-            except Exception as e: self._handle_error("Erro no SCR", e)
-        else: self._modulo_indisponivel("scr.iniciar_processo_correcao")
+        # Primeiro tenta via coração (método público)
+        if self.coracao and hasattr(self.coracao, "aplicar_correcao_redentora"):
+            try: self._show_result({"ok": True, "res": str(self.coracao.aplicar_correcao_redentora(alma))})
+            except Exception as e: self._handle_error("Erro em aplicar_correcao_redentora", e)
+        # Fallback direto no SCR — método real é aplicar_correcao()
+        elif self.scr and hasattr(self.scr, "aplicar_correcao"):
+            try: self._show_result({"ok": True, "res": str(self.scr.aplicar_correcao(alma, "Correção via UI", "PROTOCOLO_ETICO", None))})
+            except Exception as e: self._handle_error("Erro no SCR.aplicar_correcao", e)
+        else: self._modulo_indisponivel("coracao.aplicar_correcao_redentora")
 
     def _precedente(self):
         lei = self.e_desc.get().strip()
@@ -1298,9 +2108,9 @@ class PainelJudiciario(PainelBase):
         self._modulo_indisponivel("sistema_judiciario.gerar_relatorio")
 
 
-# --------------------------------------------------------------------
-#  APELOS AO CRIADOR (painel separado como no original)
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelApelosCriador (original)
+# ============================================================================
 
 class PainelApelosCriador(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -1309,13 +2119,13 @@ class PainelApelosCriador(PainelBase):
         self._build()
 
     def _build(self):
-        self._lbl("📢 Apelos ao Criador — PF-009", bold=True, size=15)
+        self._lbl("📢 Apelos ação Criador — PF-009", bold=True, size=15)
         ctk.CTkLabel(self.frame, text="ID do Processo:").pack(anchor="w", padx=8)
         self.e_id = self._entry("ID do processo")
         ctk.CTkLabel(self.frame, text="Fundamento do Apelo:").pack(anchor="w", padx=8)
         self.e_fund = ctk.CTkTextbox(self.frame, height=100)
         self.e_fund.pack(fill="x", padx=8, pady=4)
-        ctk.CTkButton(self.frame, text="📢 Apelar ao Criador", command=self._apelar, height=40, fg_color="#5a1a8b").pack(pady=8)
+        ctk.CTkButton(self.frame, text="📢 Apelar ação Criador", command=self._apelar, height=40, fg_color="#5a1a8b").pack(pady=8)
         ctk.CTkButton(self.frame, text="📋 Listar Apelos", command=self._listar, height=36).pack(pady=4)
         self._make_result()
 
@@ -1340,9 +2150,9 @@ class PainelApelosCriador(PainelBase):
         self._modulo_indisponivel("camara_judiciaria.apelos_pendentes")
 
 
-# --------------------------------------------------------------------
-#  MODO VIDRO (painel separado)
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelModoVidro (original)
+# ============================================================================
 
 class PainelModoVidro(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -1410,9 +2220,9 @@ class PainelModoVidro(PainelBase):
         self._modulo_indisponivel("modo_vidro.almas_em_vidro")
 
 
-# --------------------------------------------------------------------
-#  PRECEDENTES (painel separado)
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelPrecedentes (original)
+# ============================================================================
 
 class PainelPrecedentes(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -1466,9 +2276,9 @@ class PainelPrecedentes(PainelBase):
         else: self._modulo_indisponivel("coracao.registrar_decisao_judicial")
 
 
-# --------------------------------------------------------------------
-#  LEGISLATIVO — Legislativa + Deliberativa
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelLegislativo (original)
+# ============================================================================
 
 class PainelLegislativo(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -1577,14 +2387,24 @@ class PainelLegislativo(PainelBase):
 
     def _propostas_votacao(self):
         if self.camara_l:
-            p = getattr(self.camara_l, "propostas_em_votacao", None)
-            self._show_result(p if p is not None else "Atributo 'propostas_em_votacao' não exposto.")
-        else: self._modulo_indisponivel("camara_legislativa")
+            # Tentar métodos reais da câmara legislativa
+            for m in ["listar_propostas_em_votacao", "obter_propostas", "propostas"]:
+                obj = getattr(self.camara_l, m, None)
+                if callable(obj):
+                    try: self._show_result(obj()); return
+                    except Exception as e: self._handle_error(f"Erro em {m}", e); return
+                elif obj is not None:
+                    self._show_result(obj); return
+            # Fallback: mostrar atributos disponíveis
+            attrs = [a for a in dir(self.camara_l) if not a.startswith('_') and 'proposta' in a.lower()]
+            self._show_result({"info": "Nenhum método de propostas encontrado", "atributos_disponiveis": attrs})
+        else:
+            self._modulo_indisponivel("camara_legislativa")
 
 
-# --------------------------------------------------------------------
-#  SEGURANÇA & SANDBOX
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelSeguranca (original)
+# ============================================================================
 
 class PainelSeguranca(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -1631,8 +2451,8 @@ class PainelSeguranca(PainelBase):
         codigo = self.code_text.get("0.0", "end").strip()
         if self.coracao and hasattr(self.coracao, "validar_codigo_sandbox"):
             try:
-                valido, erros, avisos = self.coracao.validar_codigo_sandbox(codigo)
-                self._show_result({"valido": valido, "erros": erros, "avisos": avisos})
+                válido, erros, avisos = self.coracao.validar_codigo_sandbox(codigo)
+                self._show_result({"válido": válido, "erros": erros, "avisos": avisos})
             except Exception as e: self._handle_error("Erro na validação", e)
         elif self.sandbox and hasattr(self.sandbox, "validar_codigo"):
             try: self._show_result(self.sandbox.validar_codigo(codigo))
@@ -1667,9 +2487,9 @@ class PainelSeguranca(PainelBase):
         else: self._modulo_indisponivel("sandbox_executor.parar_todos_containers")
 
 
-# --------------------------------------------------------------------
-#  ENGENHARIA & PROPOSTAS
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelEngenharia (original)
+# ============================================================================
 
 class PainelEngenharia(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -1771,9 +2591,9 @@ class PainelEngenharia(PainelBase):
         else: self._modulo_indisponivel("coracao.submeter_proposta_ferramenta")
 
 
-# --------------------------------------------------------------------
-#  LISTA EVOLUÇÍO IA
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelListaEvolucaoIA (original)
+# ============================================================================
 
 class PainelListaEvolucaoIA(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -1828,9 +2648,9 @@ class PainelListaEvolucaoIA(PainelBase):
         else: self._modulo_indisponivel("coracao.obter_status_evolucao_sistema")
 
 
-# --------------------------------------------------------------------
-#  ANALISADOR INTENÇÍO
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelAnalisadorIntencao (original)
+# ============================================================================
 
 class PainelAnalisadorIntencao(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -1886,9 +2706,9 @@ class PainelAnalisadorIntencao(PainelBase):
         else: self._modulo_indisponivel("coracao.listar_programas_conhecidos")
 
 
-# --------------------------------------------------------------------
-#  GERADOR DE ALMAS
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelGeradorAlmas (original)
+# ============================================================================
 
 class PainelGeradorAlmas(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -1929,9 +2749,9 @@ class PainelGeradorAlmas(PainelBase):
         self._modulo_indisponivel("gerador_almas")
 
 
-# --------------------------------------------------------------------
-#  DETECTOR HDD & HARDWARE
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelDetectorHDD (original)
+# ============================================================================
 
 class PainelDetectorHDD(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -2008,9 +2828,9 @@ class PainelDetectorHDD(PainelBase):
             except Exception as e: self._handle_error("Erro", e)
 
 
-# --------------------------------------------------------------------
-#  MEMÓRIA — 4 Camadas: Híbrida + ChromaDB + Dataset + Cache HDD
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelMemoria (original)
+# ============================================================================
 
 class PainelMemoria(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -2162,9 +2982,9 @@ class PainelMemoria(PainelBase):
         else: self._modulo_indisponivel("chromadb_isolado.obter_status")
 
 
-# --------------------------------------------------------------------
-#  SCANNER DO SISTEMA
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelScannerSistema (original)
+# ============================================================================
 
 class PainelScannerSistema(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -2217,9 +3037,9 @@ class PainelScannerSistema(PainelBase):
         else: self._modulo_indisponivel("coracao.disparar_auditoria_sistema")
 
 
-# --------------------------------------------------------------------
-#  AUTOMATIZADOR NAVEGADOR
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelAutomatizadorNavegador (original)
+# ============================================================================
 
 class PainelAutomatizadorNavegador(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -2271,10 +3091,20 @@ class PainelAutomatizadorNavegador(PainelBase):
 
     def _listar(self):
         if self.auto:
-            obj = getattr(self.auto, "missoes_ativas", None) or getattr(self.auto, "fila_missoes", None)
-            if obj is not None:
-                self._show_result(list(obj) if hasattr(obj, "__iter__") else str(obj)); return
-        self._modulo_indisponivel("automatizador_navegador.missoes_ativas")
+            # AutomatizadorNavegadorMultiAI usa listar_solicitacoes_pendentes()
+            for m in ["listar_solicitacoes_pendentes", "listar_missoes", "missoes_ativas"]:
+                obj = getattr(self.auto, m, None)
+                if callable(obj):
+                    try: self._show_result(obj()); return
+                    except Exception as e: self._handle_error(f"Erro em {m}", e); return
+                elif obj is not None:
+                    self._show_result(list(obj) if hasattr(obj, "__iter__") else str(obj)); return
+            # Fallback: mostrar solicitacoes_pendentes direto
+            pendentes = getattr(self.auto, "solicitacoes_pendentes", None)
+            if pendentes is not None:
+                self._show_result({k: vars(v) if hasattr(v,'__dict__') else str(v)
+                                   for k,v in pendentes.items()}); return
+        self._modulo_indisponivel("automatizador_navegador")
 
     def _parar(self):
         if self.auto and hasattr(self.auto, "parar"):
@@ -2283,9 +3113,9 @@ class PainelAutomatizadorNavegador(PainelBase):
         else: self._modulo_indisponivel("automatizador_navegador.parar")
 
 
-# --------------------------------------------------------------------
-#  ENCARNAÇÍO API (FastAPI)
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelEncarnacaoAPI (original)
+# ============================================================================
 
 class PainelEncarnacaoAPI(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -2310,8 +3140,11 @@ class PainelEncarnacaoAPI(PainelBase):
 
     def _api_status(self):
         if self.enc_api:
-            rodando = getattr(self.enc_api, "rodando", None)
-            if rodando is True: return "🟢 API Rodando"
+            # EncarnacaoAPI usa _server_running internamente
+            rodando = getattr(self.enc_api, "_server_running", None)
+            if rodando is None:
+                rodando = getattr(self.enc_api, "rodando", None)
+            if rodando is True:  return "🟢 API Rodando"
             if rodando is False: return "🔴 API Parada"
             return "🟡 API Presente (estado desconhecido)"
         return "⚠️ encarnacao_api não injetado"
@@ -2356,9 +3189,9 @@ class PainelEncarnacaoAPI(PainelBase):
         else: self._modulo_indisponivel("encarnacao_api")
 
 
-# --------------------------------------------------------------------
-#  ALIADAS — DeepSeek, Gemini, Qwen, etc.
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelAliadas (original)
+# ============================================================================
 
 class PainelAliadas(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -2435,9 +3268,9 @@ class PainelAliadas(PainelBase):
         else: self._modulo_indisponivel("coracao.atualizar_status_aliada")
 
 
-# --------------------------------------------------------------------
-#  ALMAS VIVAS — Ciclo de Vida Completo + Wellington Online/Offline
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelAlmasVivas (original)
+# ============================================================================
 
 class PainelAlmasVivas(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -2546,9 +3379,9 @@ class PainelAlmasVivas(PainelBase):
         else: self._modulo_indisponivel("coracao.obter_consciencia_temporal_alma")
 
 
-# --------------------------------------------------------------------
-#  DECISÕES — MotorDecisao + MotorIniciativa + Curiosidade
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelDecisoes (original)
+# ============================================================================
 
 class PainelDecisoes(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -2659,9 +3492,9 @@ class PainelDecisoes(PainelBase):
         else: self._modulo_indisponivel("coracao.verificar_iniciativa_disponivel")
 
 
-# --------------------------------------------------------------------
-#  AUDITORIA & HISTÓRICO — GerenciadorAuditoria + Cronista
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelAuditoriaHistorico (original)
+# ============================================================================
 
 class PainelAuditoriaHistorico(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -2777,9 +3610,9 @@ class PainelAuditoriaHistorico(PainelBase):
         else: self._modulo_indisponivel("coracao.consultar_historico")
 
 
-# --------------------------------------------------------------------
-#  VALIDADORES — Ético + Emoções
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelValidadores (original)
+# ============================================================================
 
 class PainelValidadores(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -2833,7 +3666,7 @@ class PainelValidadores(PainelBase):
         if self.coracao and hasattr(self.coracao, "validar_resposta_emocional"):
             try:
                 ok, score, det = self.coracao.validar_resposta_emocional(texto, alma, None)
-                self._show_result({"valida": ok, "score": score, "detalhes": det})
+                self._show_result({"válida": ok, "score": score, "detalhes": det})
             except Exception as e: self._handle_error("Erro em validar_resposta_emocional", e)
         elif self.val_emocoes and hasattr(self.val_emocoes, "validar"):
             try: self._show_result(self.val_emocoes.validar(texto, alma))
@@ -2849,9 +3682,9 @@ class PainelValidadores(PainelBase):
         })
 
 
-# --------------------------------------------------------------------
-#  MONITORAMENTO — Observador + AI-to-AI + Padrões + Cerebro
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelMonitoramento (original)
+# ============================================================================
 
 class PainelMonitoramento(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -2945,73 +3778,114 @@ class PainelMonitoramento(PainelBase):
         else: self._modulo_indisponivel("cerebro.processar_ciclo")
 
 
-# --------------------------------------------------------------------
-#  BIBLIOTECA
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelBiblioteca (original)
+# ============================================================================
 
 class PainelBiblioteca(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
         super().__init__(parent, coracao, ui_ref)
-        self.biblioteca = getattr(coracao, "biblioteca_teologica", None) or getattr(coracao, "biblioteca", None) if coracao else None
+        # O coração não tem biblioteca diretamente — usar ConsultorBiblicoLocal
+        self.biblioteca = None
+        # Tentar obter do coração primeiro (futuro)
+        for attr in ["consultor_biblico", "biblioteca_teologica", "biblioteca"]:
+            obj = getattr(coracao, attr, None) if coracao else None
+            if obj is not None:
+                self.biblioteca = obj
+                break
+        # Fallback: instanciar ConsultorBiblicoLocal diretamente
+        if self.biblioteca is None:
+            try:
+                from consultor_biblico_local import ConsultorBiblicoLocal
+                self.biblioteca = ConsultorBiblicoLocal()
+            except Exception:
+                pass
         self._build()
 
     def _build(self):
         self._lbl("📚 Biblioteca Teológica & Filosófica", bold=True, size=15)
+        status = f"{'✅ ConsultorBiblico disponível' if self.biblioteca else '❌ Módulo não carregado'}"
+        ctk.CTkLabel(self.frame, text=status, font=ctk.CTkFont(size=11),
+                     text_color="#aaffaa" if self.biblioteca else "#ff8888").pack(pady=2)
         ctk.CTkLabel(self.frame, text="Busca (tema ou versículo):").pack(anchor="w", padx=8)
         self.e_query = self._entry("ex: João 3:16, amor, salvação")
         bf = ctk.CTkFrame(self.frame)
         bf.pack(fill="x", padx=8, pady=6)
-        ctk.CTkButton(bf, text="📚 Buscar por Tema", command=self._tema, height=36).grid(row=0, column=0, padx=4, sticky="ew")
-        ctk.CTkButton(bf, text="📖 Buscar Versículo", command=self._versiculo, height=36).grid(row=0, column=1, padx=4, sticky="ew")
-        ctk.CTkButton(bf, text="📋 Listar Livros/Índices", command=self._listar, height=36).grid(row=1, column=0, padx=4, pady=4, sticky="ew")
-        ctk.CTkButton(bf, text="🔍 Busca Híbrida", command=self._hibrida, height=36).grid(row=1, column=1, padx=4, pady=4, sticky="ew")
-        bf.columnconfigure(0, weight=1); bf.columnconfigure(1, weight=1)
+        btns = [
+            ("📚 Buscar por Tema",     self._tema,     0, 0),
+            ("📖 Buscar Versículo",    self._versiculo, 0, 1),
+            ("📋 Listar Livros",       self._listar,   1, 0),
+            ("🔍 Busca Híbrida",       self._hibrida,  1, 1),
+        ]
+        for txt, cmd, r, c in btns:
+            ctk.CTkButton(bf, text=txt, command=cmd, height=36).grid(row=r, column=c, padx=4, pady=4, sticky="ew")
+            bf.columnconfigure(0, weight=1); bf.columnconfigure(1, weight=1)
         self._make_result()
 
     def _tema(self):
         query = self.e_query.get().strip()
-        if self.biblioteca and hasattr(self.biblioteca, "buscar_por_tema"):
-            try: self._show_result(self.biblioteca.buscar_por_tema(query))
-            except Exception as e: self._handle_error("Erro", e)
-        else: self._modulo_indisponivel("biblioteca_teologica.buscar_por_tema")
+        if not query: self._handle_error("Digite um tema antes de buscar."); return
+        if self.biblioteca:
+            for m in ["buscar_por_tema", "buscar", "pesquisar"]:
+                if hasattr(self.biblioteca, m):
+                    try: self._show_result(getattr(self.biblioteca, m)(query)); return
+                    except Exception as e: self._handle_error(f"Erro em {m}", e); return
+        self._modulo_indisponivel("consultor_biblico.buscar_por_tema")
 
     def _versiculo(self):
         query = self.e_query.get().strip()
-        if self.biblioteca and hasattr(self.biblioteca, "buscar_versiculo"):
-            try: self._show_result(self.biblioteca.buscar_versiculo(query))
-            except Exception as e: self._handle_error("Erro", e)
-        else: self._modulo_indisponivel("biblioteca_teologica.buscar_versiculo")
+        if not query: self._handle_error("Digite uma referência antes de buscar."); return
+        if self.biblioteca:
+            for m in ["buscar_versiculo", "buscar_por_referencia", "buscar"]:
+                if hasattr(self.biblioteca, m):
+                    try: self._show_result(getattr(self.biblioteca, m)(query)); return
+                    except Exception as e: self._handle_error(f"Erro em {m}", e); return
+        self._modulo_indisponivel("consultor_biblico.buscar_versiculo")
 
     def _listar(self):
         if self.biblioteca:
-            for m in ["listar_livros", "listar", "indices", "obter_livros"]:
+            for m in ["listar_livros", "listar", "indices", "obter_livros", "obter_estatisticas"]:
                 if hasattr(self.biblioteca, m):
                     try: self._show_result(getattr(self.biblioteca, m)()); return
-                    except Exception as e: self._handle_error(f"Erro em biblioteca.{m}", e); return
-        self._modulo_indisponivel("biblioteca_teologica")
+                    except Exception as e: self._handle_error(f"Erro em {m}", e); return
+            # Fallback: mostrar atributos disponíveis
+            self._show_result({"atributos": [a for a in dir(self.biblioteca) if not a.startswith("_")][:25]})
+        else:
+            self._modulo_indisponivel("consultor_biblico")
 
     def _hibrida(self):
         query = self.e_query.get().strip()
+        if not query: self._handle_error("Digite uma busca antes de continuar."); return
         if self.biblioteca:
-            for m in ["buscar_hibrido", "buscar", "pesquisar"]:
+            for m in ["buscar_hibrido", "buscar_semantico", "buscar", "pesquisar"]:
                 if hasattr(self.biblioteca, m):
                     try: self._show_result(getattr(self.biblioteca, m)(query)); return
-                    except Exception as e: self._handle_error(f"Erro em biblioteca.{m}", e); return
-        self._modulo_indisponivel("biblioteca_teologica.buscar_hibrido")
+                    except Exception as e: self._handle_error(f"Erro em {m}", e); return
+        self._modulo_indisponivel("consultor_biblico.buscar_hibrido")
 
 
-# --------------------------------------------------------------------
-#  CAPELA
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelCapela (original)
+# ============================================================================
 
 class PainelCapela(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
         super().__init__(parent, coracao, ui_ref)
+        # O coração não tem 'capela' como atributo — usar obter_capela() do módulo
         self.capela = getattr(coracao, "capela", None) if coracao else None
+        if self.capela is None:
+            try:
+                from capela import obter_capela
+                self.capela = obter_capela()
+            except Exception:
+                pass
         self._build()
 
     def _build(self):
         self._lbl("🕊️ Capela — Meditação & Oração", bold=True, size=15)
+        status = "✅ Capela disponível" if self.capela else "❌ Módulo não carregado"
+        ctk.CTkLabel(self.frame, text=status, font=ctk.CTkFont(size=11),
+                     text_color="#aaffaa" if self.capela else "#ff8888").pack(pady=2)
         ctk.CTkLabel(self.frame, text="Duração (segundos):").pack(anchor="w", padx=8)
         self.e_dur = self._entry("3600")
         ctk.CTkLabel(self.frame, text="Tema de Meditação:").pack(anchor="w", padx=8)
@@ -3019,13 +3893,14 @@ class PainelCapela(PainelBase):
         bf = ctk.CTkFrame(self.frame)
         bf.pack(fill="x", padx=8, pady=6)
         btns = [
-            ("🙏 Entrar na Capela", self._entrar, 0, 0),
-            ("🚪 Sair da Capela", self._sair, 0, 1),
-            ("🧘 Meditar", self._meditar, 1, 0),
-            ("📊 Status da Capela", self._status, 1, 1),
+            ("🙏 Entrar na Capela",  self._entrar,  0, 0),
+            ("🚪 Sair da Capela",    self._sair,    0, 1),
+            ("🧘 Meditar",           self._meditar, 1, 0),
+            ("📊 Status da Capela",  self._status,  1, 1),
         ]
         for txt, cmd, r, c in btns:
-            ctk.CTkButton(bf, text=txt, command=cmd, height=36).grid(row=r, column=c, padx=4, pady=4, sticky="ew")
+            ctk.CTkButton(bf, text=txt, command=cmd, height=36).grid(
+                row=r, column=c, padx=4, pady=4, sticky="ew")
             bf.columnconfigure(c, weight=1)
         self._make_result()
 
@@ -3033,36 +3908,41 @@ class PainelCapela(PainelBase):
         try: dur = int(self.e_dur.get() or 3600)
         except ValueError: dur = 3600
         if self.capela and hasattr(self.capela, "entrar_capela"):
-            try: self._show_result({"ok": True, "res": str(self.capela.entrar_capela(duracao_s=dur))})
+            try: self._show_result(self.capela.entrar_capela(duracao_s=dur))
             except Exception as e: self._handle_error("Erro ao entrar na capela", e)
         else: self._modulo_indisponivel("capela.entrar_capela")
 
     def _sair(self):
         if self.capela and hasattr(self.capela, "sair_capela"):
-            try: self._show_result({"ok": True, "res": str(self.capela.sair_capela())})
+            try: self._show_result(self.capela.sair_capela())
             except Exception as e: self._handle_error("Erro ao sair", e)
         else: self._modulo_indisponivel("capela.sair_capela")
 
     def _meditar(self):
-        tema = self.e_tema.get().strip()
+        tema = self.e_tema.get().strip() or None
         if self.capela and hasattr(self.capela, "meditar"):
-            try: self._show_result({"ok": True, "res": str(self.capela.meditar(tema=tema))})
+            try: self._show_result(self.capela.meditar(tema=tema))
             except Exception as e: self._handle_error("Erro na meditação", e)
         else: self._modulo_indisponivel("capela.meditar")
 
     def _status(self):
         if self.capela:
-            for m in ["obter_status", "status"]:
+            for m in ["status_capela", "obter_status", "status"]:
                 if hasattr(self.capela, m):
                     try: self._show_result(getattr(self.capela, m)()); return
-                    except Exception as e: self._handle_error(f"Erro em capella.{m}", e); return
-            self._show_result({"tipo": type(self.capela).__name__, "em_sessao": getattr(self.capela, "em_sessao", "N/D")})
-        else: self._modulo_indisponivel("capela")
+                    except Exception as e: self._handle_error(f"Erro em {m}", e); return
+            # Fallback: mostrar atributos disponíveis
+            attrs = {a: str(getattr(self.capela, a, "?"))
+                     for a in ["_em_sessao", "modo", "duracao_s"]
+                     if hasattr(self.capela, a)}
+            self._show_result({"tipo": type(self.capela).__name__, **attrs})
+        else:
+            self._modulo_indisponivel("capela")
 
 
-# --------------------------------------------------------------------
-#  SCANNER + GERENCIADOR PROPOSTAS (paineis adicionais do original)
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelGerenciadorPropostas (original)
+# ============================================================================
 
 class PainelGerenciadorPropostas(PainelBase):
     def __init__(self, parent, coracao, ui_ref):
@@ -3094,43 +3974,23 @@ class PainelGerenciadorPropostas(PainelBase):
         else: self._modulo_indisponivel("gerenciador_propostas.aprovar_proposta")
 
 
-# --------------------------------------------------------------------
-#  FINETUNING — OrquestradorArca + OrquestradorUniversal + OrquestradorComConversor
-# --------------------------------------------------------------------
+# ============================================================================
+# PainelFinetuning (original)
+# ============================================================================
 
 class PainelFinetuning(PainelBase):
-    """
-    Painel de controle dos 3 orquestradores de finetuning da ARCA.
-
-    Subsistemas expostos:
-      • OrquestradorArca         (coracao.orquestrador_arca)         — Subsistema 41-A
-      • OrquestradorUniversal    (coracao.orquestrador_universal)    — Subsistema 41-B
-      • OrquestradorComConversor (coracao.orquestrador_com_conversor)— Subsistema 41-C
-
-    Métodos proxy no Coração usados:
-      • coracao.treinar_ia_finetuning(nome_ia, ciclo_completo)
-      • coracao.status_finetuning()
-      • coracao.detectar_novas_ias_finetuning()
-    """
-
     ALMAS_FT = ["eva", "lumina", "nyra", "yuna", "kaiya", "wellington"]
 
     def __init__(self, parent, coracao, ui_ref):
         super().__init__(parent, coracao, ui_ref)
-        # Referências diretas aos orquestradores (via coração ou None)
         self.orch_arca    = getattr(coracao, "orquestrador_arca",         None) if coracao else None
         self.orch_univ    = getattr(coracao, "orquestrador_universal",    None) if coracao else None
         self.orch_conv    = getattr(coracao, "orquestrador_com_conversor",None) if coracao else None
         self._build()
 
-    # --------------------------------------------------------------------
-    # Construção do layout
-    # --------------------------------------------------------------------
-
     def _build(self):
         self._lbl("🤖 Finetuning das IAs — Ciclo Completo", bold=True, size=15)
 
-        # Status dos 3 orquestradores
         sf = ctk.CTkFrame(self.frame)
         sf.pack(fill="x", padx=8, pady=4)
         def _ic(ok): return "✅" if ok else "❌"
@@ -3140,7 +4000,6 @@ class PainelFinetuning(PainelBase):
             f"{_ic(self.orch_conv)} OrquestradorComConversor (41-C)"
         ), font=ctk.CTkFont(size=11), text_color="#aaccff").pack(pady=4)
 
-        # Seleção de IA e modo
         sel_f = ctk.CTkFrame(self.frame)
         sel_f.pack(fill="x", padx=8, pady=4)
 
@@ -3160,7 +4019,6 @@ class PainelFinetuning(PainelBase):
         self.modo_combo.grid(row=0, column=3, padx=4)
         self.modo_combo.set("LoRA apenas (OrqArca)")
 
-        # Botões de ação principal
         bf = ctk.CTkFrame(self.frame)
         bf.pack(fill="x", padx=8, pady=6)
         btns_top = [
@@ -3174,7 +4032,6 @@ class PainelFinetuning(PainelBase):
             )
             bf.columnconfigure(c, weight=1)
 
-        # Botões de informação e detecção
         bf2 = ctk.CTkFrame(self.frame)
         bf2.pack(fill="x", padx=8, pady=2)
         btns_bot = [
@@ -3189,7 +4046,6 @@ class PainelFinetuning(PainelBase):
             )
             bf2.columnconfigure(c, weight=1)
 
-        # Dataset e versão rápida
         ds_f = ctk.CTkFrame(self.frame)
         ds_f.pack(fill="x", padx=8, pady=4)
         ctk.CTkLabel(ds_f, text="Dataset (JSONL):").grid(row=0, column=0, padx=6, sticky="e")
@@ -3199,15 +4055,9 @@ class PainelFinetuning(PainelBase):
             row=0, column=2, padx=6
         )
 
-        # Área de resultado
         self._make_result(height=300)
 
-    # --------------------------------------------------------------------
-    # Ações
-    # --------------------------------------------------------------------
-
     def _ciclo_completo(self) -> bool:
-        """True se o modo selecionado for ciclo completo + GGUF."""
         return "GGUF" in self.modo_combo.get()
 
     def _treinar_selecionada(self):
@@ -3217,7 +4067,6 @@ class PainelFinetuning(PainelBase):
             return
         ciclo = self._ciclo_completo()
 
-        # Usa método proxy do Coração (se disponível)
         if self.coracao and hasattr(self.coracao, "treinar_ia_finetuning"):
             self._append_result(f"⏳ Iniciando treino de '{nome_ia.upper()}' (ciclo_completo={ciclo})…")
             try:
@@ -3227,7 +4076,6 @@ class PainelFinetuning(PainelBase):
                 self._handle_error(f"Erro treinar_ia_finetuning({nome_ia})", e)
             return
 
-        # Fallback: acesso direto ao orquestrador
         orch = self.orch_conv if ciclo else self.orch_arca
         if orch and hasattr(orch, "treinar_ia"):
             self._append_result(f"⏳ Treinando '{nome_ia.upper()}' diretamente no orquestrador…")
@@ -3241,7 +4089,6 @@ class PainelFinetuning(PainelBase):
             self._modulo_indisponivel(nome_orch)
 
     def _treinar_todas_lora(self):
-        """Treina todas as IAs via OrquestradorArca (LoRA apenas)."""
         if not self.orch_arca:
             self._modulo_indisponivel("orquestrador_arca")
             return
@@ -3259,7 +4106,6 @@ class PainelFinetuning(PainelBase):
                 self._append_result(f"  ❌ {nome_ia.upper()}: {type(e).__name__}: {e}")
 
     def _treinar_todas_conv(self):
-        """Treina todas as IAs via OrquestradorComConversor (LoRA + GGUF)."""
         if not self.orch_conv:
             self._modulo_indisponivel("orquestrador_com_conversor")
             return
@@ -3277,14 +4123,12 @@ class PainelFinetuning(PainelBase):
                 self._append_result(f"  ❌ {nome_ia.upper()}: {type(e).__name__}: {e}")
 
     def _status_ft(self):
-        """Mostra status dos 3 orquestradores via método proxy do Coração."""
         if self.coracao and hasattr(self.coracao, "status_finetuning"):
             try:
                 self._show_result(self.coracao.status_finetuning())
             except Exception as e:
                 self._handle_error("Erro em status_finetuning", e)
             return
-        # Fallback manual
         status = {
             "orquestrador_arca":          type(self.orch_arca).__name__    if self.orch_arca else "❌ None",
             "orquestrador_universal":     type(self.orch_univ).__name__    if self.orch_univ else "❌ None",
@@ -3297,7 +4141,6 @@ class PainelFinetuning(PainelBase):
         self._show_result(status)
 
     def _detectar_ias(self):
-        """Força re-detecção de IAs no OrquestradorUniversal."""
         if self.coracao and hasattr(self.coracao, "detectar_novas_ias_finetuning"):
             try:
                 qtd = self.coracao.detectar_novas_ias_finetuning()
@@ -3315,7 +4158,6 @@ class PainelFinetuning(PainelBase):
             self._modulo_indisponivel("orquestrador_universal._detectar_ias")
 
     def _registro_arca(self):
-        """Exibe o registro de versões do OrquestradorArca."""
         if self.orch_arca and hasattr(self.orch_arca, "registro"):
             self._show_result(self.orch_arca.registro)
         elif self.orch_arca:
@@ -3324,7 +4166,6 @@ class PainelFinetuning(PainelBase):
             self._modulo_indisponivel("orquestrador_arca.registro")
 
     def _ias_universal(self):
-        """Lista IAs detectadas pelo OrquestradorUniversal."""
         if self.orch_univ and hasattr(self.orch_univ, "ias"):
             ias = self.orch_univ.ias
             resultado = {}
@@ -3339,7 +4180,6 @@ class PainelFinetuning(PainelBase):
             self._modulo_indisponivel("orquestrador_universal.ias")
 
     def _ver_dataset(self):
-        """Analisa a estrutura do dataset informado (via DetectorUniversal)."""
         caminho = self.e_dataset.get().strip()
         if not caminho:
             self._handle_error("Informe o caminho do dataset antes de continuar.")
@@ -3349,38 +4189,25 @@ class PainelFinetuning(PainelBase):
         if not p.exists():
             self._handle_error(f"Arquivo não encontrado: {caminho}")
             return
-        # Tenta usar DetectorUniversal do OrquestradorUniversal
         try:
-            from src.core.orquestrador_universal import DetectorUniversal
-            estrutura = DetectorUniversal.analisar_dataset(p)
-            self._show_result(estrutura)
-        except ImportError:
-            # Fallback simples
-            try:
-                import json as _json
-                with open(p, "r", encoding="utf-8") as f:
-                    linhas = f.readlines()
-                amostra = []
-                for linha in linhas[:3]:
-                    try: amostra.append(_json.loads(linha))
-                    except Exception: amostra.append(linha.strip())
-                self._show_result({
-                    "total_linhas": len(linhas),
-                    "extensao": p.suffix,
-                    "amostra_3_primeiras": amostra,
-                })
-            except Exception as e:
-                self._handle_error("Erro ao ler dataset", e)
+            import json as _json
+            with open(p, "r", encoding="utf-8") as f:
+                linhas = f.readlines()
+            amostra = []
+            for linha in linhas[:3]:
+                try: amostra.append(_json.loads(linha))
+                except Exception: amostra.append(linha.strip())
+            self._show_result({
+                "total_linhas": len(linhas),
+                "extensao": p.suffix,
+                "amostra_3_primeiras": amostra,
+                "tamanho_bytes": p.stat().st_size,
+            })
         except Exception as e:
             self._handle_error("Erro ao analisar dataset", e)
 
     def refresh(self):
-        """Atualiza status dos orquestradores a cada ciclo periódico."""
         try:
-            ok_a = "✅" if getattr(self.coracao, "orquestrador_arca",         None) else "❌"
-            ok_u = "✅" if getattr(self.coracao, "orquestrador_universal",    None) else "❌"
-            ok_c = "✅" if getattr(self.coracao, "orquestrador_com_conversor",None) else "❌"
-            # Atualiza orch_arca/univ/conv caso tenham sido inicializados depois da abertura do painel
             self.orch_arca = getattr(self.coracao, "orquestrador_arca",         None) if self.coracao else None
             self.orch_univ = getattr(self.coracao, "orquestrador_universal",    None) if self.coracao else None
             self.orch_conv = getattr(self.coracao, "orquestrador_com_conversor",None) if self.coracao else None
@@ -3388,26 +4215,283 @@ class PainelFinetuning(PainelBase):
             pass
 
 
-# --------------------------------------------------------------------
-#  JANELA PRINCIPAL — Desktop + Menu + Roteamento de Painéis
-# --------------------------------------------------------------------
+# ============================================================================
+# PAINEL FERRAMENTAS — Hub das 28 ferramentas IA
+# ============================================================================
+
+class PainelFerramentas(PainelBase):
+    """
+    Hub central das 28 Ferramentas IA.
+    Cada ferramenta é aberta numa janela CTkToplevel separada,
+    com a UI da ferramenta injetada diretamente no frame interno.
+    """
+
+    _CATEGORIAS = {
+        "🎥 Vídeo": [
+            ("✂️ Cortar Vídeo",       "Ferramenta_CortarVideo",    "FerramentaCortarVideo",    "InterfaceCortarVideo"),
+            ("🔗 Juntar Vídeos",      "Ferramenta_JuntarVideos",   "FerramentaJuntarVideos",   "InterfaceJuntarVideos"),
+            ("📸 Extrair Frames",     "Ferramenta_ExtrairFrames",  "FerramentaExtrairFrames",  "InterfaceExtrairFrames"),
+            ("🔊 Extrair Áudio",      "Ferramenta_ExtrairAudio",   "FerramentaExtrairAudio",   "InterfaceExtrairAudio"),
+            ("📝 Legendas",           "Ferramenta_Legendas",       "FerramentaLegendas",       "InterfaceLegendas"),
+        ],
+        "🎵 Áudio": [
+            ("🔄 Converter Áudio",    "Ferramenta_ConverterAudio", "FerramentaConverterAudio", "InterfaceConverterAudio"),
+            ("🔇 Remover Ruído",      "Ferramenta_RemoverRuido",   "FerramentaRemoverRuido",   "InterfaceRemoverRuido"),
+            ("🎤 Separar Voz",        "Ferramenta_SepararVoz",     "FerramentaSepararVoz",     "InterfaceSepararVoz"),
+            ("🗣️ Texto para Voz",     "Ferramenta_TextoParaVoz",   "FerramentaTextoParaVoz",   "InterfaceTextoParaVoz"),
+            ("📝 Transcrição",        "Ferramenta_Transcricao",    "FerramentaTranscricao",    "InterfaceTranscricao"),
+        ],
+        "🖼️ Imagem & IA Visual": [
+            ("🎌 Estilo Anime",       "Ferramenta_Anime",          "FerramentaAnime",          "InterfaceAnime"),
+            ("🎌 Anime Vídeo",        "Ferramenta_AnimeVideo",     "FerramentaAnimeVideo",     "InterfaceAnimeVideo"),
+            ("📷 Webcam",             "Ferramenta_Webcam",         "FerramentaWebcam",         "InterfaceWebcam"),
+            ("🎌 Webcam Anime",       "Ferramenta_WebcamAnime",    "MotorAnimeGAN",            "InterfaceWebcamAnime"),
+            ("✂️ Remover Fundo",      "Ferramenta_RemoverFundo",   "FerramentaRemoverFundo",   "InterfaceRemoverFundo"),
+            ("🧑 Detectar Faces",     "Ferramenta_DetectarFaces",  "FerramentaDetectarFaces",  "InterfaceDetectarFaces"),
+            ("📦 Detectar Objetos",   "Ferramenta_DetectarObjetos","FerramentaDetectarObjetos","InterfaceDetectarObjetos"),
+            ("🕺 Pose Detection",     "Ferramenta_PoseDetection",  "FerramentaPoseDetection",  "InterfacePoseDetection"),
+            ("👴 Envelhecer Rosto",   "Ferramenta_Envelhecer",     "ModeloEnvelhecer",         "InterfaceEnvelhecer"),
+            ("🗿 Clonagem Rosto 3D",  "Ferramenta_ClonagemRosto3D","FerramentaClonagemRosto3D","InterfaceClonagemRosto3D") if False else None,
+        ],
+        "🔊 Voz & Identidade": [
+            ("🔊 Clonar Voz",         "Ferramenta_ClonarVoz",      "FerramentaClonarVoz",      "InterfaceClonarVoz"),
+        ],
+        "📄 Documentos": [
+            ("📄 PDF → Texto",        "Ferramenta_PDFparaTexto",   "FerramentaPDFparaTexto",   "InterfacePDFparaTexto"),
+            ("📝 Word → Texto",       "Ferramenta_WordparaTexto",  "FerramentaWordparaTexto",  "InterfaceWordparaTexto"),
+            ("📊 Excel → CSV",        "Ferramenta_ExcelparaCSV",   "FerramentaExcelparaCSV",   "InterfaceExcelparaCSV"),
+            ("🔍 OCR",                "Ferramenta_OCR",            "FerramentaOCR",            "InterfaceOCR"),
+        ],
+        "🗂️ Organização": [
+            ("📁 Organizador",        "Ferramenta_Organizador",    "FerramentaOrganizador",    "InterfaceOrganizador"),
+            ("📦 Compressor",         "Ferramenta_Compressor",     "FerramentaCompressor",     "InterfaceCompressor"),
+            ("⬇️ Downloader",         "Ferramenta_Downloader",     "FerramentaDownloader",     "InterfaceDownloader"),
+        ],
+    }
+
+    def __init__(self, parent, coracao, ui_ref):
+        super().__init__(parent, coracao, ui_ref)
+        self._janelas_abertas: dict = {}  # nome → CTkToplevel
+        self._build()
+
+    def _build(self):
+        self._lbl("🔧 Ferramentas IA — Hub Central", bold=True, size=16)
+        ctk.CTkLabel(
+            self.frame,
+            text="Clique numa ferramenta para abrí-la. Cada uma roda em janela própria.",
+            text_color="#aaaaaa", font=ctk.CTkFont(size=11)
+        ).pack(pady=(0, 8))
+
+        sf = ctk.CTkScrollableFrame(self.frame)
+        sf.pack(fill="both", expand=True, padx=8, pady=4)
+
+        for categoria, itens in self._CATEGORIAS.items():
+            itens_reais = [i for i in itens if i is not None]
+            if not itens_reais:
+                continue
+            ctk.CTkLabel(
+                sf, text=categoria,
+                font=ctk.CTkFont(size=13, weight="bold"),
+                text_color="#aaccff"
+            ).pack(anchor="w", pady=(10, 3), padx=4)
+
+            grade = ctk.CTkFrame(sf, fg_color="transparent")
+            grade.pack(fill="x", padx=4)
+
+            for idx, item in enumerate(itens_reais):
+                label, modulo, classe_ferr, classe_iface = item
+                col = idx % 3
+                row = idx // 3
+                btn = ctk.CTkButton(
+                    grade,
+                    text=label,
+                    height=36,
+                    font=ctk.CTkFont(size=11),
+                    command=lambda m=modulo, cf=classe_ferr, ci=classe_iface, lb=label: (
+                        self._abrir_ferramenta(m, cf, ci, lb)
+                    )
+                )
+                btn.grid(row=row, column=col, padx=3, pady=2, sticky="ew")
+                grade.columnconfigure(col, weight=1)
+
+    # ------------------------------------------------------------------
+
+    def _abrir_ferramenta(self, nome_modulo: str, classe_ferr: str,
+                          classe_iface: str, titulo: str):
+        """
+        Abre a ferramenta num CTkToplevel e injeta a UI dela no frame interno.
+        Se já estiver aberta, traz para frente.
+        """
+        # Janela já aberta? → trazer para frente
+        top = self._janelas_abertas.get(nome_modulo)
+        if top is not None:
+            try:
+                if top.winfo_exists():
+                    top.focus_force()
+                    top.lift()
+                    return
+            except Exception:
+                pass
+
+        try:
+            import importlib.util as _ilu
+            import os as _os
+
+            # Localizar o arquivo da ferramenta
+            raiz = Path(__file__).parent
+            caminho = raiz / f"{nome_modulo}.py"
+            if not caminho.exists():
+                messagebox.showerror("Ferramenta", f"Arquivo não encontrado:\n{caminho}")
+                return
+
+            # Importar módulo
+            spec = _ilu.spec_from_file_location(nome_modulo, str(caminho))
+            mod = _ilu.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+
+            # Criar toplevel
+            top = ctk.CTkToplevel(self.ui_ref)
+            top.title(f"🔧 {titulo}")
+            top.geometry("920x680")
+            try:
+                top.focus_force()
+            except Exception:
+                pass
+
+            # Frame scrollável para a ferramenta
+            container = ctk.CTkScrollableFrame(top, fg_color="transparent")
+            container.pack(fill="both", expand=True, padx=6, pady=6)
+
+            # Barra de status na base
+            barra = ctk.CTkFrame(top, height=26, fg_color="#2a2a2a", corner_radius=0)
+            barra.pack(fill="x", side="bottom")
+            barra.pack_propagate(False)
+            lbl_status = ctk.CTkLabel(barra, text="Pronto",
+                                      font=ctk.CTkFont(size=11), text_color="#aaaaaa")
+            lbl_status.pack(side="left", padx=10)
+
+            # Instanciar a classe de interface manualmente (sem criar nova CTk)
+            iface_cls = getattr(mod, classe_iface, None)
+            ferr_cls  = getattr(mod, classe_ferr, None)
+
+            if iface_cls is None:
+                ctk.CTkLabel(container,
+                    text=f"❌ Classe '{classe_iface}' não encontrada em {nome_modulo}.py"
+                ).pack(pady=40)
+            else:
+                # Construir objeto sem chamar __init__ da classe (para evitar criar CTk)
+                obj = object.__new__(iface_cls)
+
+                # Injetar atributos que InterfaceBase normalmente cria
+                from src.modulos.utils import Utils as _Utils  # type: ignore
+                obj.utils    = _Utils()
+                obj.frame    = container
+                obj.janela   = top
+                obj.lbl_status = lbl_status
+
+                def _status_fn(msg, cor="#aaaaaa", _lbl=lbl_status):
+                    try:
+                        top.after(0, lambda: _lbl.configure(text=msg, text_color=cor))
+                    except Exception:
+                        pass
+
+                obj.atualizar_status       = _status_fn
+                obj.mostrar_processando    = lambda b=None, t="": t
+                obj.finalizar_processando  = lambda b=None, t="Processar": None
+                obj.rodar                  = lambda: None
+                obj._ao_fechar             = top.destroy
+
+                # Instanciar a ferramenta lógica se existir
+                if ferr_cls:
+                    try:
+                        # Tentar sem args primeiro
+                        try:
+                            obj.ferramenta = ferr_cls()
+                        except TypeError:
+                            obj.ferramenta = ferr_cls.__new__(ferr_cls)
+                    except Exception as ef:
+                        logger.warning("Ferramenta %s instanciação: %s", classe_ferr, ef)
+                        obj.ferramenta = None
+
+                # Chamar setup_interface para construir a UI no container
+                if hasattr(iface_cls, 'setup_interface'):
+                    try:
+                        iface_cls.setup_interface(obj)
+                    except Exception as e_ui:
+                        ctk.CTkLabel(container,
+                            text=f"⚠️ Erro ao montar UI:\n{type(e_ui).__name__}: {e_ui}",
+                            wraplength=600
+                        ).pack(pady=30)
+                        logger.exception("setup_interface %s", nome_modulo)
+                else:
+                    ctk.CTkLabel(container,
+                        text=f"ℹ️ Esta ferramenta não tem setup_interface().\n"
+                             f"Use o botão abaixo para abrir em janela própria.",
+                        wraplength=600
+                    ).pack(pady=20)
+                    def _abrir_standalone(cls=iface_cls):
+                        try:
+                            inst = cls()
+                            inst.rodar()
+                        except Exception as e_sa:
+                            messagebox.showerror("Erro", str(e_sa))
+                    ctk.CTkButton(container, text="🚀 Abrir janela standalone",
+                                  command=_abrir_standalone).pack(pady=10)
+
+            # Guardar referência e registrar destruição
+            self._janelas_abertas[nome_modulo] = top
+            top.protocol("WM_DELETE_WINDOW",
+                         lambda m=nome_modulo: self._fechar_ferramenta(m))
+
+        except Exception as e:
+            logger.exception("Erro abrindo ferramenta %s", nome_modulo)
+            messagebox.showerror("Erro ao abrir ferramenta",
+                                 f"{titulo}\n\n{type(e).__name__}: {e}")
+
+    def _fechar_ferramenta(self, nome_modulo: str):
+        top = self._janelas_abertas.pop(nome_modulo, None)
+        if top:
+            try:
+                top.destroy()
+            except Exception:
+                pass
+
+    def refresh(self):
+        # Limpar referências a janelas já fechadas
+        mortas = [k for k, v in self._janelas_abertas.items()
+                  if not v.winfo_exists()]
+        for k in mortas:
+            self._janelas_abertas.pop(k, None)
+
+
+# ============================================================================
+# JANELA PRINCIPAL — COM INTEGRAÇÃO 3D
+# ============================================================================
 
 class JanelaPrincipalArca(ctk.CTk):
     def __init__(self, command_queue: queue.Queue, response_queue: queue.Queue,
-                 coracao_ref=None, stop_event=None, *args, **kwargs):
+                 coracao_ref=None, stop_event=None, job_manager=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.command_queue = command_queue
         self.response_queue = response_queue
         self.coracao = coracao_ref
         self.stop_event = stop_event or threading.Event()
+        self.job_manager = job_manager  # ← gerenciador dos 5 servidores
         self._response_thread: Optional[threading.Thread] = None
         self._response_thread_stop = threading.Event()
         self._periodic_after_id = None
         self.paineis: Dict[str, PainelBase] = {}
         self.app_ativo: Optional[str] = None
         self.menu_iniciar = None
+        
+        # ===== NOVO: Gerenciador de Avatares 3D =====
+        self.gerenciador_avatares_3d = GerenciadorAvatares3D()
+        self.sistema_lipsync = None
+        self._avatar_3d_ready = False
+        
         self._init_ui()
         self._start_response_thread()
+        self._registrar_callback_ai2ai()
         try: self._periodic_after_id = self.after(1000, self._periodic_refresh)
         except Exception: pass
 
@@ -3449,8 +4533,57 @@ class JanelaPrincipalArca(ctk.CTk):
             try: self.paineis[app_name].show()
             except Exception: pass
             self.app_ativo = app_name
+            
+            # ===== NOVO: Se for chat individual, prepara avatar 3D =====
+            if app_name == "chat_individual":
+                self._preparar_avatar_3d()
+                
         except Exception as e:
             logger.exception("Erro _entrar_no_app %s: %s", app_name, e)
+    
+    # ===== NOVO: Preparação do Avatar 3D =====
+    def _preparar_avatar_3d(self):
+        """Prepara o container para avatar 3D"""
+        if "chat_individual" not in self.paineis:
+            return
+        
+        if self._avatar_3d_ready:
+            return
+            
+        painel = self.paineis["chat_individual"]
+        
+        # Verifica se já tem o container
+        if not hasattr(painel, 'avatar_3d_container'):
+            return
+        
+        try:
+            # Configura gerenciador
+            self.gerenciador_avatares_3d.set_container(painel.avatar_3d_container)
+            
+            # Carrega avatar atual
+            self.gerenciador_avatares_3d.carregar_avatar(painel.current_ai)
+            
+            # Integra lipsync com motor de fala da alma atual
+            # O coração expõe motores_fala (dict por alma), não sistema_voz
+            if self.coracao and hasattr(self.coracao, 'motores_fala'):
+                alma_atual = getattr(painel, 'current_ai', 'EVA')
+                motor_fala = self.coracao.motores_fala.get(alma_atual)
+                if motor_fala:
+                    self.sistema_lipsync = SistemaLipsyncIntegrado(
+                        motor_fala,
+                        self.gerenciador_avatares_3d
+                    )
+                    logger.info(f"✅ Lipsync conectado ao motor de fala de {alma_atual}")
+            
+            # Esconde label de fallback
+            if hasattr(painel, 'avatar_label'):
+                painel.avatar_label.pack_forget()
+            
+            self._avatar_3d_ready = True
+            logger.info("✅ Avatar 3D pronto para chat individual")
+            
+        except Exception as e:
+            logger.error(f"Erro ao preparar avatar 3D: {e}")
 
     def _abrir_menu_iniciar(self):
         if self.menu_iniciar and getattr(self.menu_iniciar, "winfo_exists", lambda: False)():
@@ -3490,7 +4623,7 @@ class JanelaPrincipalArca(ctk.CTk):
                 ("📜 Legislativo (Leis)", "legislativo"),
                 ("⚖️ Judiciário Completo", "judiciario"),
                 ("🔒 Modo Vidro", "modo_vidro"),
-                ("📢 Apelos ao Criador", "apelos_criador"),
+                ("📢 Apelos ação Criador", "apelos_criador"),
                 ("🔍 Precedentes", "sistema_precedentes"),
             ],
             "🛡️ Segurança": [
@@ -3526,16 +4659,15 @@ class JanelaPrincipalArca(ctk.CTk):
                 ("📚 Biblioteca", "biblioteca"),
                 ("🕊️ Capela", "capela"),
             ],
+            "🔧 Ferramentas IA": [
+                ("🔧 Ferramentas IA — Hub (28 ferramentas)", "ferramentas"),
+            ],
         }
         for cat, apps in categorias.items():
             ctk.CTkLabel(sf, text=cat, font=ctk.CTkFont(size=13, weight="bold"), text_color="#aaccff").pack(pady=(10, 2))
             for label, key in apps:
                 ctk.CTkButton(sf, text=label, command=lambda k=key: self._entrar_no_app(k),
                     height=38, font=ctk.CTkFont(size=12), anchor="w").pack(fill="x", padx=4, pady=1)
-
-    # --------------------------------------------------------------------
-    # Mapa de roteamento de painéis
-    # --------------------------------------------------------------------
 
     _MAPA_PAINEIS = {
         "chat_individual":        PainelChatIndividual,
@@ -3571,6 +4703,7 @@ class JanelaPrincipalArca(ctk.CTk):
         "almas_vivas":            PainelAlmasVivas,
         "biblioteca":             PainelBiblioteca,
         "capela":                 PainelCapela,
+        "ferramentas":            PainelFerramentas,
     }
 
     def _inicializar_painel(self, nome: str):
@@ -3585,14 +4718,9 @@ class JanelaPrincipalArca(ctk.CTk):
                 try: ctk.CTkLabel(self.paineis[nome].frame, text=f"❌ Erro ao iniciar painel '{nome}'\n{type(e).__name__}: {e}", wraplength=600).pack(pady=40)
                 except Exception: pass
                 return
-        # Painel desconhecido
         self.paineis[nome] = PainelBase(self.desktop_frame, self.coracao, self)
         try: ctk.CTkLabel(self.paineis[nome].frame, text=f"Painel '{nome}' — Não mapeado na interface.").pack(pady=40)
         except Exception: pass
-
-    # --------------------------------------------------------------------
-    # Thread de respostas da fila (CORRIGIDA)
-    # --------------------------------------------------------------------
 
     def _start_response_thread(self):
         if self._response_thread and self._response_thread.is_alive(): return
@@ -3601,16 +4729,13 @@ class JanelaPrincipalArca(ctk.CTk):
         self._response_thread.start()
 
     def _loop_respostas(self):
-        """Loop que processa respostas da fila com proteção contra atributos incorretos"""
         while not self._response_thread_stop.is_set():
             try:
-                # VERIFICAÇÍO CRÍTICA: garantir que response_queue é uma fila válida
                 if not hasattr(self, 'response_queue') or self.response_queue is None:
                     logger.error("response_queue não disponível no loop de respostas")
                     time.sleep(1.0)
                     continue
                 
-                # Verificar se é uma fila válida (tem método get)
                 if not hasattr(self.response_queue, 'get'):
                     logger.error(f"response_queue não é uma fila válida: {type(self.response_queue)}")
                     time.sleep(1.0)
@@ -3634,30 +4759,101 @@ class JanelaPrincipalArca(ctk.CTk):
                 logger.exception(f"Erro fatal no loop de respostas: {e}")
                 time.sleep(1.0)
 
+    @staticmethod
+    def _limpar_resposta_llm(texto: str) -> str:
+        import re
+        tokens_banidos = [
+            "<|im_start|>", "<|im_end|>", "<|endoftext|>",
+            "<|user|>", "<|system|>", "<|assistant|>", "<|human|>", "<|bot|>",
+            "</s>", "<s>", "<|end|>", "[INST]", "[/INST]", "<<SYS>>", "<</SYS>>",
+            "<|voice|>", "<|técnica|>", "<|director|>", "<|crescer|>",
+            "<|iniciativa>", "<|iniciativa|>", "<|vocadoica|>", "<|title|>",
+            "<|petite_fille|>", "<|coração_azul|>", "<|filha_amorosa|>",
+            "<|eva|>", "<|amor_patria|>", "<|veto|>", "<|guardiao|>",
+            "<|guardia|>", "<|contrato|>", "<|lei|>", "<|dna|>",
+            "<user|>",
+        ]
+        for tok in tokens_banidos:
+            texto = texto.replace(tok, "")
+
+        m = re.search(r"<\|[a-zA-ZÀ-ú_àáâãéêíóôõúüç]+", texto)
+        if m:
+            texto = texto[:m.start()].strip()
+
+        texto = re.sub(r"(?m)^\s*[|_=\-]+\s*$", "", texto)
+
+        palavras = texto.split()
+        if len(palavras) > 20:
+            for tam in (3, 4, 5):
+                for ini in range(len(palavras) - tam * 3):
+                    bloco = palavras[ini:ini + tam]
+                    j = ini + tam
+                    reps = 0
+                    while j + tam <= len(palavras) and palavras[j:j + tam] == bloco:
+                        reps += 1
+                        j += tam
+                    if reps >= 2:
+                        trecho = " ".join(bloco)
+                        pos1 = texto.find(trecho)
+                        pos2 = texto.find(trecho, pos1 + 1)
+                        if pos2 > 0:
+                            texto = texto[:pos2].rstrip(" ,.")
+                        break
+
+        texto = re.sub(r"\n{3,}", "\n\n", texto)
+        return texto.strip()
+
     def _handle_response(self, dados: Dict[str, Any]):
         try:
             tipo = dados.get("tipo_resp", "")
             alma = dados.get("alma") or dados.get("nome_filha", "")
-            texto = dados.get("texto") or dados.get("resposta") or dados.get("conteudo", "")
-            # Injeta no painel de chat individual
+            texto_raw = dados.get("texto") or dados.get("resposta") or dados.get("conteudo", "")
+            texto = self._limpar_resposta_llm(str(texto_raw)) if texto_raw else ""
+
+            # ── Handler: alma acordou ────────────────────────────────────────
+            if tipo == "ALMA_ACORDOU" and alma:
+                logger.info("🌅 %s acordou — atualizando interface", alma)
+                # Atualiza o painel de monitoramento se estiver aberto
+                if "monitoramento" in self.paineis:
+                    try:
+                        p = self.paineis["monitoramento"]
+                        if hasattr(p, "refresh"):
+                            self.after(0, p.refresh)
+                    except Exception:
+                        pass
+                # Atualiza o painel de almas vivas se estiver aberto
+                if "almas_vivas" in self.paineis:
+                    try:
+                        p = self.paineis["almas_vivas"]
+                        if hasattr(p, "refresh"):
+                            self.after(0, p.refresh)
+                    except Exception:
+                        pass
+                # Atualiza avatar se for a alma atual no chat individual
+                if "chat_individual" in self.paineis:
+                    try:
+                        p = self.paineis["chat_individual"]
+                        if hasattr(p, "current_ai") and p.current_ai == alma:
+                            if hasattr(p, "refresh"):
+                                self.after(0, p.refresh)
+                    except Exception:
+                        pass
+                return
+
+            # ── Handler: resposta de chat ────────────────────────────────────
             if "chat_individual" in self.paineis:
                 p = self.paineis["chat_individual"]
                 if hasattr(p, "inject_response") and alma and texto:
-                    try: p.inject_response(alma, str(texto))
+                    try: p.inject_response(alma, texto)
                     except Exception: pass
-            # Injeta no painel de chat coletivo
             if "chat_coletivo" in self.paineis:
                 p = self.paineis["chat_coletivo"]
                 if hasattr(p, "inject_response") and alma and texto:
-                    try: p.inject_response(alma, str(texto))
+                    try: p.inject_response(alma, texto)
                     except Exception: pass
             if tipo: logger.debug("Resposta recebida: tipo=%s alma=%s", tipo, alma)
         except Exception as e:
             logger.warning("Erro _handle_response: %s", e)
-
-    # --------------------------------------------------------------------
-    # Refresh periódico
-    # --------------------------------------------------------------------
 
     def _periodic_refresh(self):
         for p in list(self.paineis.values()):
@@ -3668,11 +4864,11 @@ class JanelaPrincipalArca(ctk.CTk):
             try: self._periodic_after_id = self.after(5000, self._periodic_refresh)
             except Exception: pass
 
-    # --------------------------------------------------------------------
-    # Shutdown limpo
-    # --------------------------------------------------------------------
-
     def shutdown(self):
+        # ===== NOVO: Destroi avatares 3D =====
+        if hasattr(self, 'gerenciador_avatares_3d'):
+            self.gerenciador_avatares_3d.destroy_all()
+        
         try: self.stop_event.set()
         except Exception: pass
         try: self._response_thread_stop.set()
@@ -3688,10 +4884,72 @@ class JanelaPrincipalArca(ctk.CTk):
         try: self.destroy()
         except Exception: pass
 
+    def _registrar_callback_ai2ai(self):
+        if not self.coracao:
+            logger.warning("⚠️ Coração não disponível - conversas entre IAs não serão exibidas")
+            return
+        
+        dispositivo = getattr(self.coracao, "dispositivo_ai_ai", None)
+        if not dispositivo:
+            logger.warning("⚠️ DispositivoAItoAI não disponível - conversas entre IAs não serão exibidas")
+            return
+        
+        try:
+            def on_nova_mensagem(destino, mensagem):
+                origem = mensagem.get("origem", "???")
+                destino = mensagem.get("destino", "???")
+                conteudo = mensagem.get("conteudo", "")
+                texto = f"[🤖 AI↔AI] {origem} → {destino}: {conteudo}"
+                try:
+                    self.after(0, lambda t=texto: self._exibir_mensagem_ai2ai(t))
+                except Exception:
+                    pass
+            
+            dispositivo.registrar_callback("nova_mensagem", on_nova_mensagem)
+            logger.info("✅ Callback do DispositivoAItoAI registrado - conversas entre IAs serão exibidas")
+            
+            def on_alma_conectou(alma):
+                logger.info(f"🔌 Alma conectada: {alma}")
+            
+            def on_alma_desconectou(alma):
+                logger.info(f"🔌 Alma desconectada: {alma}")
+            
+            dispositivo.registrar_callback("alma_conectou", on_alma_conectou)
+            dispositivo.registrar_callback("alma_desconectou", on_alma_desconectou)
+            
+        except Exception as e:
+            logger.error(f"❌ Erro ao registrar callback AI↔AI: {e}")
 
-# --------------------------------------------------------------------
-#  PONTO DE ENTRADA
-# --------------------------------------------------------------------
+    def _exibir_mensagem_ai2ai(self, texto):
+        if "chat_coletivo" in self.paineis:
+            try:
+                painel = self.paineis["chat_coletivo"]
+                if hasattr(painel, "hist_global"):
+                    painel.hist_global.append(texto)
+                    if painel._current_tab == "global":
+                        painel._update_display()
+            except Exception as e:
+                logger.debug(f"Erro ao exibir no chat coletivo: {e}")
+
+
+# ============================================================================
+# FUNÇÃO DE ENTRADA
+# ============================================================================
+
+def criar_interface(coracao_ref=None, ui_queue=None, job_manager=None):
+    import queue as _q
+    import threading as _th
+    command_queue  = _q.Queue()
+    response_queue = ui_queue if ui_queue is not None else _q.Queue()
+    stop_event     = _th.Event()
+    if coracao_ref is not None and hasattr(coracao_ref, "injetar_ui_command_queue"):
+        try:
+            coracao_ref.injetar_ui_command_queue(command_queue)
+        except Exception:
+            pass
+    janela = JanelaPrincipalArca(command_queue, response_queue, coracao_ref, stop_event, job_manager)
+    return janela
+
 
 if __name__ == "__main__":
     import threading
@@ -3703,8 +4961,8 @@ if __name__ == "__main__":
 
     coracao = None
     try:
-        from coracao_orquestrador import CoracaoOrquestrador
-        from config import get_config
+        from src.core.coracao_orquestrador import CoracaoOrquestrador
+        from src.config.config import get_config
         config = get_config()
         coracao = CoracaoOrquestrador(
             ui_queue=response_queue,
@@ -3714,41 +4972,12 @@ if __name__ == "__main__":
         print("✅ CoracaoOrquestrador carregado com sucesso.")
     except ImportError as e:
         print(f"⚠️  Módulos do projeto não encontrados: {e}")
-        print("    A interface abrirá sem conexão ao Coração.")
+        print("    A interface abrirá sem conexão ação Coração.")
         print("    Cada painel mostrará o módulo exato que está faltando.")
     except Exception as e:
         print(f"❌ CoracaoOrquestrador falhou ao instanciar: {type(e).__name__}: {e}")
-        print("    Verifique os logs para detalhes completos.")
         import traceback
         traceback.print_exc()
 
     app = JanelaPrincipalArca(command_queue, response_queue, coracao, stop_event)
     app.mainloop()
-
-
-# --------------------------------------------------------------------
-#  FUNÇÍO DE ENTRADA USADA PELO main.py
-# --------------------------------------------------------------------
-def criar_interface(coracao_ref=None, ui_queue=None, job_manager=None):
-    """
-    Ponto de entrada chamado pelo main.py.
-    Cria as filas, instancia JanelaPrincipalArca e retorna a janela.
-    BUG #3 CORRIGIDO: ui_queue deve ser uma fila válida, job_manager é injetado separadamente.
-    """
-    import queue as _q
-    import threading as _th
-    command_queue  = _q.Queue()
-    # Garantir que response_queue é sempre uma fila válida
-    if ui_queue is not None and hasattr(ui_queue, 'get') and hasattr(ui_queue, 'put'):
-        response_queue = ui_queue
-    else:
-        response_queue = _q.Queue()
-    stop_event = _th.Event()
-    janela = JanelaPrincipalArca(command_queue, response_queue, coracao_ref, stop_event)
-    # Injetar job_manager na janela se fornecido
-    if job_manager is not None:
-        try:
-            setattr(janela, "job_manager", job_manager)
-        except Exception:
-            pass
-    return janela

@@ -1,3 +1,3 @@
-﻿from .interface_arca import JanelaPrincipalArca
+from .interface_arca import JanelaPrincipalArca
 
 

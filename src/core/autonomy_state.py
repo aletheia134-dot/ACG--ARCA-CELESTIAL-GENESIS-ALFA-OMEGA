@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# src/core/autonomy_state.py - Persistência simples em JSON para o sistema de autonomia.
+# src/core/autonomy_state.py - Persistncia simples em JSON para o sistema de autonomia.
 
 import json
 import threading
@@ -11,7 +11,7 @@ import os
 from filelock import FileLock, Timeout
 
 """
-AutonomyState - Persistência simples em JSON para o sistema de autonomia.
+AutonomyState - Persistncia simples em JSON para o sistema de autonomia.
 
 Estrutura do JSON:
 {
@@ -55,7 +55,7 @@ class AutonomyState:
                     self._save_locked()
                 except Exception:
                     # if even saving fails, log via print (no logger here)
-                    print("AutonomyState: erro ao salvar estado durante load fallback", flush=True)
+                    print("AutonomyState: erro ação salvar estado durante load fallback", flush=True)
 
     def save(self) -> None:
         with self._lock:
@@ -72,14 +72,14 @@ class AutonomyState:
             try:
                 # Adquire lock (com timeout curto)
                 with lock.acquire(timeout=2):
-                    # Use os.replace para operação atômica
+                    # Use os.replace para operação atmica
                     os.replace(str(tmp_path), str(target_path))
                     return
             except Timeout:
-                # Não conseguiu adquirir lock dentro do timeout - tentar novamente com backoff
+                # No conseguiu adquirir lock dentro do timeout - tentar novamente com backoff
                 attempt += 1
                 if attempt > retries:
-                    # última tentativa direta sem lock para propagar a exceção se falhar
+                    # ltima tentativa direta sem lock para propagar a exceo se falhar
                     try:
                         os.replace(str(tmp_path), str(target_path))
                         return
@@ -89,11 +89,11 @@ class AutonomyState:
             except PermissionError:
                 attempt += 1
                 if attempt > retries:
-                    # re-raise após tentativas
+                    # re-raise aps tentativas
                     raise
                 time.sleep(base_delay * (1 + attempt * 0.5))
             except Exception:
-                # para outras OSErrors, tentar uma última vez e propagar se falhar
+                # para outras OSErrors, tentar uma ltima vez e propagar se falhar
                 try:
                     os.replace(str(tmp_path), str(target_path))
                     return
@@ -102,8 +102,8 @@ class AutonomyState:
 
     def _save_locked(self) -> None:
         """
-        Grava self._data em arquivo JSON de forma atômica e robusta.
-        Usa arquivo temporário + replace, protegido por lock (filelock) com retries.
+        Grava self._data em arquivo JSON de forma atmica e robusta.
+        Usa arquivo temporrio + replace, protegido por lock (filelock) com retries.
         """
         self._data.setdefault("ais", {})
         self._data.setdefault("meta", {})["updated_at"] = time.time()
@@ -114,7 +114,7 @@ class AutonomyState:
             json.dump(self._data, fh, ensure_ascii=False, indent=2)
 
         # Substituir o arquivo alvo de forma segura (com file lock e retries).
-        # Se houver falha não recuperável, a exceção será propagada para o chamador.
+        # Se houver falha no recupervel, a exceo ser propagada para o chamador.
         self._safe_replace(tmp, self.path)
 
     # per-AI helpers

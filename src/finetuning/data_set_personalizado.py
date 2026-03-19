@@ -1,14 +1,14 @@
 """
 Construtor de Dataset Especial - Independente
-Gera datasets personalizados baseados em bio, com 144 sentimentos, humanização avançada.
+Gera datasets personalizados baseados em bio, com 144 sentimentos, humanizao avanada.
 Uso: python data_set_personalizado.py --bio biografia.txt --total 5000 --formato json
 
-CORREÇÕES APLICADAS:
- - Substituído distilgpt2 (inglês) por geração template pura em português
- - Substituído googletrans por deep-translator (API oficial, confiável)
+CORREES APLICADAS:
+ - Substitudo distilgpt2 (ingls) por gerao template pura em portugus
+ - Substitudo googletrans por deep-translator (API oficial, confivel)
  - Corrigido IndexError no balanceamento de sentimentos
  - Removido duplicata 'adoracao_fanatica'
- - LanguageTool agora é reutilizado em batch, não por chamada
+ - LanguageTool agora  reutilizado em batch, no por chamada
  - Adicionado timeout e fallback em todas operações externas
 """
 
@@ -39,20 +39,20 @@ try:
 except Exception as e:
     logger.warning("Falha ao baixar recursos NLTK: %s", e)
 
-# Importações opcionais com fallback honesto
+# Importaes opcionais com fallback honesto
 try:
     import language_tool_python
     _LANG_TOOL_AVAILABLE = True
 except ImportError:
     _LANG_TOOL_AVAILABLE = False
-    logger.warning("language_tool_python não disponível. Correção gramatical desativada.")
+    logger.warning("language_tool_python no disponível. Correo gramatical desativada.")
 
 try:
     from deep_translator import GoogleTranslator
     _TRANSLATOR_AVAILABLE = True
 except ImportError:
     _TRANSLATOR_AVAILABLE = False
-    logger.warning("deep-translator não disponível. Tradução desativada. Instale: pip install deep-translator")
+    logger.warning("deep-translator no disponível. Traduo desativada. Instale: pip install deep-translator")
 
 try:
     import tkinter as tk
@@ -61,17 +61,17 @@ try:
 except ImportError:
     _TKINTER_AVAILABLE = False
 
-# GUI só importada se necessário
+# GUI s importada se necessário
 
 
 class ConstrutorDatasetEspecial:
     def __init__(self, protocolo_path="protocolos.json", bio_paths=None):
-        # Carrega protocolos se existirem, senão usa defaults
+        # Carrega protocolos se existirem, seno usa defaults
         if os.path.exists(protocolo_path):
             with open(protocolo_path, "r", encoding="utf-8") as f:
                 self.protocolos = json.load(f)
         else:
-            logger.warning("protocolos.json não encontrado. Usando configuração padrão.")
+            logger.warning("protocolos.json no encontrado. Usando configuração padrão.")
             self.protocolos = {
                 "temas": ["amor", "tristeza", "raiva", "alegria", "medo", "surpresa", "nojo", "esperanca"],
                 "total_entradas": 5000,
@@ -86,22 +86,22 @@ class ConstrutorDatasetEspecial:
         try:
             self.nlp = spacy.load("pt_core_news_sm")
         except OSError:
-            logger.error("Modelo spacy 'pt_core_news_sm' não encontrado. Instale: python -m spacy download pt_core_news_sm")
+            logger.error("Modelo spacy 'pt_core_news_sm' no encontrado. Instale: python -m spacy download pt_core_news_sm")
             raise
 
         self.sia = SentimentIntensityAnalyzer()
 
-        # CORREÇÍO: LanguageTool inicializado uma vez, não por chamada
+        # CORREO: LanguageTool inicializado uma vez, no por chamada
         self.tool = None
         if _LANG_TOOL_AVAILABLE:
             try:
                 self.tool = language_tool_python.LanguageTool('pt-BR')
                 logger.info("LanguageTool inicializado.")
             except Exception as e:
-                logger.warning("Falha ao iniciar LanguageTool: %s. Correção desativada.", e)
+                logger.warning("Falha ao iniciar LanguageTool: %s. Correo desativada.", e)
 
-        # CORREÇÍO: Lista com 144 sentimentos SEM duplicatas
-        # Encontrada: 'adoracao_fanatica' estava duplicada (posição 102 e 130)
+        # CORREO: Lista com 144 sentimentos SEM duplicatas
+        # Encontrada: 'adoracao_fanatica' estava duplicada (posio 102 e 130)
         self.sentimentos = [
             "alegria_leve", "alegria_forte", "alegria_contida", "tristeza_leve", "tristeza_profunda", "tristeza_reflexiva",
             "raiva_leve", "raiva_intensa", "raiva_controlada", "medo_leve", "medo_panico", "medo_ansioso",
@@ -127,7 +127,7 @@ class ConstrutorDatasetEspecial:
             "tedio_mortal", "curiosidade_dangerosa", "frustracao_explosiva", "satisfacao_suprema", "inveja_venenosa", "gratidao_eterna",
             "ressentimento_feroz", "solidao_angustiante", "companheirismo_universal", "paixao_devoradora", "calma_imperturbavel", "ansiedade_cronica",
             "excitacao_euforica", "desgosto_profundo", "desprezo_absoluto", "neutralidade_absoluta", "alegria_euforica",
-            # Completando para 144 (a versão original tinha duplicata que ocultava o total real de 143 únicos)
+            # Completando para 144 (a verso original tinha duplicata que ocultava o total real de 143 nicos)
             "esperanca_renovada"
         ]
 
@@ -154,19 +154,19 @@ class ConstrutorDatasetEspecial:
                 with open(path, "r", encoding="utf-8") as f:
                     combined_text += f.read() + " "
             else:
-                logger.warning("Arquivo de bio não encontrado: %s", path)
+                logger.warning("Arquivo de bio no encontrado: %s", path)
 
         if not combined_text.strip():
-            logger.warning("Nenhum conteúdo de bio carregado. Usando perfil padrão.")
+            logger.warning("Nenhum contedo de bio carregado. Usando perfil padrão.")
             return {"padrão": "neutro", "estilo": "casual", "sentimentos_dominantes": ["alegria_leve"]}
 
         sentimento_geral = self.sia.polarity_scores(combined_text)
-        doc = self.nlp(combined_text[:100000])  # Limite para não travar com bios enormes
+        doc = self.nlp(combined_text[:100000])  # Limite para no travar com bios enormes
         palavras = [token.lemma_.lower() for token in doc if token.is_alpha and not token.is_stop]
         top_palavras = Counter(palavras).most_common(10)
 
         estilo = "casual"
-        if any(word in combined_text.lower() for word in ["senhor", "excelência"]):
+        if any(word in combined_text.lower() for word in ["senhor", "excelncia"]):
             estilo = "formal"
         elif any(word in combined_text.lower() for word in ["poesia", "versos"]):
             estilo = "poetico"
@@ -179,15 +179,15 @@ class ConstrutorDatasetEspecial:
         if not sentimentos_dominantes:
             sentimentos_dominantes = ["alegria_leve"]
 
-        padrao = "neutro"
+        padrão = "neutro"
         top_lemmas = [p[0] for p in top_palavras]
         if estilo == "poetico" and "alma" in top_lemmas:
-            padrao = "filosofico"
+            padrão = "filosofico"
         elif estilo == "casual" and sentimento_geral['neu'] < 0.5:
-            padrao = "emocional"
+            padrão = "emocional"
 
         return {
-            "padrão": padrao,
+            "padrão": padrão,
             "estilo": estilo,
             "sentimentos_dominantes": sentimentos_dominantes[:5],
             "palavras_chave": top_palavras,
@@ -196,115 +196,115 @@ class ConstrutorDatasetEspecial:
 
     def gerar_texto_emocional(self, tema, sentimento):
         """
-        CORREÇÍO PRINCIPAL: Removido distilgpt2 (modelo inglês que contaminava o dataset).
-        Geração agora é puramente por templates em português com variação real.
+        CORREO PRINCIPAL: Removido distilgpt2 (modelo ingls que contaminava o dataset).
+        Gerao agora  puramente por templates em portugus com variao real.
         """
         sentimento_legivel = sentimento.replace('_', ' ')
 
         templates = {
             "amor": [
                 f"Sinto {sentimento_legivel} quando penso em você.",
-                f"Meu coração transborda de {sentimento_legivel} por causa do amor.",
+                f"Meu corao transborda de {sentimento_legivel} por causa do amor.",
                 f"O amor me faz sentir {sentimento_legivel} de maneira profunda.",
-                f"Não há como descrever esse {sentimento_legivel} que o amor desperta.",
-                f"Cada momento com você é marcado por um intenso {sentimento_legivel}.",
+                f"No h como descrever esse {sentimento_legivel} que o amor desperta.",
+                f"Cada momento com você  marcado por um intenso {sentimento_legivel}.",
             ],
             "tristeza": [
                 f"Hoje estou tomado por {sentimento_legivel}, o mundo parece vazio.",
                 f"A tristeza me deixa com {sentimento_legivel} no peito.",
-                f"Sinto {sentimento_legivel} ao lembrar de tempos que não voltam.",
-                f"Esse {sentimento_legivel} pesa como chumbo no meu coração.",
-                f"Não consigo me livrar desse {sentimento_legivel} que a tristeza traz.",
+                f"Sinto {sentimento_legivel} ação lembrar de tempos que no voltam.",
+                f"Esse {sentimento_legivel} pesa como chumbo no meu corao.",
+                f"No consigo me livrar desse {sentimento_legivel} que a tristeza traz.",
             ],
             "raiva": [
                 f"Estou consumido por {sentimento_legivel}, isso me deixa furioso.",
-                f"A injustiça provoca {sentimento_legivel} em mim.",
+                f"A injustia provoca {sentimento_legivel} em mim.",
                 f"Sinto {sentimento_legivel} quando vejo isso acontecer.",
-                f"Esse {sentimento_legivel} queima por dentro, é difícil conter.",
+                f"Esse {sentimento_legivel} queima por dentro,  difcil conter.",
                 f"Nunca senti tanto {sentimento_legivel} quanto agora.",
             ],
             "alegria": [
                 f"Que dia cheio de {sentimento_legivel}! Tudo vai bem.",
                 f"A alegria me enche de {sentimento_legivel} do jeito mais bonito.",
                 f"Estou radiante de {sentimento_legivel} com tudo que aconteceu.",
-                f"Esse {sentimento_legivel} é contagiante e não consigo esconder.",
-                f"Nunca me senti tão bem, esse {sentimento_legivel} é real.",
+                f"Esse {sentimento_legivel}  contagiante e no consigo esconder.",
+                f"Nunca me senti to bem, esse {sentimento_legivel}  real.",
             ],
             "medo": [
-                f"Sinto {sentimento_legivel}, meu coração acelera sem parar.",
+                f"Sinto {sentimento_legivel}, meu corao acelera sem parar.",
                 f"O medo me causa um {sentimento_legivel} que paralisa.",
                 f"Estou dominado por {sentimento_legivel} sem conseguir me mover.",
                 f"Esse {sentimento_legivel} vem do medo do desconhecido.",
-                f"Às vezes o {sentimento_legivel} chega sem aviso e tudo trava.",
+                f"s vezes o {sentimento_legivel} chega sem aviso e tudo trava.",
             ],
             "surpresa": [
-                f"Que {sentimento_legivel}! Não esperava isso de forma alguma.",
-                f"A surpresa me traz um {sentimento_legivel} inexplicável.",
-                f"Sinto {sentimento_legivel} ao ver o que aconteceu.",
+                f"Que {sentimento_legivel}! No esperava isso de forma alguma.",
+                f"A surpresa me traz um {sentimento_legivel} inexplicvel.",
+                f"Sinto {sentimento_legivel} ação ver o que aconteceu.",
                 f"Esse {sentimento_legivel} de surpresa me deixou sem palavras.",
-                f"Nunca me surpreendi tanto — que {sentimento_legivel}.",
+                f"Nunca me surpreendi tanto  que {sentimento_legivel}.",
             ],
             "nojo": [
-                f"Isso me causa {sentimento_legivel}, é completamente repulsivo.",
-                f"O nojo traz um {sentimento_legivel} que não consigo disfarçar.",
-                f"Sinto {sentimento_legivel} só de pensar nisso.",
-                f"Esse {sentimento_legivel} é físico, vem do estômago.",
+                f"Isso me causa {sentimento_legivel},  completamente repulsivo.",
+                f"O nojo traz um {sentimento_legivel} que no consigo disfarar.",
+                f"Sinto {sentimento_legivel} s de pensar nisso.",
+                f"Esse {sentimento_legivel}  fsico, vem do estmago.",
                 f"Nunca senti tanto {sentimento_legivel} quanto diante disso.",
             ],
             "esperanca": [
                 f"Tenho {sentimento_legivel}, acredito que vai melhorar.",
-                f"A esperança me dá um {sentimento_legivel} que sustenta.",
+                f"A esperana me d um {sentimento_legivel} que sustenta.",
                 f"Estou cheio de {sentimento_legivel} sobre o futuro.",
-                f"Esse {sentimento_legivel} de esperança me mantém de pé.",
+                f"Esse {sentimento_legivel} de esperana me mantm de p.",
                 f"Mesmo nas dificuldades, carrego esse {sentimento_legivel} comigo.",
             ]
         }
 
-        base_lista = templates.get(tema, [f"Estou sentindo {sentimento_legivel} em relação a {tema}."])
+        base_lista = templates.get(tema, [f"Estou sentindo {sentimento_legivel} em relao a {tema}."])
         base = random.choice(base_lista)
 
-        # Adaptação de estilo por perfil (sem IA externa)
+        # Adaptao de estilo por perfil (sem IA externa)
         estilo = self.perfil_personalizado.get("estilo", "casual")
         if estilo == "poetico":
             prefixos_poeticos = [
                 f"Ah, minha alma sente {sentimento_legivel} ",
                 f"Como a chuva que cai, o {sentimento_legivel} ",
-                f"Em silêncio, o {sentimento_legivel} ",
+                f"Em silncio, o {sentimento_legivel} ",
             ]
-            base = random.choice(prefixos_poeticos) + f"ao pensar em {tema}."
+            base = random.choice(prefixos_poeticos) + f"ação pensar em {tema}."
         elif estilo == "formal":
             base = f"Experimento um estado de {sentimento_legivel} no que concerne a {tema}."
 
-        # Humanização por variação de abertura
+        # Humanizao por variao de abertura
         if self.humanizar:
             variacoes_abertura = [
                 f"Ah, {base[0].lower()}{base[1:]}",
                 f"Sabe, {base[0].lower()}{base[1:]}",
-                f"É estranho, mas {base[0].lower()}{base[1:]}",
+                f" estranho, mas {base[0].lower()}{base[1:]}",
                 f"Honestamente, {base[0].lower()}{base[1:]}",
-                base  # sem prefixo também é válido
+                base  # sem prefixo tambm  vlido
             ]
             base = random.choice(variacoes_abertura)
 
-        # Erros intencionais (ANTES da correção — ordem lógica corrigida)
+        # Erros intencionais (ANTES da correo  ordem lógica corrigida)
         if self.adicionar_erros and random.random() < 0.3:
             erros_naturais = {
                 "estou": "to",
-                "você": "voce",
-                "também": "tambem",
-                "então": "entao",
+                "você": "você",
+                "tambm": "tambem",
+                "ento": "entao",
             }
             for original, erro in erros_naturais.items():
                 if original in base:
                     base = base.replace(original, erro, 1)
-                    break  # só um erro por frase, para ser realista
+                    break  # s um erro por frase, para ser realista
 
-        # Correção gramatical APENAS se não foram adicionados erros intencionais
+        # Correo gramatical APENAS se no foram adicionados erros intencionais
         if self.tool and not self.adicionar_erros:
             try:
                 base = self.tool.correct(base)
             except Exception as e:
-                logger.debug("LanguageTool falhou na correção: %s", e)
+                logger.debug("LanguageTool falhou na correo: %s", e)
 
         return base
 
@@ -312,11 +312,11 @@ class ConstrutorDatasetEspecial:
         start_time = time.time()
         dataset = []
         sentimentos_counter = Counter()
-        outputs_recentes = []  # Buffer circular para deduplicação
+        outputs_recentes = []  # Buffer circular para deduplicao
 
         num_temas = len(self.temas)
         if num_temas == 0:
-            raise ValueError("Lista de temas está vazia. Verifique protocolos.json.")
+            raise ValueError("Lista de temas est vazia. Verifique protocolos.json.")
 
         entradas_por_tema = self.total_entradas // num_temas
         quota_por_sentimento = max(1, self.total_entradas // len(self.sentimentos))
@@ -327,7 +327,7 @@ class ConstrutorDatasetEspecial:
             geradas = 0
 
             while geradas < quantidade:
-                # CORREÇÍO: Balanceamento de sentimentos sem IndexError
+                # CORREO: Balanceamento de sentimentos sem IndexError
                 sentimentos_abaixo_quota = [
                     s for s in self.sentimentos
                     if sentimentos_counter[s] < quota_por_sentimento
@@ -336,12 +336,12 @@ class ConstrutorDatasetEspecial:
                 if sentimentos_abaixo_quota:
                     sentimento = random.choice(sentimentos_abaixo_quota)
                 else:
-                    # Todos atingiram quota — escolhe o menos usado
+                    # Todos atingiram quota  escolhe o menos usado
                     sentimento = min(self.sentimentos, key=lambda s: sentimentos_counter[s])
 
                 texto = self.gerar_texto_emocional(tema, sentimento)
 
-                # Validação: texto curto ou duplicado recente
+                # Validao: texto curto ou duplicado recente
                 if len(texto) < 10:
                     tentativas += 1
                     if tentativas > quantidade * 3:
@@ -382,7 +382,7 @@ class ConstrutorDatasetEspecial:
                     len(dataset), total_time, len(dataset) / max(total_time, 0.001))
         if sentimentos_counter:
             mais_comum = sentimentos_counter.most_common(1)[0]
-            logger.info("Sentimento mais comum: %s (%d ocorrências)", *mais_comum)
+            logger.info("Sentimento mais comum: %s (%d ocorrncias)", *mais_comum)
 
         return dataset
 
@@ -428,11 +428,11 @@ class ConstrutorDatasetEspecial:
 
     def traduzir_dataset(self, dataset, idioma_destino):
         """
-        CORREÇÍO: Usa deep-translator (API oficial) em vez de googletrans (não-oficial, quebra).
+        CORREO: Usa deep-translator (API oficial) em vez de googletrans (no-oficial, quebra).
         Instale: pip install deep-translator
         """
         if not _TRANSLATOR_AVAILABLE:
-            logger.error("Tradução solicitada mas deep-translator não está instalado.")
+            logger.error("Traduo solicitada mas deep-translator no est instalado.")
             logger.error("Instale com: pip install deep-translator")
             return dataset
 
@@ -446,21 +446,21 @@ class ConstrutorDatasetEspecial:
                 item['metadata']['idioma'] = idioma_destino
             except Exception as e:
                 falhas += 1
-                logger.debug("Falha na tradução item %d: %s", i, e)
+                logger.debug("Falha na traduo item %d: %s", i, e)
 
             # Log de progresso a cada 500 itens
             if (i + 1) % 500 == 0:
-                logger.info("Tradução: %d/%d itens processados (%d falhas)", i + 1, len(dataset), falhas)
+                logger.info("Traduo: %d/%d itens processados (%d falhas)", i + 1, len(dataset), falhas)
 
         if falhas > 0:
-            logger.warning("Tradução concluída com %d falhas de %d total.", falhas, len(dataset))
+            logger.warning("Traduo concluda com %d falhas de %d total.", falhas, len(dataset))
 
         return dataset
 
 
 def iniciar_gui():
     if not _TKINTER_AVAILABLE:
-        print("ERRO: tkinter não disponível. Não é possível iniciar a GUI.")
+        print("ERRO: tkinter no disponível. No  possível iniciar a GUI.")
         return
 
     root = tk.Tk()
@@ -475,7 +475,7 @@ def iniciar_gui():
     total_entry.insert(0, "5000")
     total_entry.pack(pady=2)
 
-    tk.Label(root, text="Formato de saída:").pack(pady=2)
+    tk.Label(root, text="Formato de sada:").pack(pady=2)
     formato_var = tk.StringVar(value="json")
     for fmt in ["json", "csv", "txt"]:
         tk.Radiobutton(root, text=fmt, variable=formato_var, value=fmt).pack()
@@ -507,7 +507,7 @@ def iniciar_gui():
             else:
                 construtor.salvar_em_txt(dataset)
 
-            status_label.config(text=f"Concluído: {len(dataset)} entradas geradas.")
+            status_label.config(text=f"Concludo: {len(dataset)} entradas geradas.")
             messagebox.showinfo("Sucesso", f"Dataset gerado com {len(dataset)} entradas!")
         except Exception as e:
             status_label.config(text="Erro!")
@@ -522,7 +522,7 @@ def main():
     parser.add_argument("--bio", help="Caminhos para bios (separados por ;)")
     parser.add_argument("--total", type=int, default=5000, help="Total de entradas")
     parser.add_argument("--formato", choices=["txt", "json", "csv"], default="txt")
-    parser.add_argument("--idioma", default="pt-BR", help="Idioma de saída")
+    parser.add_argument("--idioma", default="pt-BR", help="Idioma de sada")
     parser.add_argument("--gui", action="store_true", help="Iniciar GUI")
     args = parser.parse_args()
 
@@ -536,7 +536,7 @@ def main():
     dataset = construtor.construir_dataset()
 
     if args.idioma not in ("pt-BR", "pt"):
-        # Mapeia código pt-BR para 'pt' que o deep-translator aceita
+        # Mapeia cdigo pt-BR para 'pt' que o deep-translator aceita
         codigo = args.idioma.split('-')[0] if '-' in args.idioma else args.idioma
         dataset = construtor.traduzir_dataset(dataset, codigo)
 
@@ -547,7 +547,7 @@ def main():
     else:
         construtor.salvar_em_txt(dataset)
 
-    print(f"Dataset construído com {len(dataset)} entradas.")
+    print(f"Dataset construdo com {len(dataset)} entradas.")
 
 
 if __name__ == "__main__":

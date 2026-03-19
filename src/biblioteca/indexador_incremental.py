@@ -1,18 +1,18 @@
+from __future__ import annotations
 # src/biblioteca/indexador_incremental.py
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 ARCA CELESTIAL GENESIS - INDEXADOR INCREMENTAL BIBLIOTECA TEOLÓGICA
-Processamento e indexação automática de novos PDFs.
-Implementação robusta e idempotente:
+Processamento e indexao automtica de novos PDFs.
+Implementao robusta e idempotente:
  - detecta novos PDFs via watchdog
  - processa em ThreadPoolExecutor para evitar bloqueio
- - calcula hash do conteúdo (SHA256) para idempotência
- - divide texto em chunks razoáveis para indexação
+ - calcula hash do contedo (SHA256) para idempotncia
+ - divide texto em chunks razoveis para indexao
  - usa métodos adaptativos do SistemaMemoriaHibrido quando disponíveis
  - logging e tratamento de erros
 """
-from __future__ import annotations
 import logging
 import time
 import threading
@@ -29,12 +29,12 @@ import io
 
 logger = logging.getLogger("IndexadorIncremental")
 
-# Tentativa de import do SistemaMemoriaHibrido (pode não existir em ambiente de testes)
+# Tentativa de import do SistemaMemoriaHibrido (pode no existir em ambiente de testes)
 try:
     from src.memoria.sistema_memoria import SistemaMemoriaHibrido  # type: ignore
     MEMORIA_DISPONIVEL = True
-except Exception as e:  # pragma: no cover - ambiente pode não ter esse módulo
-    logger.debug("SistemaMemoriaHibrido não disponível: %s", e)
+except Exception as e:  # pragma: no cover - ambiente pode no ter esse módulo
+    logger.debug("SistemaMemoriaHibrido no disponível: %s", e)
     SistemaMemoriaHibrido = None
     MEMORIA_DISPONIVEL = False
 
@@ -47,7 +47,7 @@ def _sha256_of_bytes(b: bytes) -> str:
 
 def _chunk_text(text: str, max_chars: int = 4000, overlap: int = 200) -> List[str]:
     """
-    Divide texto em chunks com sobreposição pequena.
+    Divide texto em chunks com sobreposio pequena.
     - max_chars: tamanho aproximado (caracteres) por chunk
     - overlap: quantos caracteres sobrepostos entre chunks
     """
@@ -72,7 +72,7 @@ def _chunk_text(text: str, max_chars: int = 4000, overlap: int = 200) -> List[st
 
 def _read_pdf_text(path: Path) -> str:
     """
-    Lê texto de um PDF de forma defensiva usando PyPDF2.
+    L texto de um PDF de forma defensiva usando PyPDF2.
     Retorna string vazia em caso de falha.
     """
     try:
@@ -93,7 +93,7 @@ def _read_pdf_text(path: Path) -> str:
 
 class _WorkerHandler(FileSystemEventHandler):
     """
-    Watchdog handler que delega processamento a um executor (não bloqueante).
+    Watchdog handler que delega processamento a um executor (no bloqueante).
     """
 
     def __init__(self, indexador: "IndexadorIncremental", settle_time: float = 0.5):
@@ -133,7 +133,7 @@ class IndexadorIncremental:
         self._scheduled: Dict[str, float] = {}  # path -> scheduled_at (to avoid double scheduling)
 
         if not MEMORIA_DISPONIVEL or not self.memoria:
-            logger.warning("Sistema de Memória não disponível. Indexação vetorial ficará desativada.")
+            logger.warning("Sistema de Memória no disponível. Indexao vetorial ficar desativada.")
 
         try:
             self.pasta_monitorada.mkdir(parents=True, exist_ok=True)
@@ -143,7 +143,7 @@ class IndexadorIncremental:
         logger.info("Indexador Incremental inicializado. Monitorando: %s", self.pasta_monitorada)
 
         if processar_existentes:
-            # processar existentes de forma assíncrona
+            # processar existentes de forma assncrona
             self._executor.submit(self._processar_existentes)
 
     # ----------------------------
@@ -152,10 +152,10 @@ class IndexadorIncremental:
     def _schedule_processing(self, path: Path, delay: float = 0.5):
         key = str(path.resolve())
         now = time.time()
-        # evita múltiplas agendas em curto intervalo
+        # evita mltiplas agendas em curto intervalo
         last = self._scheduled.get(key)
         if last and now - last < max(1.0, delay):
-            logger.debug("Arquivo %s já agendado recentemente, ignorando re-agendamento.", path)
+            logger.debug("Arquivo %s j agendado recentemente, ignorando re-agendamento.", path)
             return
         self._scheduled[key] = now
         def _delayed():
@@ -180,20 +180,20 @@ class IndexadorIncremental:
     def iniciar_monitoramento(self):
         """Inicia o monitoramento da pasta para novos PDFs."""
         if not MEMORIA_DISPONIVEL or not self.memoria:
-            logger.error("Sistema de Memória não disponível. Não é possível monitorar.")
+            logger.error("Sistema de Memória no disponível. No  possível monitorar.")
             return
         if self._running:
-            logger.debug("Monitoramento já ativo.")
+            logger.debug("Monitoramento j ativo.")
             return
         self.observer.schedule(self.pdf_handler, str(self.pasta_monitorada), recursive=False)
         self.observer.start()
         self._running = True
-        logger.info("ðŸ” Monitoramento da pasta iniciado: %s", self.pasta_monitorada)
+        logger.info(" Monitoramento da pasta iniciado: %s", self.pasta_monitorada)
 
     def parar_monitoramento(self):
         """Para o monitoramento da pasta."""
         if not self._running:
-            logger.debug("Monitoramento já parado.")
+            logger.debug("Monitoramento j parado.")
             return
         try:
             self.observer.stop()
@@ -220,12 +220,12 @@ class IndexadorIncremental:
     # Processamento de PDFs
     # ----------------------------
     def _processar_existentes(self):
-        """Processa arquivos PDF já presentes na pasta ao iniciar o indexador."""
+        """Processa arquivos PDF j presentes na pasta ação iniciar o indexador."""
         try:
             for arquivo in sorted(self.pasta_monitorada.glob("*.pdf")):
                 try:
                     logger.debug("Processando existente: %s", arquivo)
-                    # submeter ao executor para paralelismo controlado
+                    # submeter ação executor para paralelismo controlado
                     self._executor.submit(self.adicionar_pdf, arquivo)
                 except Exception:
                     logger.exception("Erro ao programar processamento de existente: %s", arquivo)
@@ -235,7 +235,7 @@ class IndexadorIncremental:
     def adicionar_pdf(self, caminho_pdf: Path):
         """
         Processa e adiciona um único PDF ao índice.
-        Método idempotente por hash do conteúdo (SHA256).
+        Método idempotente por hash do contedo (SHA256).
         """
         try:
             if not caminho_pdf or not caminho_pdf.exists():
@@ -243,12 +243,12 @@ class IndexadorIncremental:
                 return
 
             if not MEMORIA_DISPONIVEL or not self.memoria:
-                logger.error("Sistema de Memória não disponível. Indexação desativada.")
+                logger.error("Sistema de Memória no disponível. Indexao desativada.")
                 return
 
             logger.info("Indexando PDF: %s", caminho_pdf.name)
 
-            # Ler conteúdo do arquivo em bytes para hash (mais robusto)
+            # Ler contedo do arquivo em bytes para hash (mais robusto)
             try:
                 raw = caminho_pdf.read_bytes()
             except Exception as e:
@@ -258,7 +258,7 @@ class IndexadorIncremental:
             file_hash = _sha256_of_bytes(raw)
             with self._hash_lock:
                 if file_hash in self._hashes_indexados:
-                    logger.info("PDF %s já indexado (hash %s). Ignorando.", caminho_pdf.name, file_hash[:8])
+                    logger.info("PDF %s j indexado (hash %s). Ignorando.", caminho_pdf.name, file_hash[:8])
                     return
                 # marcar imediatamente para evitar race conditions
                 self._hashes_indexados.add(file_hash)
@@ -266,7 +266,7 @@ class IndexadorIncremental:
             # Extrair texto de forma defensiva
             texto_completo = _read_pdf_text(caminho_pdf)
             if not texto_completo or not texto_completo.strip():
-                logger.warning("Texto vazio extraído de %s — ignorando.", caminho_pdf.name)
+                logger.warning("Texto vazio extrado de %s  ignorando.", caminho_pdf.name)
                 # liberar marca para permitir novo processamento futuro
                 with self._hash_lock:
                     self._hashes_indexados.discard(file_hash)
@@ -274,10 +274,10 @@ class IndexadorIncremental:
 
             texto_processado = self._preprocessar_texto(texto_completo)
 
-            # dividir em chunks para indexação
+            # dividir em chunks para indexao
             chunks = _chunk_text(texto_processado, max_chars=4000, overlap=300)
             if not chunks:
-                logger.warning("Nenhum chunk gerado para %s — ignorando.", caminho_pdf.name)
+                logger.warning("Nenhum chunk gerado para %s  ignorando.", caminho_pdf.name)
                 with self._hash_lock:
                     self._hashes_indexados.discard(file_hash)
                 return
@@ -311,22 +311,22 @@ class IndexadorIncremental:
                 # prefer add_documents_to_collection(documents=..., metadatas=[...], collection_name=...)
                 if hasattr(self.memoria, "add_documents_to_collection"):
                     self.memoria.add_documents_to_collection(documents=chunks, metadatas=[metadados] * len(chunks), collection_name=colecao)
-                    logger.info("Indexado %s via add_documents_to_collection (coleção=%s).", caminho_pdf.name, colecao)
+                    logger.info("Indexado %s via add_documents_to_collection (coleo=%s).", caminho_pdf.name, colecao)
                 elif hasattr(self.memoria, "add_documents"):
-                    # algumas implementações usam (documents, metadatas, collection=...)
+                    # algumas implementaes usam (documents, metadatas, collection=...)
                     try:
                         self.memoria.add_documents(chunks, [metadados] * len(chunks), collection=colecao)
                     except TypeError:
                         # signature diferente: try keyword args
                         self.memoria.add_documents(documents=chunks, metadatas=[metadados] * len(chunks), collection=colecao)
-                    logger.info("Indexado %s via add_documents (coleção=%s).", caminho_pdf.name, colecao)
+                    logger.info("Indexado %s via add_documents (coleo=%s).", caminho_pdf.name, colecao)
                 elif hasattr(self.memoria, "indexar_texto"):
                     # older API: indexar_texto(texto, metadados, colecao)
                     for chunk in chunks:
                         self.memoria.indexar_texto(chunk, metadados, colecao)
-                    logger.info("Indexado %s via indexar_texto (coleção=%s).", caminho_pdf.name, colecao)
+                    logger.info("Indexado %s via indexar_texto (coleo=%s).", caminho_pdf.name, colecao)
                 else:
-                    logger.error("Método de indexação não encontrado no SistemaMemoriaHibrido. Não foi possível indexar %s.", caminho_pdf.name)
+                    logger.error("Método de indexao no encontrado no SistemaMemoriaHibrido. No foi possível indexar %s.", caminho_pdf.name)
                     with self._hash_lock:
                         self._hashes_indexados.discard(file_hash)
                     return
@@ -348,11 +348,11 @@ class IndexadorIncremental:
                         except Exception:
                             pass
             except Exception:
-                logger.debug("Falha ao registrar evento na memória (não crítico).", exc_info=True)
+                logger.debug("Falha ao registrar evento na memória (no crítico).", exc_info=True)
 
-            logger.info("Indexação concluída: %s (chunks=%d)", caminho_pdf.name, len(chunks))
+            logger.info("Indexao concluda: %s (chunks=%d)", caminho_pdf.name, len(chunks))
         except Exception:
-            logger.exception("Erro inesperado na adição do PDF %s", caminho_pdf)
+            logger.exception("Erro inesperado na adio do PDF %s", caminho_pdf)
             # tentativa de limpar estado em caso de erro
             try:
                 with self._hash_lock:
@@ -362,11 +362,11 @@ class IndexadorIncremental:
 
     def _preprocessar_texto(self, texto: str) -> str:
         """
-        Pré-processamento simples: normalização de espaços e remoção de caracteres não desejados.
+        Pr-processamento simples: normalizao de espaos e remoo de caracteres no desejados.
         """
         if not texto:
             return ""
-        # normalizar espaços
+        # normalizar espaos
         cleaned = " ".join(text.split())
         # manter apenas printable unicode characters (exemplo simples)
         cleaned = "".join(ch for ch in cleaned if ch == "\n" or ch == "\r" or (32 <= ord(ch) <= 0x10FFFF))

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-DETECTOR EMOCIONAL - VERSÍO FINAL HÍBRIDA
-Português robusto.Sequência temporal.Validação real.Regex otimizada.Fallbacks defensivos.Reset de contadores.Sem stubs.Sem placebo.Código 100% real e aprimorado.
-"""
 from __future__ import annotations
+"""
+DETECTOR EMOCIONAL - VERSO FINAL HBRIDA
+Portugus robusto.Sequncia temporal.Validao real.Regex otimizada.Fallbacks defensivos.Reset de contadores.Sem stubs.Sem placebo.Cdigo 100% real e aprimorado.
+"""
 
 
 import json
@@ -24,7 +24,7 @@ logger.addHandler(logging.NullHandler())
 
 @dataclass
 class DeteccaoEmocional:
-    """Resultado real de detecção."""
+    """Resultado real de deteco."""
     contexto_principal: str
     confianca: float
     contextos_secundarios: List[Tuple[str, float]]
@@ -37,18 +37,18 @@ class DeteccaoEmocional:
     validacao_resposta: bool = True
 
 
-# ===== NORMALIZADOR PARA PORTUGUÍŠS REAL =====
+# ===== NORMALIZADOR PARA PORTUGUS REAL =====
 
 class NormalizadorTexto:
-    """Normaliza português SEM problemas com acentos."""
+    """Normaliza portugus SEM problemas com acentos."""
     
     @staticmethod
     def normalizar_para_busca(texto: str) -> str:
         """Remove acentos e converte para lowercase - REAL."""
         texto = str(texto).lower()
-        # NFD = decomposição
+        # NFD = decomposio
         nfd = unicodedata.normalize('NFD', texto)
-        # Remove marcas diacríticas
+        # Remove marcas diacrticas
         sem_acento = ''.join(c for c in nfd if unicodedata.category(c) != 'Mn')
         return sem_acento
     
@@ -56,12 +56,12 @@ class NormalizadorTexto:
     def palavra_com_variantes(palavra: str) -> List[str]:
         """Gera variantes com/sem acento - REAL."""
         mapa = {
-            'a': ['a', 'á', 'ã', 'â'],
-            'e': ['e', 'é', 'ê'],
-            'i': ['i', 'í'],
-            'o': ['o', 'ó', 'ô', 'õ'],
-            'u': ['u', 'ú'],
-            'c': ['c', 'ç'],
+            'a': ['a', '', '', ''],
+            'e': ['e', '', ''],
+            'i': ['i', ''],
+            'o': ['o', '', '', ''],
+            'u': ['u', ''],
+            'c': ['c', ''],
         }
         variantes = [palavra]
         for normal, acentos in mapa.items():
@@ -75,7 +75,7 @@ class NormalizadorTexto:
 
 class DetectorEmocional:
     """
-    Detector emocional FINAL: Híbrido otimizado.Português robusto + regex eficiente + fallbacks defensivos + reset de estado.
+    Detector emocional FINAL: Hbrido otimizado.Portugus robusto + regex eficiente + fallbacks defensivos + reset de estado.
     """
 
     def __init__(self, caminho_contextos: str = "data/dicionario_emocoes_qualidades.json"):
@@ -96,77 +96,77 @@ class DetectorEmocional:
             "alegria": {
                 "indicadores": [
                     "feliz", "felicidade", "alegre", "alegria", "contente", "contentamento",
-                    "radiante", "radiância", "maravilhoso", "maravilha", "incrível", "incribilidade",
-                    "ótimo", "ótima", "bom", "boa", "excelente", "perfeito", "perfeita",
-                    "magnífico", "magnífica", "espetacular", "fantástico", "fantástica",
-                    "lindo", "linda", "bonito", "bonita", "amo", "adoro", "adorável"
+                    "radiante", "radincia", "maravilhoso", "maravilha", "incrvel", "incribilidade",
+                    "timo", "tima", "bom", "boa", "excelente", "perfeito", "perfeita",
+                    "magnfico", "magnfica", "espetacular", "fantstico", "fantstica",
+                    "lindo", "linda", "bonito", "bonita", "amo", "adoro", "adorvel"
                 ],
-                "resposta_sugerida": "Que alegria te envolve! Isso é contagiante e lindo de ver.",
+                "resposta_sugerida": "Que alegria te envolve! Isso  contagiante e lindo de ver.",
                 "tom_recomendado": "alegre, acolhedor, quente",
                 "evitar": ["pena", "lamento", "desculpe", "infelicidade", "triste"]
             },
             "tristeza": {
                 "indicadores": [
                     "triste", "tristeza", "infeliz", "infelicidade", "deprimido", "deprimida",
-                    "depressão", "melancólico", "melancolia", "dor", "dolorido", "dolorida",
+                    "depresso", "melanclico", "melancolia", "dor", "dolorido", "dolorida",
                     "sofrimento", "sofro", "sofre", "sofrem", "choro", "chora", "choram",
-                    "lágrimas", "lágrima", "pena", "penoso", "penosa", "angústia", "angustiado",
-                    "miserável", "desolado", "desolada", "desconsolado", "desconsolada"
+                    "lgrimas", "lgrima", "pena", "penoso", "penosa", "angstia", "angustiado",
+                    "miservel", "desolado", "desolada", "desconsolado", "desconsolada"
                 ],
                 "resposta_sugerida": "Sinto sua tristeza profundamente.Estou aqui para ouvir e estar com você.",
                 "tom_recomendado": "compassivo, suave, acolhedor, presente",
-                "evitar": ["ignore", "supere", "é só", "poderia ser pior", "pelo menos"]
+                "evitar": ["ignore", "supere", " s", "poderia ser pior", "pelo menos"]
             },
             "raiva": {
                 "indicadores": [
                     "raiva", "ira", "furioso", "furiosa", "indignado", "indignada",
-                    "enraivecido", "enraivecida", "ódio", "odeio", "odeia", "odiam",
-                    "fúria", "furor", "cólera", "colérico", "colérica", "irritado", "irritada",
-                    "irritante", "irritação", "inflamado", "inflamada", "exasperado", "exasperada",
-                    "irado", "irada", "colérico", "raivoso", "raivosa"
+                    "enraivecido", "enraivecida", "dio", "odeio", "odeia", "odiam",
+                    "fria", "furor", "clera", "colrico", "colrica", "irritado", "irritada",
+                    "irritante", "irritao", "inflamado", "inflamada", "exasperado", "exasperada",
+                    "irado", "irada", "colrico", "raivoso", "raivosa"
                 ],
-                "resposta_sugerida": "Sua raiva é válida e compreensível. É uma emoção importante.Vamos conversar.",
+                "resposta_sugerida": "Sua raiva  vlida e compreensvel.  uma emoção importante.Vamos conversar.",
                 "tom_recomendado": "calmo, validador, firme, respeitoso",
-                "evitar": ["relaxe", "não exagere", "calma", "controle-se", "é besteira"]
+                "evitar": ["relaxe", "no exagere", "calma", "controle-se", " besteira"]
             },
             "medo": {
                 "indicadores": [
                     "medo", "assustado", "assustada", "aterrorizado", "aterrorizada",
                     "terrificado", "terrificada", "apreensivo", "apreensiva", "ansioso", "ansiosa",
-                    "nervoso", "nervosa", "pavor", "pavoroso", "pavorosa", "fobia", "fóbico",
+                    "nervoso", "nervosa", "pavor", "pavoroso", "pavorosa", "fobia", "fbico",
                     "apavorado", "apavorada", "medroso", "medrosa", "temeroso", "temerosa",
-                    "aterrador", "aterradora", "assustador", "assustadora", "pânico", "pânico"
+                    "aterrador", "aterradora", "assustador", "assustadora", "pnico", "pnico"
                 ],
-                "resposta_sugerida": "Seu medo é compreensível.Você não está sozinho.Estou aqui.",
+                "resposta_sugerida": "Seu medo  compreensvel.você no est sozinho.Estou aqui.",
                 "tom_recomendado": "seguro, protetor, calmo, reconfortante",
-                "evitar": ["é besteira", "não há razão", "deixa de ser infantil", "exagero"]
+                "evitar": [" besteira", "no h razo", "deixa de ser infantil", "exagero"]
             },
             "amor": {
                 "indicadores": [
                     "amo", "amor", "amado", "amada", "amante", "querido", "querida",
                     "carinho", "carinhoso", "carinhosa", "afeto", "afetuoso", "afetuosa",
-                    "paixão", "apaixonado", "apaixonada", "adoro", "adorável", "adoração",
-                    "ternura", "terno", "terna", "amável", "amabilidade", "devoto", "devota",
-                    "leal", "lealdade", "dedicado", "dedicada", "dedicação"
+                    "paixo", "apaixonado", "apaixonada", "adoro", "adorvel", "adorao",
+                    "ternura", "terno", "terna", "amvel", "amabilidade", "devoto", "devota",
+                    "leal", "lealdade", "dedicado", "dedicada", "dedicao"
                 ],
-                "resposta_sugerida": "Que conexão bonita e profunda.O amor é o que nos faz mais vivos.",
-                "tom_recomendado": "quente, íntimo, reconhecedor, profundo",
-                "evitar": ["superficial", "nunca vai", "ilusão", "fantasia irrealista"]
+                "resposta_sugerida": "Que conexo bonita e profunda.O amor  o que nos faz mais vivos.",
+                "tom_recomendado": "quente, ntimo, reconhecedor, profundo",
+                "evitar": ["superficial", "nunca vai", "iluso", "fantasia irrealista"]
             },
             "esperanca": {
                 "indicadores": [
-                    "esperança", "esperançoso", "esperançosa", "esperancinha", "otimismo",
-                    "otimista", "confiante", "confiança", "promessa", "promissor", "promissora",
+                    "esperana", "esperanoso", "esperanosa", "esperancinha", "otimismo",
+                    "otimista", "confiante", "confiana", "promessa", "promissor", "promissora",
                     "futuro", "futuro brilhante", "possibilidade", "possível"
                 ],
-                "resposta_sugerida": "Sua esperança é inspiradora.Vamos cultivá-la juntas.",
+                "resposta_sugerida": "Sua esperana  inspiradora.Vamos cultiv-la juntas.",
                 "tom_recomendado": "encorajador, positivo, apoiador",
-                "evitar": ["ilusão", "impossível", "realista", "não vai dar"]
+                "evitar": ["iluso", "impossvel", "realista", "no vai dar"]
             }
         }
 
     def reload_contexts(self) -> None:
-        """Força recarregamento - REAL.Reseta contadores para evitar vazamento."""
+        """Fora recarregamento - REAL.Reseta contadores para evitar vazamento."""
         self.total_deteccoes = 0
         self.deteccoes_por_contexto = {}
         self.historico_sequencial = []
@@ -179,7 +179,7 @@ class DetectorEmocional:
     def _carregar_contextos(self) -> None:
         """Carrega arquivo JSON com fallback para defaults - REAL."""
         if not self.caminho_contextos.exists():
-            self.logger.warning("Arquivo não encontrado: %s", self.caminho_contextos)
+            self.logger.warning("Arquivo no encontrado: %s", self.caminho_contextos)
             return
 
         try:
@@ -196,11 +196,11 @@ class DetectorEmocional:
                     raw_context_map = {k: v for k, v in dados.items() if isinstance(v, dict)}
             
             self._normalizar_contextos(raw_context_map)
-            self.logger.info("âœ… Carregados %d contextos adicionais", len(raw_context_map))
+            self.logger.info("[OK] Carregados %d contextos adicionais", len(raw_context_map))
         except (json.JSONDecodeError, UnicodeDecodeError) as e:
             self.logger.error("Erro ao carregar/parsing JSON: %s.Usando fallbacks.", e)
         except Exception as e:
-            self.logger.exception("Erro inesperado ao abrir arquivo: %s.Usando fallbacks.", e)
+            self.logger.exception("Erro inesperado ação abrir arquivo: %s.Usando fallbacks.", e)
 
     def _normalizar_contextos(self, raw_context_map: Dict[str, Any]) -> None:
         """Normaliza contextos do arquivo - REAL.Evita duplicatas com set()."""
@@ -242,7 +242,7 @@ class DetectorEmocional:
 
     def detectar(self, texto: str) -> Optional[DeteccaoEmocional]:
         """
-        IMPLEMENTAÇÍO FINAL de detecção emocional.Regex otimizado (um padrão por contexto) + sequência temporal.Retorna DeteccaoEmocional ou None.
+        IMPLEMENTAO FINAL de deteco emocional.Regex otimizado (um padrão por contexto) + sequncia temporal.Retorna DeteccaoEmocional ou None.
         """
         if not texto or not texto.strip():
             return None
@@ -271,7 +271,7 @@ class DetectorEmocional:
                     if match in indicadores:
                         encontrados.append(match)
                         count = matches.count(match)
-                        raw_score += 1.0 + min(0.1 * (count - 1), 0.3)  # Fórmula ajustada
+                        raw_score += 1.0 + min(0.1 * (count - 1), 0.3)  # Frmula ajustada
             except Exception as e:
                 self.logger.debug("Erro no regex para contexto %s: %s.Usando substring.", nome, e)
                 for ind in indicadores:
@@ -288,7 +288,7 @@ class DetectorEmocional:
         if not scores:
             return None
 
-        # ===== ORDENAR POR CONFIANÇA =====
+        # ===== ORDENAR POR CONFIANA =====
         ordenados = sorted(scores.items(), key=lambda kv: kv[1], reverse=True)
         contexto_principal, confianca_principal = ordenados[0]
         secundarios = ordenados[1:4]
@@ -296,7 +296,7 @@ class DetectorEmocional:
         # ===== ESTIMAR INTENSIDADE APRIMORADA =====
         intensidade = self._estimar_intensidade(texto, confianca_principal)
         
-        # ===== ANALISAR SEQUÍŠNCIA TEMPORAL REAL =====
+        # ===== ANALISAR SEQUNCIA TEMPORAL REAL =====
         sequencia = self._analisar_sequencia_temporal(texto_lower, contexto_principal, indicadores_por_contexto)
 
         # ===== EXTRAIR RESPOSTA E VALIDAR =====
@@ -311,7 +311,7 @@ class DetectorEmocional:
         indicadores_encontrados = indicadores_por_contexto.get(contexto_principal, [])
         contextos_secundarios = [(k, float(v)) for k, v in secundarios]
 
-        # ===== CRIAR DETECÇÍO =====
+        # ===== CRIAR DETECO =====
         deteccao = DeteccaoEmocional(
             contexto_principal=contexto_principal,
             confianca=float(confianca_principal),
@@ -325,16 +325,16 @@ class DetectorEmocional:
             validacao_resposta=resposta_valida
         )
 
-        # ===== ATUALIZAR MÉTRICAS =====
+        # ===== ATUALIZAR MTRICAS =====
         self.total_deteccoes += 1
         self.deteccoes_por_contexto[contexto_principal] = self.deteccoes_por_contexto.get(contexto_principal, 0) + 1
         self.historico_sequencial.append((contexto_principal, confianca_principal, len(self.historico_sequencial)))
 
-        self.logger.info("âœ… Detectado: %s (confiança: %.2f, intensidade: %.2f)", contexto_principal, confianca_principal, intensidade)
+        self.logger.info("[OK] Detectado: %s (confiana: %.2f, intensidade: %.2f)", contexto_principal, confianca_principal, intensidade)
 
         return deteccao
 
-    # ===== ANÍLISE SEQUENCIAL TEMPORAL REAL =====
+    # ===== ANLISE SEQUENCIAL TEMPORAL REAL =====
 
     def _analisar_sequencia_temporal(
         self,
@@ -343,10 +343,10 @@ class DetectorEmocional:
         contextos: Dict[str, List[str]]
     ) -> Optional[str]:
         """
-        Detecta mudanças de sentimento ao longo do texto.Melhorado: usa delimitadores mais robustos.
+        Detecta mudanas de sentimento ação longo do texto.Melhorado: usa delimitadores mais robustos.
         """
         # Dividir em frases com delimitadores aprimorados
-        frases = re.split(r'[.!?]\s+|,\s+mas\s+|,\s+porém\s+|;\s+então\s+', texto)
+        frases = re.split(r'[.!?]\\s+|,\\s+mas\\s+|,\\s+porm\\s+|;\\s+ento\\s+', texto)
         if len(frases) < 2:
             return None
         
@@ -368,26 +368,26 @@ class DetectorEmocional:
                 if encontrado:
                     break
         
-        # Detectar mudança
+        # Detectar mudana
         if len(emocoes_sequencia) >= 2:
             primeira = emocoes_sequencia[0]
             ultima = emocoes_sequencia[-1]
             
             if primeira != ultima:
-                return f"mudança de {primeira} para {ultima}"
+                return f"mudana de {primeira} para {ultima}"
         
         return None
 
     # ===== VALIDAR RESPOSTA REAL =====
 
     def _validar_resposta(self, resposta: str, evitar: List[str]) -> bool:
-        """Verifica se resposta contém palavras proibidas."""
+        """Verifica se resposta contm palavras proibidas."""
         resposta_lower = resposta.lower()
         
         for palavra_evitar in (evitar or []):
             palavra_lower = palavra_evitar.lower()
             if palavra_lower in resposta_lower:
-                self.logger.warning("âš ï¸ Resposta contém palavra proibida: %s", palavra_evitar)
+                self.logger.warning("[AVISO] Resposta contm palavra proibida: %s", palavra_evitar)
                 return False
         
         return True
@@ -396,41 +396,41 @@ class DetectorEmocional:
 
     def _estimar_intensidade(self, texto: str, confianca_base: float) -> float:
         """
-        Intensidade aprimorada: sinais do código avançado + edge cases.
+        Intensidade aprimorada: sinais do cdigo avanado + edge cases.
         """
         intensidade = float(confianca_base)
         
-        # ===== SIGNAL 1: Exclamações =====
+        # ===== SIGNAL 1: Exclamaes =====
         exclamacoes = texto.count("!")
         intensidade += min(0.3, exclamacoes * 0.08)
         
-        # ===== SIGNAL 2: MAIÚSCULAS =====
+        # ===== SIGNAL 2: MAISCULAS =====
         maiusculas = sum(1 for c in texto if c.isupper())
         if maiusculas > len(texto) * 0.3:
             intensidade += 0.2
         
-        # ===== SIGNAL 3: Repetição de letras (muuuito) =====
+        # ===== SIGNAL 3: Repetio de letras (muuuito) =====
         repeticoes = len(re.findall(r'(.)\1{2,}', texto))
         intensidade += min(0.2, repeticoes * 0.05)
         
         # ===== SIGNAL 4: Intensificadores expandidos =====
         intensificadores = [
             "muito", "demais", "extremamente", "totalmente", "profundamente",
-            "tão", "realmente", "imensamente", "absolutamente", "completamente",
-            "bastante", "bem", "tão", "demais", "super"
+            "to", "realmente", "imensamente", "absolutamente", "completamente",
+            "bastante", "bem", "to", "demais", "super"
         ]
         texto_lower = texto.lower()
         for tok in intensificadores:
             if tok in texto_lower:
                 intensidade += 0.1
         
-        # ===== SIGNAL 5: Negação (inverte sinais) =====
-        negacoes = ["não", "nunca", "jamais", "ninguém", "nada"]
+        # ===== SIGNAL 5: Negao (inverte sinais) =====
+        negacoes = ["no", "nunca", "jamais", "ningum", "nada"]
         has_negacao = any(neg in texto_lower for neg in negacoes)
         if has_negacao:
             intensidade *= 0.7  # Reduz impacto
 
-        # ===== SIGNAL 6: Pontuação múltipla (!!!, ???) =====
+        # ===== SIGNAL 6: Pontuao mltipla (!!!, ???) =====
         multiplos = len(re.findall(r'[!?]{2,}', texto))
         intensidade += min(0.1, multiplos * 0.05)
 
@@ -440,10 +440,10 @@ class DetectorEmocional:
 
         return float(min(1.0, intensidade))
 
-    # ===== RETORNAR ESTRATÉGIA =====
+    # ===== RETORNAR ESTRATGIA =====
 
     def obter_estrategia_resposta(self, texto: str) -> Dict[str, Any]:
-        """Retorna estrutura com detecção completa e estratégia."""
+        """Retorna estrutura com deteco completa e estratgia."""
         deteccao = self.detectar(texto)
         
         if not deteccao:
@@ -452,13 +452,13 @@ class DetectorEmocional:
                 "resposta_sugerida": "Entendo seus sentimentos e estou aqui para ouvir.",
                 "tom": "neutro, acolhedor",
                 "evitar": [],
-                "valida": True
+                "válida": True
             }
         
-        # Se resposta inválida, gerar alternativa
+        # Se resposta invlida, gerar alternativa
         resposta_final = deteccao.resposta_sugerida
         if not deteccao.validacao_resposta:
-            self.logger.warning("âš ï¸ Resposta inválida, gerando alternativa")
+            self.logger.warning("[AVISO] Resposta invlida, gerando alternativa")
             resposta_final = self._gerar_resposta_alternativa(deteccao.contexto_principal)
         
         return {
@@ -466,28 +466,28 @@ class DetectorEmocional:
             "resposta_sugerida": resposta_final,
             "tom": deteccao.tom_recomendado,
             "evitar": deteccao.evitar,
-            "valida": deteccao.validacao_resposta,
+            "válida": deteccao.validacao_resposta,
             "sequencia": deteccao.sequencia_temporal,
             "confianca": deteccao.confianca,
             "intensidade": deteccao.intensidade_estimada
         }
 
     def _gerar_resposta_alternativa(self, contexto: str) -> str:
-        """Gera resposta alternativa se padrão não funcionar."""
+        """Gera resposta alternativa se padrão no funcionar."""
         alternativas = {
-            "alegria": "Que maravilha! Sua felicidade é inspiradora e contagiante.",
-            "tristeza": "Sinto profundamente seu sofrimento.Você não está sozinha.",
-            "raiva": "Sua indignação é válida.Vamos conversar sobre isso com calma.",
-            "medo": "Seu medo é compreensível.Você está segura comigo.",
-            "amor": "Que conexão bonita.Isso enriquece vidas profundamente.",
-            "esperanca": "Sua esperança é bela.Vamos cultivá-la juntas.",
+            "alegria": "Que maravilha! Sua felicidade  inspiradora e contagiante.",
+            "tristeza": "Sinto profundamente seu sofrimento.você no est sozinha.",
+            "raiva": "Sua indignao  vlida.Vamos conversar sobre isso com calma.",
+            "medo": "Seu medo  compreensvel.você est segura comigo.",
+            "amor": "Que conexo bonita.Isso enriquece vidas profundamente.",
+            "esperanca": "Sua esperana  bela.Vamos cultiv-la juntas.",
         }
         return alternativas.get(contexto, "Compreendo seus sentimentos verdadeiramente.")
 
-    # ===== ESTATÍSTICAS =====
+    # ===== ESTATSTICAS =====
 
     def estatisticas(self) -> Dict[str, Any]:
-        """Retorna estatísticas REAIS."""
+        """Retorna estatsticas REAIS."""
         return {
             "total_deteccoes": self.total_deteccoes,
             "deteccoes_por_contexto": dict(self.deteccoes_por_contexto),
@@ -498,14 +498,14 @@ class DetectorEmocional:
     # ===== TESTE FINAL =====
 
     def testar_detector(self) -> Dict[str, Any]:
-        """Teste abrangente com cenários reais."""
+        """Teste abrangente com cenrios reais."""
         testes = {
             "alegria": ["Estou muito feliz e radiante!", "Que maravilha!!!", "Amo isso"],
             "tristeza": ["Estou triste e sozinho", "Sinto pena profunda", "Choro muito"],
             "raiva": ["Estou furioso e indignado!", "Odeio isso", "Raiva extrema"],
             "medo": ["Tenho medo e pavor", "Estou apavorado", "Ansioso demais"],
             "sequencia": ["Estava triste ontem, mas agora estou feliz!"],
-            "acentos": ["Estou com medo e apreensão", "Sinto raiva e ódio"],
+            "acentos": ["Estou com medo e apreenso", "Sinto raiva e dio"],
             "intensidade": ["EU ODEIO MUITO!!! Estou EXTREMAMENTE furioso!!!"],
             "validacao": ["Estou triste"]
         }
@@ -516,7 +516,7 @@ class DetectorEmocional:
                 if det:
                     resultados[frase] = {
                         "detectado": det.contexto_principal,
-                        "categoria_esperada": categoria if categoria != "sequencia" else "mudança",
+                        "categoria_esperada": categoria if categoria != "sequencia" else "mudana",
                         "correto": (
                             det.contexto_principal == categoria or 
                             (categoria == "sequencia" and det.sequencia_temporal) or
@@ -541,7 +541,7 @@ if __name__ == "__main__":
     )
     
     print("\n" + "="*80)
-    print("ðŸ§ª TESTE FINAL: DetectorEmocional v1.0 (HÍBRIDO)")
+    print(" TESTE FINAL: DetectorEmocional v1.0 (HBRIDO)")
     print("="*80 + "\n")
     
     detector = DetectorEmocional()
@@ -551,23 +551,23 @@ if __name__ == "__main__":
     acertos = sum(1 for r in resultados_teste.values() if r.get("correto", False))
     total = len(resultados_teste)
     
-    print(f"ðŸ“Š Testes Executados: {total}")
-    print(f"âœ… Acertos: {acertos} ({acertos/total*100:.1f}%)")
+    print(f" Testes Executados: {total}")
+    print(f"[OK] Acertos: {acertos} ({acertos/total*100:.1f}%)")
     print()
     
     # Exemplos detalhados
     for frase, res in list(resultados_teste.items())[:5]:
-        status = "âœ…" if res.get("correto") else "âŒ"
-        print(f"{status} '{frase[:40]}...' â†’ {res.get('detectado', 'erro')}")
+        status = "[OK]" if res.get("correto") else "[ERRO]"
+        print(f"{status} '{frase[:40]}...'  {res.get('detectado', 'erro')}")
     
-    print("\nðŸ“ˆ Estatísticas:")
+    print("\n Estatsticas:")
     stats = detector.estatisticas()
-    print(f"   Detecções Totais: {stats['total_deteccoes']}")
+    print(f"   Deteces Totais: {stats['total_deteccoes']}")
     print(f"   Contextos: {stats['contextos_carregados']}")
-    print(f"   Histórico Sequencial: {stats['historico_sequencial_tamanho']}")
+    print(f"   histórico Sequencial: {stats['historico_sequencial_tamanho']}")
     
     print("\n" + "="*80)
-    print("âœ… VERSÍO FINAL PRONTA - DETECTOR 100% REAL E OTIMIZADO")
+    print("[OK] VERSO FINAL PRONTA - DETECTOR 100% REAL E OTIMIZADO")
     print("="*80 + "\n")
 
 

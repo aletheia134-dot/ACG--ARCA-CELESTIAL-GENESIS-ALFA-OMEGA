@@ -1,5 +1,5 @@
 # Ferramenta: Clonagem de Rosto 3D
-# Gera modelo 3D a partir de fotos, compatível com GTX 1070 (2-3GB VRAM)
+# Gera modelo 3D a partir de fotos, compatvel com GTX 1070 (2-3GB VRAM)
 
 import sys
 import os
@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS, PASTA_MODELOS, USAR_GPU
 
 import cv2
@@ -22,23 +22,23 @@ import time
 import trimesh
 import open3d as o3d
 
-# ========== MÓDULOS OPCIONAIS COM FALLBACK ==========
+# ========== módulos OPCIONAIS COM FALLBACK ==========
 
-# Para detecção facial 3D
+# Para deteco facial 3D
 try:
     import mediapipe as mp
     MEDIAPIPE_AVAILABLE = True
 except:
     MEDIAPIPE_AVAILABLE = False
-    print("âš ï¸ MediaPipe não instalado")
+    print("[AVISO] MediaPipe no instalado")
 
-# Para reconstrução 3D
+# Para reconstruo 3D
 try:
     import face_alignment
     FA_AVAILABLE = True
 except:
     FA_AVAILABLE = False
-    print("âš ï¸ face_alignment não instalado")
+    print("[AVISO] face_alignment no instalado")
 
 # Para rendering
 try:
@@ -50,12 +50,12 @@ try:
     PYTORCH3D_AVAILABLE = True
 except:
     PYTORCH3D_AVAILABLE = False
-    print("âš ï¸ pytorch3d não instalado (opcional para visualização)")
+    print("[AVISO] pytorch3d no instalado (opcional para visualizao)")
 
 class ModeloReconstrucao3D:
     """
-    Modelo de reconstrução 3D facial a partir de imagens
-    Usa técnicas de deep learning para gerar malha 3D
+    Modelo de reconstruo 3D facial a partir de imagens
+    Usa tcnicas de deep learning para gerar malha 3D
     """
     def __init__(self, usar_gpu=True):
         self.usar_gpu = usar_gpu and torch.cuda.is_available()
@@ -65,14 +65,14 @@ class ModeloReconstrucao3D:
         self.fa = None
         self.detector_facial = None
         
-        # Parâmetros do modelo 3D
-        self.num_vertices = 5023  # Número de vértices do modelo base
-        self.num_triangles = 9976  # Número de triângulos
+        # Parmetros do modelo 3D
+        self.num_vertices = 5023  # Número de vrtices do modelo base
+        self.num_triangles = 9976  # Número de tringulos
         
         # Carrega modelos
         self.carregar_modelos()
         
-        print(f"âœ… Reconstrução 3D inicializada na {self.device}")
+        print(f"[OK] Reconstruo 3D inicializada na {self.device}")
     
     def carregar_modelos(self):
         """Carrega modelos necessários"""
@@ -84,20 +84,20 @@ class ModeloReconstrucao3D:
                     device=self.device,
                     flip_input=False
                 )
-                print("âœ… FaceAlignment 3D carregado")
+                print("[OK] FaceAlignment 3D carregado")
             except Exception as e:
-                print(f"âŒ Erro FaceAlignment: {e}")
+                print(f"[ERRO] Erro FaceAlignment: {e}")
         
-        # MediaPipe para detecção facial
+        # MediaPipe para deteco facial
         if MEDIAPIPE_AVAILABLE:
             try:
                 self.detector_facial = mp.solutions.face_detection.FaceDetection(
                     model_selection=1,
                     min_detection_confidence=0.5
                 )
-                print("âœ… MediaPipe FaceDetection carregado")
+                print("[OK] MediaPipe FaceDetection carregado")
             except Exception as e:
-                print(f"âŒ Erro MediaPipe: {e}")
+                print(f"[ERRO] Erro MediaPipe: {e}")
     
     def detectar_rosto(self, imagem):
         """Detecta rosto na imagem e retorna bounding box"""
@@ -151,7 +151,7 @@ class ModeloReconstrucao3D:
                 # Normaliza coordenadas
                 landmarks[:, 0] /= rgb.shape[1]  # x
                 landmarks[:, 1] /= rgb.shape[0]  # y
-                # z já está normalizado
+                # z j est normalizado
                 
                 return landmarks
             
@@ -162,16 +162,16 @@ class ModeloReconstrucao3D:
     
     def reconstruir_malha(self, landmarks, depth_estimate=True):
         """
-        Reconstrói malha 3D a partir de landmarks
-        Usa interpolação para gerar malha completa
+        Reconstri malha 3D a partir de landmarks
+        Usa interpolao para gerar malha completa
         """
         if landmarks is None:
             return None
         
-        # Template base (malha média da face)
+        # Template base (malha mdia da face)
         vertices = self._gerar_vertices_base(landmarks)
         
-        # Gera triângulos (conectividade)
+        # Gera tringulos (conectividade)
         triangles = self._gerar_triangulos_base()
         
         # Estima profundidade se necessário
@@ -186,7 +186,7 @@ class ModeloReconstrucao3D:
         }
     
     def _gerar_vertices_base(self, landmarks):
-        """Gera vértices base da malha"""
+        """Gera vrtices base da malha"""
         # Interpola landmarks para criar malha densa
         num_landmarks = len(landmarks)
         
@@ -204,7 +204,7 @@ class ModeloReconstrucao3D:
         # Interpola z
         zz = griddata(points, values_z, (xx, yy), method='cubic', fill_value=0)
         
-        # Cria vértices
+        # Cria vrtices
         vertices = []
         for i in range(grid_size):
             for j in range(grid_size):
@@ -214,7 +214,7 @@ class ModeloReconstrucao3D:
         return np.array(vertices, dtype=np.float32)
     
     def _gerar_triangulos_base(self):
-        """Gera conectividade dos triângulos"""
+        """Gera conectividade dos tringulos"""
         # Grade regular
         grid_size = 64
         triangles = []
@@ -222,15 +222,15 @@ class ModeloReconstrucao3D:
         for i in range(grid_size - 1):
             for j in range(grid_size - 1):
                 idx = i * grid_size + j
-                # Triângulo 1
+                # Tringulo 1
                 triangles.append([idx, idx + 1, idx + grid_size])
-                # Triângulo 2
+                # Tringulo 2
                 triangles.append([idx + 1, idx + grid_size + 1, idx + grid_size])
         
         return np.array(triangles, dtype=np.int32)
     
     def _estimar_profundidade(self, vertices, landmarks):
-        """Estima profundidade usando modelo estatístico"""
+        """Estima profundidade usando modelo estatstico"""
         # Ajusta profundidade baseada em landmarks
         z_mean = np.mean(landmarks[:, 2])
         z_std = np.std(landmarks[:, 2])
@@ -288,11 +288,11 @@ class Visualizador3D:
         self.mesh = None
     
     def criar_janela(self):
-        """Cria janela de visualização"""
+        """Cria janela de visualizao"""
         if not PYTORCH3D_AVAILABLE:
             # Usa Open3D como fallback
             self.vis = o3d.visualization.Visualizer()
-            self.vis.create_window(window_name="Visualização 3D", width=800, height=600)
+            self.vis.create_window(window_name="Visualizao 3D", width=800, height=600)
     
     def mostrar_malha(self, vertices, triangles):
         """Mostra malha 3D"""
@@ -307,7 +307,7 @@ class Visualizador3D:
             o3d.visualization.draw_geometries([mesh_o3d], window_name="Rosto 3D")
             
         except Exception as e:
-            print(f"Erro visualização: {e}")
+            print(f"Erro visualizao: {e}")
     
     def fechar(self):
         if self.vis:
@@ -329,7 +329,7 @@ class FerramentaClonagemRosto3D:
             # Carrega imagem
             self.imagem_original = cv2.imread(caminho_imagem)
             if self.imagem_original is None:
-                return None, "Não foi possível carregar imagem"
+                return None, "No foi possível carregar imagem"
             
             # Detecta rosto
             self.rosto_detectado = self.modelo.detectar_rosto(self.imagem_original)
@@ -339,12 +339,12 @@ class FerramentaClonagemRosto3D:
             # Extrai landmarks 3D
             self.landmarks_3d = self.modelo.extrair_landmarks_3d(self.imagem_original)
             if self.landmarks_3d is None:
-                return None, "Não foi possível extrair landmarks 3D"
+                return None, "No foi possível extrair landmarks 3D"
             
-            # Reconstrói malha
+            # Reconstri malha
             self.malha_3d = self.modelo.reconstruir_malha(self.landmarks_3d)
             if self.malha_3d is None:
-                return None, "Falha na reconstrução 3D"
+                return None, "Falha na reconstruo 3D"
             
             # Gera textura
             self.textura_uv = self.modelo.gerar_textura(self.imagem_original, self.malha_3d)
@@ -409,23 +409,23 @@ class FerramentaClonagemRosto3D:
 
 class InterfaceClonagemRosto3D(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸ‘¤ Clonagem de Rosto 3D", "900x700")
+        super().__init__(" Clonagem de Rosto 3D", "900x700")
         self.ferramenta = FerramentaClonagemRosto3D(usar_gpu=USAR_GPU)
         self.caminho_imagem = None
         self.info_modelo = None
         self.setup_interface()
     
     def setup_interface(self):
-        # Título
+        # Ttulo
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸ‘¤ Clonagem de Rosto 3D",
+            text=" Clonagem de Rosto 3D",
             font=("Arial", 24, "bold")
         )
         titulo.pack(pady=10)
         
         # Status GPU
-        status = "âœ… GPU Ativa (3D Reconstruction)" if self.ferramenta.modelo.usar_gpu else "âš ï¸ CPU (lento)"
+        status = "[OK] GPU Ativa (3D Reconstruction)" if self.ferramenta.modelo.usar_gpu else "[AVISO] CPU (lento)"
         self.lbl_gpu = ctk.CTkLabel(self.frame, text=status)
         self.lbl_gpu.pack(pady=5)
         
@@ -473,13 +473,13 @@ class InterfaceClonagemRosto3D(InterfaceBase):
         self.frame_controles = ctk.CTkFrame(self.frame)
         self.frame_controles.pack(fill="x", padx=10, pady=10)
         
-        # Botões principais
+        # Botes principais
         self.frame_botoes = ctk.CTkFrame(self.frame_controles)
         self.frame_botoes.pack(pady=5)
         
         self.btn_imagem = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ“ Selecionar Imagem",
+            text=" Selecionar Imagem",
             command=self.selecionar_imagem,
             width=150
         )
@@ -487,7 +487,7 @@ class InterfaceClonagemRosto3D(InterfaceBase):
         
         self.btn_processar = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ”® Gerar Modelo 3D",
+            text=" Gerar Modelo 3D",
             command=self.processar,
             width=150,
             fg_color="green",
@@ -497,7 +497,7 @@ class InterfaceClonagemRosto3D(InterfaceBase):
         
         self.btn_visualizar = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ‘ï¸ Visualizar",
+            text=" Visualizar",
             command=self.visualizar,
             width=100,
             state="disabled"
@@ -506,14 +506,14 @@ class InterfaceClonagemRosto3D(InterfaceBase):
         
         self.btn_salvar = ctk.CTkButton(
             self.frame_botoes,
-            text="ðŸ’¾ Salvar",
+            text=" Salvar",
             command=self.salvar,
             width=100,
             state="disabled"
         )
         self.btn_salvar.pack(side="left", padx=5)
         
-        # Opções
+        # Opes
         self.frame_opcoes = ctk.CTkFrame(self.frame_controles)
         self.frame_opcoes.pack(pady=5, fill="x")
         
@@ -543,16 +543,16 @@ class InterfaceClonagemRosto3D(InterfaceBase):
         self.lbl_qualidade = ctk.CTkLabel(self.frame_opcoes, text="Qualidade:")
         self.lbl_qualidade.pack(side="left", padx=5)
         
-        self.qualidade_var = ctk.StringVar(value="média")
+        self.qualidade_var = ctk.StringVar(value="mdia")
         self.qualidade_combo = ctk.CTkComboBox(
             self.frame_opcoes,
-            values=["baixa (rápido)", "média", "alta (lento)"],
+            values=["baixa (rpido)", "mdia", "alta (lento)"],
             variable=self.qualidade_var,
             width=120
         )
         self.qualidade_combo.pack(side="left", padx=5)
         
-        # Informações
+        # informações
         self.frame_info = ctk.CTkFrame(self.frame_controles)
         self.frame_info.pack(pady=5, fill="x")
         
@@ -589,7 +589,7 @@ class InterfaceClonagemRosto3D(InterfaceBase):
     
     def processar(self):
         def processar_thread():
-            self.btn_processar.configure(state="disabled", text="â³ Gerando modelo 3D...")
+            self.btn_processar.configure(state="disabled", text=" Gerando modelo 3D...")
             self.progress.set(0.2)
             
             self.lbl_info.configure(text="Detectando rosto...")
@@ -603,15 +603,15 @@ class InterfaceClonagemRosto3D(InterfaceBase):
                 self.info_modelo = resultado
                 
                 # Mostra info
-                texto_info = f"âœ… Rosto detectado!\n"
+                texto_info = f"[OK] Rosto detectado!\n"
                 texto_info += f"Landmarks: {resultado['num_landmarks']}\n"
-                texto_info += f"Vértices: {resultado['vertices']}\n"
-                texto_info += f"Triângulos: {resultado['triangles']}"
+                texto_info += f"Vrtices: {resultado['vertices']}\n"
+                texto_info += f"Tringulos: {resultado['triangles']}"
                 
                 self.lbl_info.configure(text=texto_info)
                 
                 # Preview 3D (placeholder)
-                self.lbl_3d.configure(text="âœ… Modelo 3D gerado!\nClique em Visualizar")
+                self.lbl_3d.configure(text="[OK] Modelo 3D gerado!\nClique em Visualizar")
                 
                 self.btn_visualizar.configure(state="normal")
                 self.btn_salvar.configure(state="normal")
@@ -622,7 +622,7 @@ class InterfaceClonagemRosto3D(InterfaceBase):
                 self.lbl_info.configure(text=f"Erro: {msg}")
             
             self.progress.set(1)
-            self.btn_processar.configure(state="normal", text="ðŸ”® Gerar Modelo 3D")
+            self.btn_processar.configure(state="normal", text=" Gerar Modelo 3D")
         
         threading.Thread(target=processar_thread).start()
     
@@ -634,14 +634,14 @@ class InterfaceClonagemRosto3D(InterfaceBase):
         if self.ferramenta.visualizar():
             self.lbl_info.configure(text="Visualizador 3D aberto")
         else:
-            self.utils.mostrar_erro("Erro", "Não foi possível abrir visualizador")
+            self.utils.mostrar_erro("Erro", "No foi possível abrir visualizador")
     
     def salvar(self):
         """Salva modelo 3D"""
         pasta = filedialog.askdirectory(title="Selecione pasta para salvar")
         if pasta:
             def salvar_thread():
-                self.btn_salvar.configure(state="disabled", text="â³ Salvando...")
+                self.btn_salvar.configure(state="disabled", text=" Salvando...")
                 
                 resultado, msg = self.ferramenta.salvar_modelo(
                     pasta,
@@ -650,7 +650,7 @@ class InterfaceClonagemRosto3D(InterfaceBase):
                 )
                 
                 if resultado:
-                    texto = "âœ… Modelo salvo!\n\n"
+                    texto = "[OK] Modelo salvo!\n\n"
                     texto += f"Malha: {Path(resultado['malha']).name}\n"
                     if resultado['textura']:
                         texto += f"Textura: {Path(resultado['textura']).name}"
@@ -660,7 +660,7 @@ class InterfaceClonagemRosto3D(InterfaceBase):
                 else:
                     self.utils.mostrar_erro("Erro", msg)
                 
-                self.btn_salvar.configure(state="normal", text="ðŸ’¾ Salvar")
+                self.btn_salvar.configure(state="normal", text=" Salvar")
             
             threading.Thread(target=salvar_thread).start()
 

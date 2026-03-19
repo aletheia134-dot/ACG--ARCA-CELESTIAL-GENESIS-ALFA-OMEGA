@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
@@ -11,11 +11,11 @@ logger = logging.getLogger(__name__)
 class ConstrutorDataset:
     def __init__(self, sistema_memoria):
         self.sistema_memoria = sistema_memoria
-        logger.info("✅ ConstrutorDataset inicializado")
+        logger.info("[OK] ConstrutorDataset inicializado")
 
     def construir_dataset_alma(self, alma: str, limite: int = 100, forcar: bool = False) -> Optional[str]:
         logger.info(f"Construindo dataset para {alma} (limite={limite})")
-        # Implementação básica
+        # Implementao básica
         return f"dataset_{alma}.json"
 
     def preparar_zip_para_colab(self, alma: str = None) -> Optional[str]:

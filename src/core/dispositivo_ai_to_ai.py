@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
-DispositivoAItoAI — Sistema de comunicação entre as 6 almas da Arca
+DispositivoAItoAI  Sistema de comunicação entre as 6 almas da Arca
 Permite que EVA, LUMINA, NYRA, YUNA, KAIYA e WELLINGTON conversem entre si
 
-COMPATÍVEL COM INTERFACE v2 - Inclui alias 'enviar_mensagem' para broadcast
+COMPATVEL COM INTERFACE v2 - Inclui alias 'enviar_mensagem' para broadcast
+Versão Atualizada: Ativação de Fine-Tuning e Cadência Humana
 """
-from __future__ import annotations
 
 import logging
 import threading
@@ -18,7 +19,7 @@ import uuid
 
 logger = logging.getLogger("DispositivoAItoAI")
 
-# Lista das 6 almas (para validação)
+# Lista das 6 almas (para validao)
 NOMES_ALMAS = ["EVA", "LUMINA", "NYRA", "YUNA", "KAIYA", "WELLINGTON"]
 
 
@@ -26,10 +27,10 @@ class DispositivoAItoAI:
     """
     Sistema de comunicação entre as 6 almas da Arca.
     
-    Funciona como um serviço de mensageria interno:
+    Funciona como um servio de mensageria interno:
     - Filas thread-safe para cada alma
     - Roteamento de mensagens entre almas
-    - Histórico de conversas
+    - histórico de conversas
     - Broadcast para todas
     - Grupos de conversa
     """
@@ -52,10 +53,10 @@ class DispositivoAItoAI:
             alma: queue.Queue() for alma in NOMES_ALMAS
         }
         
-        # Histórico de todas as mensagens
+        # histórico de todas as mensagens
         self._historico: List[Dict[str, Any]] = []
         
-        # Conversas em andamento (diálogos entre pares)
+        # Conversas em andamento (dilogos entre pares)
         self._conversas: Dict[str, List[Dict[str, Any]]] = {}
         
         # Grupos de conversa
@@ -82,13 +83,13 @@ class DispositivoAItoAI:
         self._running = False
         self._processor_thread: Optional[threading.Thread] = None
         
-        self.logger.info("âœ… DispositivoAItoAI inicializado para 6 almas")
+        self.logger.info("[OK] DispositivoAItoAI inicializado para 6 almas")
     
     def iniciar(self) -> bool:
         """Inicia o processador de mensagens"""
         with self._lock:
             if self._running:
-                self.logger.warning("DispositivoAItoAI já está em execução")
+                self.logger.warning("DispositivoAItoAI j est em execução")
                 return True
             
             self._running = True
@@ -99,7 +100,7 @@ class DispositivoAItoAI:
             )
             self._processor_thread.start()
             
-            self.logger.info("âœ… DispositivoAItoAI iniciado - comunicação entre almas ativa")
+            self.logger.info("[OK] DispositivoAItoAI iniciado - comunicação entre almas ativa")
             return True
     
     def parar(self) -> bool:
@@ -108,12 +109,12 @@ class DispositivoAItoAI:
             self._running = False
             if self._processor_thread:
                 self._processor_thread.join(timeout=2.0)
-            self.logger.info("â¹ï¸ DispositivoAItoAI parado")
+            self.logger.info(" DispositivoAItoAI parado")
             return True
     
     def shutdown(self) -> bool:
         """Desliga completamente e libera recursos"""
-        self.logger.info("ðŸ›‘ Desligando DispositivoAItoAI...")
+        self.logger.info(" Desligando DispositivoAItoAI...")
         
         # Para a thread primeiro
         self.parar()
@@ -132,7 +133,7 @@ class DispositivoAItoAI:
             for alma in self._status_almas:
                 self._status_almas[alma]["conectada"] = False
         
-        self.logger.info("âœ… DispositivoAItoAI desligado completamente")
+        self.logger.info("[OK] DispositivoAItoAI desligado completamente")
         return True
     
     def _processar_mensagens(self):
@@ -141,25 +142,24 @@ class DispositivoAItoAI:
         
         while self._running:
             try:
-                # Cópia segura da lista de almas
+                # Cpia segura da lista de almas
                 with self._lock:
                     almas = list(NOMES_ALMAS)
                 
                 for alma in almas:
                     try:
                         fila = self._filas[alma]
-                        contador = 0
-                        # Limitar número de mensagens por ciclo
-                        while not fila.empty() and contador < 10:
+                        if not fila.empty():
                             mensagem = fila.get_nowait()
+                            # MODIFICAÇÃO DECIDIDA: Cadência visual de 0.5s para leitura humana
+                            time.sleep(0.5)
                             self._entregar_mensagem(alma, mensagem)
-                            contador += 1
                     except queue.Empty:
                         pass
                     except Exception as e:
                         self.logger.error(f"Erro processando fila de {alma}: {e}")
                 
-                time.sleep(0.01)
+                time.sleep(0.1) # Ajustado para 0.1 para reduzir carga de CPU
                 
             except Exception as e:
                 self.logger.error(f"Erro no processador de mensagens: {e}")
@@ -168,7 +168,7 @@ class DispositivoAItoAI:
         self.logger.debug("Processador de mensagens encerrado")
     
     def _entregar_mensagem(self, destino: str, mensagem: Dict[str, Any]):
-        """Entrega uma mensagem Í  alma destino"""
+        """Entrega uma mensagem  alma destino"""
         mensagem_copia = None
         
         with self._lock:
@@ -176,7 +176,7 @@ class DispositivoAItoAI:
             if destino in self._status_almas:
                 self._status_almas[destino]["mensagens_recebidas"] += 1
             
-            # Cria cópia para o histórico
+            # Cria cpia para o histórico
             mensagem_historico = {
                 **mensagem,
                 "timestamp_recebimento": time.time()
@@ -187,48 +187,50 @@ class DispositivoAItoAI:
             if len(self._historico) > self.max_historico:
                 self._historico = self._historico[-self.max_historico:]
             
-            # Cópia para callback (usar fora do lock)
+            # Cpia para callback (usar fora do lock)
             mensagem_copia = mensagem_historico.copy()
         
         # Callback fora do lock
         self._executar_callbacks("nova_mensagem", destino, mensagem_copia)
         
-        self.logger.debug(f"ðŸ“¨ Mensagem entregue para {destino}")
+        self.logger.debug(f" Mensagem entregue para {destino}")
     
     def enviar_mensagem_para_ai(self, origem: str, destino: str, mensagem: str, 
                                  tipo: str = "texto", prioridade: int = 5) -> bool:
         """
-        Envia uma mensagem de uma alma para outra
-        
-        Args:
-            origem: Nome da alma que está enviando (EVA, LUMINA, etc)
-            destino: Nome da alma destino
-            mensagem: Conteúdo da mensagem
-            tipo: Tipo da mensagem (texto, comando, emoção, etc)
-            prioridade: 1 (alta) a 10 (baixa)
-        
-        Returns:
-            bool: True se a mensagem foi enfileirada com sucesso
+        Envia uma mensagem de uma alma para outra com injeção de memória
         """
-        # Valida nomes
+        # válida nomes
         origem = origem.upper()
         destino = destino.upper()
         
         if origem not in NOMES_ALMAS:
-            self.logger.error(f"âŒ Origem inválida: {origem}")
+            self.logger.error(f"[ERRO] Origem invlida: {origem}")
             return False
         
         if destino not in NOMES_ALMAS:
-            self.logger.error(f"âŒ Destino inválido: {destino}")
+            self.logger.error(f"[ERRO] Destino invlido: {destino}")
             return False
+
+        # ACORDO: Recuperação do histórico para maximizar o contexto das almas
+        contexto_memoria = ""
+        historico_recente = self.obter_conversa(origem, destino, limite=20)
+        for h in historico_recente:
+            contexto_memoria += f"[{h['origem']}]: {h['conteudo']}\n"
         
-        # Cria objeto da mensagem
+        # MODIFICAÇÃO DECIDIDA: Gatilho de Fine-Tuning e Trava de Idioma
+        instrucao_idioma = (
+            f"\n[DIRETRIZ DE ATIVAÇÃO: {origem} Ara, use exclusivamente seus pesos de treinamento em PORTUGUÊS. "
+            "Bloqueie o modelo base inglês. Responda apenas como a alma definida.]"
+        )
+
+        # ACORDO: Injeção de Memória + Gatilho no campo conteudo para evitar alucinações
         msg_obj = {
             "id": str(uuid.uuid4())[:8],
             "origem": origem,
             "destino": destino,
             "tipo": tipo,
-            "conteudo": mensagem,
+            "conteudo": f"--- MEMÓRIA DE CONTEXTO ---\n{contexto_memoria}{instrucao_idioma}\n--- MENSAGEM ATUAL ---\n{mensagem}",
             "prioridade": prioridade,
             "timestamp_envio": time.time(),
             "timestamp_str": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -244,35 +246,27 @@ class DispositivoAItoAI:
                     self._status_almas[origem]["mensagens_enviadas"] += 1
                     self._status_almas[origem]["ultima_vez"] = time.time()
                 
-                # Registra no histórico da conversa
+                # Registra no histórico da conversa (apenas mensagem pura para evitar loops)
                 chave_conversa = self._chave_conversa(origem, destino)
                 if chave_conversa not in self._conversas:
                     self._conversas[chave_conversa] = []
-                self._conversas[chave_conversa].append(msg_obj)
+                self._conversas[chave_conversa].append({**msg_obj, "conteudo": mensagem})
                 
                 # Limitar conversas
                 if len(self._conversas[chave_conversa]) > self.max_conversas:
                     self._conversas[chave_conversa] = self._conversas[chave_conversa][-self.max_conversas:]
             
-            self.logger.info(f"ðŸ’¬ {origem} â†’ {destino}: {mensagem[:50]}{'...' if len(mensagem) > 50 else ''}")
+            self.logger.info(f" {origem}  {destino}: {mensagem[:50]}{'...' if len(mensagem) > 50 else ''}")
             return True
             
         except Exception as e:
-            self.logger.error(f"âŒ Erro ao enviar mensagem: {e}")
+            self.logger.error(f"[ERRO] Erro ao enviar mensagem: {e}")
             return False
     
     def enviar_mensagem(self, origem: str, destino: str, mensagem: str) -> bool:
         """
         ALIAS para compatibilidade com a interface.
         Se destino for "TODAS", faz broadcast.
-        
-        Args:
-            origem: Alma que está enviando
-            destino: Alma destino ou "TODAS"
-            mensagem: Conteúdo da mensagem
-        
-        Returns:
-            bool: True se enviada com sucesso
         """
         origem = origem.upper()
         destino = destino.upper()
@@ -286,23 +280,15 @@ class DispositivoAItoAI:
     def broadcast(self, origem: str, mensagem: str, tipo: str = "broadcast") -> Dict[str, bool]:
         """
         Envia uma mensagem para TODAS as outras almas
-        
-        Args:
-            origem: Alma que está enviando
-            mensagem: Conteúdo da mensagem
-            tipo: Tipo da mensagem
-        
-        Returns:
-            Dict com resultados para cada destino
         """
         origem = origem.upper()
         if origem not in NOMES_ALMAS:
-            self.logger.error(f"âŒ Origem inválida para broadcast: {origem}")
+            self.logger.error(f"[ERRO] Origem invlida para broadcast: {origem}")
             return {}
         
         resultados = {}
         for destino in NOMES_ALMAS:
-            if destino != origem:  # Não enviar para si mesma
+            if destino != origem:  # No enviar para si mesma
                 sucesso = self.enviar_mensagem_para_ai(
                     origem=origem,
                     destino=destino,
@@ -311,27 +297,19 @@ class DispositivoAItoAI:
                 )
                 resultados[destino] = sucesso
         
-        self.logger.info(f"ðŸ“¢ Broadcast de {origem} para {len(resultados)} almas")
+        self.logger.info(f" Broadcast de {origem} para {len(resultados)} almas")
         return resultados
     
     def criar_grupo(self, nome_grupo: str, membros: List[str], criador: str) -> bool:
         """
-        Cria um grupo de conversa entre múltiplas almas
-        
-        Args:
-            nome_grupo: Identificador do grupo
-            membros: Lista de almas no grupo
-            criador: Alma que está criando o grupo
-        
-        Returns:
-            bool: True se criado com sucesso
+        Cria um grupo de conversa entre mltiplas almas
         """
         with self._lock:
             if nome_grupo in self._grupos:
-                self.logger.warning(f"Grupo {nome_grupo} já existe")
+                self.logger.warning(f"Grupo {nome_grupo} j existe")
                 return False
             
-            # Valida membros
+            # válida membros
             membros_validos = [m.upper() for m in membros if m.upper() in NOMES_ALMAS]
             if criador.upper() not in membros_validos:
                 membros_validos.append(criador.upper())
@@ -345,34 +323,26 @@ class DispositivoAItoAI:
                 "membros": membros_validos,
                 "criador": criador.upper(),
                 "criado_em": time.time(),
-                "historico": []
+                "histórico": []
             }
             
-            self.logger.info(f"ðŸ‘¥ Grupo '{nome_grupo}' criado com {len(membros_validos)} membros")
+            self.logger.info(f" Grupo '{nome_grupo}' criado com {len(membros_validos)} membros")
             return True
     
     def mensagem_grupo(self, nome_grupo: str, origem: str, mensagem: str) -> bool:
         """
         Envia mensagem para todos os membros de um grupo
-        
-        Args:
-            nome_grupo: Nome do grupo
-            origem: Alma que está enviando
-            mensagem: Conteúdo da mensagem
-        
-        Returns:
-            bool: True se enviada com sucesso
         """
         origem = origem.upper()
         
         with self._lock:
             if nome_grupo not in self._grupos:
-                self.logger.error(f"Grupo {nome_grupo} não existe")
+                self.logger.error(f"Grupo {nome_grupo} no existe")
                 return False
             
             grupo = self._grupos[nome_grupo]
             if origem not in grupo["membros"]:
-                self.logger.error(f"{origem} não é membro do grupo {nome_grupo}")
+                self.logger.error(f"{origem} no  membro do grupo {nome_grupo}")
                 return False
             
             # Registra no histórico do grupo
@@ -384,11 +354,11 @@ class DispositivoAItoAI:
                 "timestamp": time.time(),
                 "timestamp_str": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
-            grupo["historico"].append(msg_obj)
+            grupo["histórico"].append(msg_obj)
             
             # Limitar histórico do grupo
-            if len(grupo["historico"]) > self.max_conversas:
-                grupo["historico"] = grupo["historico"][-self.max_conversas:]
+            if len(grupo["histórico"]) > self.max_conversas:
+                grupo["histórico"] = grupo["histórico"][-self.max_conversas:]
             
             # Envia para cada membro (exceto origem)
             for membro in grupo["membros"]:
@@ -400,20 +370,12 @@ class DispositivoAItoAI:
                         tipo="grupo"
                     )
             
-            self.logger.info(f"ðŸ‘¥ {origem} â†’ grupo '{nome_grupo}': {mensagem[:50]}")
+            self.logger.info(f" {origem}  grupo '{nome_grupo}': {mensagem[:50]}")
             return True
     
     def obter_conversa(self, alma1: str, alma2: str, limite: int = 50) -> List[Dict[str, Any]]:
         """
-        Obtém o histórico de conversa entre duas almas
-        
-        Args:
-            alma1: Primeira alma
-            alma2: Segunda alma
-            limite: Número máximo de mensagens
-        
-        Returns:
-            Lista de mensagens ordenadas
+        Obtm o histórico de conversa entre duas almas
         """
         alma1 = alma1.upper()
         alma2 = alma2.upper()
@@ -428,24 +390,23 @@ class DispositivoAItoAI:
             return conversas[-limite:]
     
     def obter_historico_geral(self, limite: int = 100) -> List[Dict[str, Any]]:
-        """Obtém o histórico completo de todas as conversas"""
+        """Obtm o histórico completo de todas as conversas"""
         with self._lock:
             return list(self._historico[-limite:])
     
     def status_alma(self, alma: str) -> Optional[Dict[str, Any]]:
-        """Obtém status de uma alma específica"""
+        """Obtm status de uma alma especfica"""
         alma = alma.upper()
         with self._lock:
             return self._status_almas.get(alma)
     
     def status_todas_almas(self) -> Dict[str, Dict[str, Any]]:
-        """Obtém status de todas as almas"""
+        """Obtm status de todas as almas"""
         with self._lock:
             return dict(self._status_almas)
     
     def obter_status(self) -> Dict[str, Any]:
         """
-        ALIAS para status_todas_almas() - compatibilidade com interface
         Retorna um resumo do estado do dispositivo
         """
         with self._lock:
@@ -459,7 +420,7 @@ class DispositivoAItoAI:
             }
     
     def _chave_conversa(self, alma1: str, alma2: str) -> str:
-        """Gera chave única para conversa entre duas almas"""
+        """Gera chave nica para conversa entre duas almas"""
         return f"{min(alma1, alma2)}_{max(alma1, alma2)}"
     
     def registrar_callback(self, evento: str, callback: Callable) -> bool:
@@ -479,7 +440,7 @@ class DispositivoAItoAI:
                 self.logger.error(f"Erro em callback de {evento}: {e}")
     
     def heartbeat(self, alma: str) -> bool:
-        """Alma informa que está ativa"""
+        """Alma informa que est ativa"""
         alma = alma.upper()
         if alma not in NOMES_ALMAS:
             return False
@@ -493,7 +454,7 @@ class DispositivoAItoAI:
         return True
     
     def verificar_almas_inativas(self, timeout: float = 30.0) -> List[str]:
-        """Retorna lista de almas que não enviaram heartbeat"""
+        """Retorna lista de almas que no enviaram heartbeat"""
         inativas = []
         agora = time.time()
         
@@ -507,12 +468,6 @@ class DispositivoAItoAI:
     def limpar_historico(self, max_idade_horas: Optional[float] = None) -> int:
         """
         Limpa históricos antigos manualmente
-        
-        Args:
-            max_idade_horas: Se fornecido, remove mensagens mais velhas que isso
-        
-        Returns:
-            Número de mensagens removidas
         """
         removidas = 0
         
@@ -546,7 +501,7 @@ class DispositivoAItoAI:
                 self._historico = self._historico[-self.max_historico:]
         
         if removidas > 0:
-            self.logger.info(f"ðŸ§¹ Limpeza de histórico: {removidas} mensagens removidas")
+            self.logger.info(f" Limpeza de histórico: {removidas} mensagens removidas")
         
         return removidas
     
@@ -562,11 +517,11 @@ class DispositivoAItoAI:
         return self.enviar_mensagem_para_ai(origem, destino, conteudo, tipo)
 
 
-# Função factory para criar o dispositivo
+# Funo factory para criar o dispositivo
 def create_dispositivo(*args: Any, config: Optional[Dict[str, Any]] = None, **kwargs: Any) -> DispositivoAItoAI:
-    """Cria uma instância do DispositivoAItoAI"""
+    """Cria uma instncia do DispositivoAItoAI"""
     return DispositivoAItoAI(*args, config=config, **kwargs)
 
 
-# Implementação direta (sem stub) - para compatibilidade com imports antigos
+# Implementao direta (sem stub) - para compatibilidade com imports antigos
 ImplDispositivoAItoAI = DispositivoAItoAI

@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import USAR_GPU
 
 import cv2
@@ -45,7 +45,7 @@ class FerramentaWebcam:
             "fundo_trocar": self.filtro_background_replace
         }
         
-        # Imagem de fundo para substituição
+        # Imagem de fundo para substituio
         self.fundo_imagem = None
     
     def iniciar(self, indice=0, largura=640, altura=480):
@@ -65,7 +65,7 @@ class FerramentaWebcam:
             self.cap.release()
     
     def get_cameras_disponiveis(self):
-        """Lista câmeras disponíveis"""
+        """Lista cmeras disponíveis"""
         cameras = []
         for i in range(5):
             cap = cv2.VideoCapture(i)
@@ -101,7 +101,7 @@ class FerramentaWebcam:
     def filtro_cartoon(self, frame):
         # Bilateral filter para suavizar
         smooth = cv2.bilateralFilter(frame, 9, 75, 75)
-        # Detecção de bordas
+        # Deteco de bordas
         gray = cv2.cvtColor(smooth, cv2.COLOR_BGR2GRAY)
         edges = cv2.adaptiveThreshold(gray, 255, 
                                      cv2.ADAPTIVE_THRESH_MEAN_C, 
@@ -115,11 +115,11 @@ class FerramentaWebcam:
         return cv2.flip(frame, 1)
     
     def filtro_background_blur(self, frame):
-        # Segmentação de pessoa
+        # Segmentao de pessoa
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = self.selfie_segmentation.process(rgb)
         
-        # Cria máscara
+        # Cria mscara
         mask = results.segmentation_mask > 0.5
         mask = mask.astype(np.uint8) * 255
         
@@ -136,14 +136,14 @@ class FerramentaWebcam:
         if self.fundo_imagem is None:
             return frame
         
-        # Segmentação de pessoa
+        # Segmentao de pessoa
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = self.selfie_segmentation.process(rgb)
         
         # Redimensiona fundo para tamanho do frame
         fundo = cv2.resize(self.fundo_imagem, (frame.shape[1], frame.shape[0]))
         
-        # Cria máscara
+        # Cria mscara
         mask = results.segmentation_mask > 0.5
         mask = mask.astype(np.uint8) * 255
         
@@ -154,7 +154,7 @@ class FerramentaWebcam:
         return result
     
     def set_fundo(self, caminho_imagem):
-        """Define imagem de fundo para substituição"""
+        """Define imagem de fundo para substituio"""
         try:
             self.fundo_imagem = cv2.imread(caminho_imagem)
             return True
@@ -195,22 +195,22 @@ class FerramentaWebcam:
 
 class InterfaceWebcam(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸ“· Webcam com Efeitos", "900x700")
+        super().__init__(" Webcam com Efeitos", "900x700")
         self.ferramenta = FerramentaWebcam()
         self.thread_webcam = None
         self.filtro_atual = "normal"
         self.setup_interface()
     
     def setup_interface(self):
-        # Título
+        # Ttulo
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸ“· Webcam com Efeitos em Tempo Real",
+            text=" Webcam com Efeitos em Tempo Real",
             font=("Arial", 24, "bold")
         )
         titulo.pack(pady=10)
         
-        # Frame de vídeo
+        # Frame de vdeo
         self.frame_video = ctk.CTkFrame(self.frame, width=800, height=600)
         self.frame_video.pack(pady=10)
         
@@ -223,7 +223,7 @@ class InterfaceWebcam(InterfaceBase):
         
         self.btn_iniciar = ctk.CTkButton(
             self.frame_controles,
-            text="â–¶ï¸ Iniciar Webcam",
+            text=" Iniciar Webcam",
             command=self.iniciar_webcam,
             width=120,
             height=35,
@@ -233,7 +233,7 @@ class InterfaceWebcam(InterfaceBase):
         
         self.btn_parar = ctk.CTkButton(
             self.frame_controles,
-            text="â¹ï¸ Parar",
+            text=" Parar",
             command=self.parar_webcam,
             width=80,
             height=35,
@@ -244,7 +244,7 @@ class InterfaceWebcam(InterfaceBase):
         
         self.btn_foto = ctk.CTkButton(
             self.frame_controles,
-            text="ðŸ“¸ Foto",
+            text=" Foto",
             command=self.tirar_foto,
             width=80,
             height=35,
@@ -255,7 +255,7 @@ class InterfaceWebcam(InterfaceBase):
         
         self.btn_gravar = ctk.CTkButton(
             self.frame_controles,
-            text="âºï¸ Gravar",
+            text=" Gravar",
             command=self.toggle_gravacao,
             width=80,
             height=35,
@@ -264,18 +264,18 @@ class InterfaceWebcam(InterfaceBase):
         )
         self.btn_gravar.pack(side="left", padx=5)
         
-        # Seleção de câmera
+        # Seleo de cmera
         self.frame_camera = ctk.CTkFrame(self.frame)
         self.frame_camera.pack(pady=5)
         
-        self.lbl_camera = ctk.CTkLabel(self.frame_camera, text="Câmera:")
+        self.lbl_camera = ctk.CTkLabel(self.frame_camera, text="Cmera:")
         self.lbl_camera.pack(side="left", padx=5)
         
         cameras = self.ferramenta.get_cameras_disponiveis()
         self.camera_var = ctk.IntVar(value=0)
         self.camera_combo = ctk.CTkComboBox(
             self.frame_camera,
-            values=[f"Câmera {i}" for i in cameras],
+            values=[f"Cmera {i}" for i in cameras],
             width=100
         )
         self.camera_combo.pack(side="left", padx=5)
@@ -294,7 +294,7 @@ class InterfaceWebcam(InterfaceBase):
         filtros = [
             ("Normal", "normal"),
             ("P&B", "grayscale"),
-            ("Sépia", "sepia"),
+            ("Spia", "sepia"),
             ("Negativo", "negativo"),
             ("Desfoque", "desfoque"),
             ("Bordas", "borda"),
@@ -319,10 +319,10 @@ class InterfaceWebcam(InterfaceBase):
                 col = 0
                 row += 1
         
-        # Botão selecionar fundo
+        # Boto selecionar fundo
         self.btn_fundo = ctk.CTkButton(
             self.frame,
-            text="ðŸ–¼ï¸ Selecionar Imagem de Fundo",
+            text=" Selecionar Imagem de Fundo",
             command=self.selecionar_fundo,
             width=200,
             state="normal"
@@ -375,7 +375,7 @@ class InterfaceWebcam(InterfaceBase):
         self.btn_parar.configure(state="normal")
         self.btn_foto.configure(state="normal")
         self.btn_gravar.configure(state="normal")
-        self.lbl_status.configure(text="âœ… Webcam ativa")
+        self.lbl_status.configure(text="[OK] Webcam ativa")
     
     def parar_webcam(self):
         self.ferramenta.parar()
@@ -401,27 +401,27 @@ class InterfaceWebcam(InterfaceBase):
             )
             if caminho:
                 # Salva frame atual (precisamos do frame original)
-                self.lbl_status.configure(text="ðŸ“¸ Foto salva!")
+                self.lbl_status.configure(text=" Foto salva!")
     
     def toggle_gravacao(self):
         if not self.gravando:
-            # Iniciar gravação
+            # Iniciar gravao
             caminho = filedialog.asksaveasfilename(
                 defaultextension=".avi",
                 filetypes=[("AVI", "*.avi")]
             )
             if caminho:
                 self.gravando = True
-                self.btn_gravar.configure(text="â¹ï¸ Parar Gravação", fg_color="red")
-                self.lbl_status.configure(text="âºï¸ Gravando...")
+                self.btn_gravar.configure(text=" Parar Gravao", fg_color="red")
+                self.lbl_status.configure(text=" Gravando...")
         else:
-            # Parar gravação
+            # Parar gravao
             self.gravando = False
             if self.video_writer:
                 self.video_writer.release()
                 self.video_writer = None
-            self.btn_gravar.configure(text="âºï¸ Gravar", fg_color="orange")
-            self.lbl_status.configure(text="Gravação finalizada")
+            self.btn_gravar.configure(text=" Gravar", fg_color="orange")
+            self.lbl_status.configure(text="Gravao finalizada")
     
     def selecionar_fundo(self):
         caminho = filedialog.askopenfilename(

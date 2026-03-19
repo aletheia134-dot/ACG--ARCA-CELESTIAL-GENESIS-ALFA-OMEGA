@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 DetectorHardware (enduricido)
 
-Detecta hardware real (HDDs, USBs) e fornece utilitários factuais do sistema.Principais endurecimentos:
- - Consolida e remove duplicações
+Detecta hardware real (HDDs, USBs) e fornece utilitrios factuais do sistema.Principais endurecimentos:
+ - Consolida e remove duplicaes
  - Plataforma-aware (WMIC apenas no Windows; lsblk/psutil em Linux)
- - Saída de subprocess encapsulada e parse robusto (/format:csv para WMIC)
- - Não usa input() no __main__; pode executar teste de velocidade via env RUN_HDD_SPEED_TEST=1
- - Teste de velocidade usa tempfile e respeita espaço/erros
- - Logs e tratamento de exceções detalhados
+ - Sada de subprocess encapsulada e parse robusto (/format:csv para WMIC)
+ - No usa input() no __main__; pode executar teste de velocidade via env RUN_HDD_SPEED_TEST=1
+ - Teste de velocidade usa tempfile e respeita espao/erros
+ - Logs e tratamento de excees detalhados
 """
-from __future__ import annotations
 
 
 import csv
@@ -37,13 +37,13 @@ def _is_windows() -> bool:
 def _run_cmd(cmd: List[str], timeout: int = 10) -> Tuple[int, str, str]:
     """
     Executa um comando seguro, retorna (returncode, stdout, stderr).
-    Nunca lança; trata FileNotFoundError e Timeout.
+    Nunca lana; trata FileNotFoundError e Timeout.
     """
     try:
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
         return proc.returncode, proc.stdout or "", proc.stderr or ""
     except FileNotFoundError:
-        logger.debug("Comando não encontrado: %s", cmd[0])
+        logger.debug("Comando no encontrado: %s", cmd[0])
         return 127, "", f"command not found: {cmd[0]}"
     except subprocess.TimeoutExpired:
         logger.warning("Comando timeout: %s", cmd)
@@ -63,7 +63,7 @@ class HDDCheckResult:
 
 class DetectorHardware:
     """
-    Detector de hardware factualmente orientado.Principais métodos públicos:
+    Detector de hardware factualmente orientado.Principais métodos pblicos:
      - detectar_hdd_externo(modelo_esperado=None, tamanho_esperado_bytes=None) -> (bool, Optional[Path])
      - detectar_dispositivos_usb() -> List[Dict[str, Any]]
      - obter_info_sistema() -> Dict[str, Any]
@@ -96,7 +96,7 @@ class DetectorHardware:
     ) -> Tuple[bool, Optional[Path]]:
         """
         Detecta um HDD externo real.Retorna (encontrado, caminho_de_montagem).
-        Tenta WMIC (Windows) ou lsblk/psutil (Linux). Em falta, tenta heurística em /media, /mnt.
+        Tenta WMIC (Windows) ou lsblk/psutil (Linux). Em falta, tenta heurstica em /media, /mnt.
         """
         try:
             if _is_windows():
@@ -106,12 +106,12 @@ class DetectorHardware:
 
             if res and res.found:
                 return True, res.mount_path
-            # fallback heurístico: procurar em /media, /mnt, /run/media
+            # fallback heurstico: procurar em /media, /mnt, /run/media
             for base in [Path("/media"), Path("/mnt"), Path("/run/media")]:
                 if base.exists():
                     for p in base.rglob("*"):
                         if p.is_mount():
-                            logger.debug("Fallback: encontrado mountpoint heurístico %s", p)
+                            logger.debug("Fallback: encontrado mountpoint heurstico %s", p)
                             return True, p
             return False, None
         except Exception as e:
@@ -122,12 +122,12 @@ class DetectorHardware:
         self, modelo_esperado: Optional[str], tamanho_esperado_bytes: Optional[int]
     ) -> Optional[HDDCheckResult]:
         """
-        Tenta WMIC com /format:csv para saída mais fácil de parse.
+        Tenta WMIC com /format:csv para sada mais fcil de parse.
         """
         cmd = ["wmic", "diskdrive", "get", "Caption,Size,DeviceID", "/format:csv"]
         rc, out, err = _run_cmd(cmd, timeout=8)
         if rc != 0 or not out:
-            logger.debug("WMIC não retornou dados úteis: rc=%s err=%s", rc, err.strip())
+            logger.debug("WMIC no retornou dados teis: rc=%s err=%s", rc, err.strip())
             return None
 
         try:
@@ -150,7 +150,7 @@ class DetectorHardware:
                     matches = False
 
                 if matches:
-                    # Heurística: try common drive letters
+                    # Heurstica: try common drive letters
                     for drive_letter in ["D:\\", "E:\\", "F:\\", "G:\\", "H:\\"]:
                         p = Path(drive_letter)
                         if p.exists():
@@ -158,7 +158,7 @@ class DetectorHardware:
                             return HDDCheckResult(True, p, model, size)
             return HDDCheckResult(False, None, None, None)
         except Exception as e:
-            logger.exception("Erro parseando saída WMIC: %s", e)
+            logger.exception("Erro parseando sada WMIC: %s", e)
             return None
 
     def _detectar_hdd_linux(
@@ -170,7 +170,7 @@ class DetectorHardware:
         cmd = ["lsblk", "-J", "-b", "-o", "NAME,MODEL,SIZE,MOUNTPOINT,TYPE"]
         rc, out, err = _run_cmd(cmd, timeout=8)
         if rc != 0 or not out:
-            logger.debug("lsblk não retornou dados úteis: rc=%s err=%s", rc, err.strip())
+            logger.debug("lsblk no retornou dados teis: rc=%s err=%s", rc, err.strip())
             return None
 
         try:
@@ -199,11 +199,11 @@ class DetectorHardware:
                         if mp:
                             p = Path(mp)
                             if p.exists():
-                                logger.info("HDD detectado via partição: %s -> %s", model, p)
+                                logger.info("HDD detectado via partio: %s -> %s", model, p)
                                 return HDDCheckResult(True, p, model, size)
             return HDDCheckResult(False, None, None, None)
         except Exception as e:
-            logger.exception("Erro parseando saída lsblk: %s", e)
+            logger.exception("Erro parseando sada lsblk: %s", e)
             return None
 
     # --------------------
@@ -226,7 +226,7 @@ class DetectorHardware:
         rc, out, err = _run_cmd(cmd, timeout=6)
         dispositivos = []
         if rc != 0 or not out:
-            logger.debug("WMIC logicaldisk não retornou dados úteis (Windows USB).")
+            logger.debug("WMIC logicaldisk no retornou dados teis (Windows USB).")
             return dispositivos
         try:
             lines = [l for l in out.splitlines() if l.strip()]
@@ -250,7 +250,7 @@ class DetectorHardware:
                     })
             return dispositivos
         except Exception:
-            logger.exception("Erro parseando saída WMIC logicaldisk")
+            logger.exception("Erro parseando sada WMIC logicaldisk")
             return dispositivos
 
     def _detectar_usb_linux(self) -> List[Dict[str, Any]]:
@@ -258,12 +258,12 @@ class DetectorHardware:
         rc, out, err = _run_cmd(cmd, timeout=6)
         dispositivos: List[Dict[str, Any]] = []
         if rc != 0 or not out:
-            logger.debug("lsblk não retornou dados úteis (Linux USB).")
+            logger.debug("lsblk no retornou dados teis (Linux USB).")
             return dispositivos
         try:
             data = json.loads(out)
             for dev in data.get("blockdevices", []):
-                # heurística: removable devices often have ROTA=1 but better: check vendor/model for USB
+                # heurstica: removable devices often have ROTA=1 but better: check vendor/model for USB
                 rota = str(dev.get("rota", ""))
                 tipo = dev.get("type", "")
                 model = dev.get("model", "") or ""
@@ -280,7 +280,7 @@ class DetectorHardware:
                         })
             return dispositivos
         except Exception:
-            logger.exception("Erro parseando saída lsblk para USB")
+            logger.exception("Erro parseando sada lsblk para USB")
             return dispositivos
 
     # --------------------
@@ -304,7 +304,7 @@ class DetectorHardware:
                 info["disk_total_gb"] = round(disk.total / (1024**3), 2)
                 info["disk_used_percent"] = disk.percent
             except Exception:
-                logger.debug("psutil não disponível ou falhou; informações reduzidas")
+                logger.debug("psutil no disponível ou falhou; informações reduzidas")
 
             # network
             try:
@@ -318,7 +318,7 @@ class DetectorHardware:
                 finally:
                     s.close()
             except Exception:
-                info["local_ip"] = "Não disponível"
+                info["local_ip"] = "No disponível"
         except Exception:
             logger.exception("Erro coletando info do sistema")
         return info
@@ -337,31 +337,31 @@ class DetectorHardware:
                 "percentual_usado": round((uso.used / uso.total) * 100, 2) if uso.total > 0 else 0.0,
             }
         except Exception:
-            logger.exception("Erro ao verificar espaço em %s", caminho)
+            logger.exception("Erro ao verificar espao em %s", caminho)
             return None
 
     def testar_velocidade_hdd(self, caminho: Path, tamanho_mb: int = 10) -> Optional[Dict[str, Any]]:
         """
         Testa velocidade de escrita/leitura no HDD de forma segura:
-         - cria arquivo temporário no mount point
-         - escreve blocos incrementais (não todo em memória)
-         - remove o arquivo ao final
+         - cria arquivo temporrio no mount point
+         - escreve blocos incrementais (no todo em memória)
+         - remove o arquivo ação final
         """
         try:
             if not caminho.exists() or not caminho.is_dir():
-                logger.error("Caminho inválido para teste de velocidade: %s", caminho)
+                logger.error("Caminho invlido para teste de velocidade: %s", caminho)
                 return None
 
-            # garantir espaço suficiente (heurística mínima)
+            # garantir espao suficiente (heurstica mnima)
             try:
                 usage = shutil.disk_usage(str(caminho))
                 if usage.free < (tamanho_mb * 1024 * 1024 * 2):
-                    logger.warning("Espaço livre muito baixo para teste de %dMB em %s", tamanho_mb, caminho)
+                    logger.warning("Espao livre muito baixo para teste de %dMB em %s", tamanho_mb, caminho)
                     return None
             except Exception:
-                logger.debug("Não foi possível determinar espaço livre (continuando com teste)")
+                logger.debug("No foi possível determinar espao livre (continuando com teste)")
 
-            # cria arquivo temporário no diretório alvo
+            # cria arquivo temporrio no diretório alvo
             tmp_file = Path(tempfile.NamedTemporaryFile(dir=str(caminho), delete=False).name)
             bytes_to_write = 1024 * 1024  # 1MB chunks
             total_mb = max(1, int(tamanho_mb))
@@ -376,7 +376,7 @@ class DetectorHardware:
             # leitura
             start = time.time()
             with open(tmp_file, "rb") as f:
-                # ler em blocos para não carregar tudo na memória
+                # ler em blocos para no carregar tudo na memória
                 while f.read(bytes_to_write):
                     pass
             read_time = time.time() - start
@@ -385,7 +385,7 @@ class DetectorHardware:
             try:
                 tmp_file.unlink()
             except Exception:
-                logger.debug("Falha ao remover arquivo temporário %s", tmp_file)
+                logger.debug("Falha ao remover arquivo temporrio %s", tmp_file)
 
             velocidade_escrita = total_mb / write_time if write_time > 0 else 0.0
             velocidade_leitura = total_mb / read_time if read_time > 0 else 0.0
@@ -404,21 +404,21 @@ class DetectorHardware:
 
 
 # --------------------
-# Fácil criação
+# Fcil criao
 # --------------------
 def criar_detector_hardware_padrao() -> DetectorHardware:
     return DetectorHardware()
 
 
 # --------------------
-# Exemplo de uso (não interativo)
+# Exemplo de uso (no interativo)
 # --------------------
 if __name__ == "__main__":
     import logging
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger("DetectorHardwareTest")
 
-    logger.info("=== TESTE DETECTOR HARDWARE (não interativo) ===")
+    logger.info("=== TESTE DETECTOR HARDWARE (no interativo) ===")
     detector = criar_detector_hardware_padrao()
 
     info = detector.obter_info_sistema()
@@ -428,14 +428,14 @@ if __name__ == "__main__":
     if encontrado and caminho:
         logger.info("HDD externo detectado em: %s", caminho)
         espaco = detector.verificar_espaco_hdd(caminho)
-        logger.info("Espaço HDD: %s", espaco)
-        # Teste de velocidade opcional (controlado por variável de ambiente)
+        logger.info("Espao HDD: %s", espaco)
+        # Teste de velocidade opcional (controlado por varivel de ambiente)
         if os.environ.get("RUN_HDD_SPEED_TEST", "0") == "1":
             logger.info("Iniciando teste de velocidade (opcional)...")
             vel = detector.testar_velocidade_hdd(caminho, tamanho_mb=10)
             logger.info("Resultado teste velocidade: %s", vel)
     else:
-        logger.info("Nenhum HDD externo detectado (fallback pode ter encontrado mounts heurísticos).")
+        logger.info("Nenhum HDD externo detectado (fallback pode ter encontrado mounts heursticos).")
 
     usbs = detector.detectar_dispositivos_usb()
     logger.info("USBs detectados: %d", len(usbs))

@@ -3,12 +3,12 @@
 """
 DecisionEngine (enduricido)
 
-Motor de decisão híbrida que combina pontuações racionais, intuitivas e de valores.Melhorias aplicadas:
- - Validação e normalização de entradas (benefício/custo -> [0,1])
- - Injeção de RNG para determinismo/testes (seed opcional ou Random instance)
- - Validação/normalização automática de pesos (somatório -> 1.0)
- - Tie-breaker determinístico (benefício maior, custo menor)
- - Logs detalhados por opção (DEBUG)
+Motor de decisão hbrida que combina pontuaes racionais, intuitivas e de valores.Melhorias aplicadas:
+ - Validao e normalizao de entradas (benefcio/custo -> [0,1])
+ - Injeo de RNG para determinismo/testes (seed opcional ou Random instance)
+ - Validao/normalizao automtica de pesos (somatrio -> 1.0)
+ - Tie-breaker determinstico (benefcio maior, custo menor)
+ - Logs detalhados por opo (DEBUG)
  - Tipagem e docstrings claras
 """
 from __future__ import annotations
@@ -25,11 +25,11 @@ logger.addHandler(logging.NullHandler())
 
 class DecisionEngine:
     """
-    Motor de Decisão Híbrida.Args:
+    Motor de Decisão Hbrida.Args:
         alma_nome: nome da agente/alma que toma decisões (usado em logs).
         pesos: opcional dict com chaves 'racional', 'intuitiva', 'valores'.
                Se ausente, usa valores padrão {'racional':0.4,'intuitiva':0.3,'valores':0.3}.
-        rng: opcional random.Random instance para tornar decisões testáveis/determinísticas.Pode ser um int seed também; se None, usa random.Random() (não determinístico).
+        rng: opcional random.Random instance para tornar decisões testveis/determinsticas.Pode ser um int seed tambm; se None, usa random.Random() (no determinstico).
     """
 
     REQUIRED_SCORE_KEYS = ("beneficio", "custo")
@@ -53,14 +53,14 @@ class DecisionEngine:
     # Pesos
     # ----------------------
     def set_pesos(self, pesos: Dict[str, float]) -> None:
-        """Define/normaliza pesos.Qualquer peso faltante recebe 0.0; pesos são normalizados para soma 1."""
+        """Define/normaliza pesos.Qualquer peso faltante recebe 0.0; pesos so normalizados para soma 1."""
         p = {k: float(pesos.get(k, 0.0)) for k in ("racional", "intuitiva", "valores")}
         total = sum(abs(v) for v in p.values()) or 1.0
         self.pesos = {k: (v / total) for k, v in p.items()}
         logger.debug("[%s] Pesos ajustados/normalizados: %s", self.alma, self.pesos)
 
     # ----------------------
-    # Utilitários de normalização
+    # Utilitrios de normalizao
     # ----------------------
     @staticmethod
     def _clamp01(v: float) -> float:
@@ -74,7 +74,7 @@ class DecisionEngine:
 
     def _normalize_option(self, op: Dict) -> Tuple[float, float]:
         """
-        Extrai e normaliza benefit/cost do dicionário da opção.Retorna (beneficio_normalizado, custo_normalizado).
+        Extrai e normaliza benefit/cost do dicionrio da opo.Retorna (beneficio_normalizado, custo_normalizado).
         """
         b = op.get("beneficio", 0.5)
         c = op.get("custo", 0.5)
@@ -85,8 +85,8 @@ class DecisionEngine:
     # ----------------------
     def _score_racional(self, op: Dict) -> float:
         """
-        Score racional: pondera benefício e custo.Retorna valor em [0,1].
-        Fórmula: 0.6 * beneficio + 0.4 * (1 - custo)
+        Score racional: pondera benefcio e custo.Retorna valor em [0,1].
+        Frmula: 0.6 * beneficio + 0.4 * (1 - custo)
         """
         b, c = self._normalize_option(op)
         score = 0.6 * b + 0.4 * (1.0 - c)
@@ -94,15 +94,15 @@ class DecisionEngine:
 
     def _score_intuitivo(self, op: Dict) -> float:
         """
-        Score intuitivo: usa distribuição Gaussiana centrada em 0.5.
-        Usa RNG injetável para determinismo em testes.Resultado é truncado para [0,1].
+        Score intuitivo: usa distribuio Gaussiana centrada em 0.5.
+        Usa RNG injetvel para determinismo em testes.Resultado  truncado para [0,1].
         """
         val = self._rng.gauss(0.5, 0.2)
         return self._clamp01(val)
 
     def _score_valores(self, op: Dict) -> float:
         """
-        Score de alinhamento com valores: se op['alinhado_proposito'] truthy => 1.0, senão 0.5.
+        Score de alinhamento com valores: se op['alinhado_proposito'] truthy => 1.0, seno 0.5.
         Pode ser estendido para checar listas de valores.
         """
         alin = op.get("alinhado_proposito")
@@ -113,11 +113,11 @@ class DecisionEngine:
     # ----------------------
     def decidir(self, opcoes: List[Dict], return_scores: bool = False) -> Optional[Dict]:
         """
-        Decide a melhor opção entre uma lista de dicionários.Cada opção deve ser um dict (ex.: {'acao': '...', 'beneficio':0.8, 'custo':0.2, 'alinhado_proposito': True}).
+        Decide a melhor opo entre uma lista de dicionrios.Cada opo deve ser um dict (ex.: {'acao': '...', 'beneficio':0.8, 'custo':0.2, 'alinhado_proposito': True}).
 
         Se return_scores=True, retorna dict com chaves:
             {'melhor': melhor_opcao_dict, 'ranked': [ (score, option), ... ]}
-        Caso contrário, retorna apenas o melhor_opcao_dict ou None se opcoes vazio.
+        Caso contrrio, retorna apenas o melhor_opcao_dict ou None se opcoes vazio.
         """
         if not opcoes:
             logger.debug("[%s] decidir chamado com lista vazia", self.alma)
@@ -128,7 +128,7 @@ class DecisionEngine:
         for op in opcoes:
             # validar opcao básica
             if not isinstance(op, dict):
-                logger.debug("[%s] opção inválida (não dict): %s", self.alma, op)
+                logger.debug("[%s] opo invlida (no dict): %s", self.alma, op)
                 continue
 
             # compute components
@@ -142,21 +142,21 @@ class DecisionEngine:
 
             comps = {"racional": s_r, "intuitiva": s_i, "valores": s_v}
             scored.append((final, op, comps))
-            logger.debug("[%s] opção='%s' comps=%s final=%.4f", self.alma, op.get("acao", "<sem_acao>"), comps, final)
+            logger.debug("[%s] opo='%s' comps=%s final=%.4f", self.alma, op.get("acao", "<sem_acao>"), comps, final)
 
         if not scored:
-            logger.debug("[%s] nenhuma opção válida após filtragem", self.alma)
+            logger.debug("[%s] nenhuma opo vlida aps filtragem", self.alma)
             return None
 
-        # ordenar por score desc; tie-breaker aplica-se quando diferença < eps
+        # ordenar por score desc; tie-breaker aplica-se quando diferena < eps
         eps = 1e-6
         scored.sort(key=lambda tup: tup[0], reverse=True)
 
-        # aplicar tie-breaker: entre opções com quase-mesmo score, escolher maior beneficio então menor custo
+        # aplicar tie-breaker: entre opes com quase-mesmo score, escolher maior beneficio ento menor custo
         top_score = scored[0][0]
         tied = [t for t in scored if abs(t[0] - top_score) <= eps]
         if len(tied) > 1:
-            logger.debug("[%s] empate detectado entre %d opções; aplicando tie-breaker", self.alma, len(tied))
+            logger.debug("[%s] empate detectado entre %d opes; aplicando tie-breaker", self.alma, len(tied))
             def tie_key(item):
                 _, op, _ = item
                 b, c = self._normalize_option(op)
@@ -181,7 +181,7 @@ class DecisionEngine:
         return melhor_opcao
 
     # ----------------------
-    # Helpers / utilitários
+    # Helpers / utilitrios
     # ----------------------
     def ajustar_pesos(self, racional: Optional[float] = None, intuitiva: Optional[float] = None, valores: Optional[float] = None) -> None:
         """Ajusta pesos parcialmente e normaliza o vetor resultante."""

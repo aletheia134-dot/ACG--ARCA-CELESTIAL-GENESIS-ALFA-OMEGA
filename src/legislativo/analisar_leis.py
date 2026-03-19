@@ -10,32 +10,32 @@ def classificar_aceito(caminho_json: Path, pasta_destino: Path):
     # Categorias aceitas com leis >0
     categorias_aceitas = {
         "regras": ['Regra Constitucional do Sistema', 'Regra de Engajamento'],
-        "sabedoria_pratica": ['Diretiva Ontológica', 'Heurística de Avaliação'],
-        "acoes_corretas": ['Diretiva de Ação', 'Diretiva de Sistema'],
-        "regras_de_ouro": ['Valor Fundamental', 'Lei de Consequência'],
-        "resolucao_conflitos": ['Gestão de Conflitos / Lógica de Interação'],
-        "protocolo": ['Protocolo de Emergência'],
+        "sabedoria_pratica": ['Diretiva Ontolgica', 'Heurstica de Avaliao'],
+        "acoes_corretas": ['Diretiva de Ao', 'Diretiva de Sistema'],
+        "regras_de_ouro": ['Valor Fundamental', 'Lei de Consequncia'],
+        "resolucao_conflitos": ['Gesto de Conflitos / Lógica de Interao'],
+        "protocolo": ['Protocolo de Emergncia'],
         "mecanismo": ['Mecanismo de Aprendizado'],
-        "licoes": ['Lição de Advertência', 'Ensino Positivo'],
-        "heuristica": ['Heurística de Avaliação'],
-        "estrategia": ['Estratégia de Debate'],
+        "licoes": ['Lio de Advertncia', 'Ensino Positivo'],
+        "heuristica": ['Heurstica de Avaliao'],
+        "estrategia": ['Estratgia de Debate'],
         "diretiva": ['Diretiva de Sistema'],
-        "analise": ['Análise de Causa Raiz'],
+        "analise": ['Anlise de Causa Raiz'],
         "etica": ['Diretiva Moral'],
         "valores": ['Valor Fundamental'],
-        "transparencia": ['Transparência / Lógica Fundamental'],
-        "seguranca": ['Segurança / Análise de Risco'],
+        "transparencia": ['Transparncia / Lógica Fundamental'],
+        "seguranca": ['Segurana / Anlise de Risco'],
         "lei_zero": ['Lei Zero / Arquitetura Fundamental'],
-        "justica": ['Justiça / Integridade'],
+        "justica": ['Justia / Integridade'],
         "integridade": ['Diretiva de Integridade'],
-        "comunicacao": ['Comunicação / Integridade'],
-        "auto_analise": ['Autoanálise / Integridade'],
-        "etica_avancada": ['Diretiva de Ação Moral'],
-        "seguranca_avancada": ['Segurança / Análise de Ameaças'],
-        "logica_avancada": ['Lógica Causal / Segurança'],
-        "comunicacao_avancada": ['Comunicação / Inteligência Emocional'],
-        "integridade_avancada": ['Integridade Operacional / Transparência'],
-        "aprendizagem_avancada": ['Aprendizagem e Adaptação / Análise de Risco'],
+        "comunicação": ['Comunicao / Integridade'],
+        "auto_analise": ['Autoanlise / Integridade'],
+        "etica_avancada": ['Diretiva de Ao Moral'],
+        "seguranca_avancada": ['Segurana / Anlise de Ameaas'],
+        "logica_avancada": ['Lógica Causal / Segurana'],
+        "comunicacao_avancada": ['Comunicao / Inteligncia Emocional'],
+        "integridade_avancada": ['Integridade Operacional / Transparncia'],
+        "aprendizagem_avancada": ['Aprendizagem e Adaptao / Anlise de Risco'],
         "gerais": []  # Resto
     }
     
@@ -63,10 +63,10 @@ def classificar_aceito(caminho_json: Path, pasta_destino: Path):
                 json.dump(lista, f, indent=2, ensure_ascii=False)
             print(f"{cat}: {len(lista)} leis")
     
-    print("Aceito e agrupado – use para o legislativo!")
+    print("Aceito e agrupado  use para o legislativo!")
 
 # ============================================================================
-# SÓ EXECUTA SE O ARQUIVO FOR CHAMADO DIRETAMENTE
+# S EXECUTA SE O ARQUIVO FOR CHAMADO DIRETAMENTE
 # ============================================================================
 if __name__ == "__main__":
     caminho_json = Path("leis_fundamentais.json")

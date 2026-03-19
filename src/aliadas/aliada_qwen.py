@@ -1,5 +1,5 @@
-# src/aliadas/aliada_qwen.py
 from __future__ import annotations
+# src/aliadas/aliada_qwen.py
 import os
 import time
 import logging
@@ -23,11 +23,11 @@ MAX_BACKOFF = 10.0
 
 class AliadaQwen:
     """
-    Cliente robusto para o serviço Qwen.
+    Cliente robusto para o servio Qwen.
 
     - Usa requests.Session para pooling de conexões.
-    - Retry exponencial com jitter para timeouts/erros transitórios.
-    - Extração de campos comuns de resposta (output, response, text, result, choices, data).
+    - Retry exponencial com jitter para timeouts/erros transitrios.
+    - Extrao de campos comuns de resposta (output, response, text, result, choices, data).
     - Public API:
       - processar(comando, contexto) -> (ok: bool, texto_or_none: Optional[str], status: str)
       - health_check() -> bool
@@ -49,7 +49,7 @@ class AliadaQwen:
 
         if not self.endpoint:
             raise LLMUnavailableError(
-                "AliadaQwen: endpoint não configurado (cfg['endpoint'] or QWEN_API_URL)"
+                "AliadaQwen: endpoint no configurado (cfg['endpoint'] or QWEN_API_URL)"
             )
 
         self.session: Session = requests.Session()
@@ -57,43 +57,76 @@ class AliadaQwen:
         logger.info("AliadaQwen initialized endpoint=%s retries=%s timeout=%s", self.endpoint, self.retries, self.timeout)
 
     def _build_headers(self) -> Dict[str, str]:
-        headers = {"Content-Type": "application/json", "Accept": "application/json"}
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            # DashScope exige SSE desabilitado para respostas síncronas
+            "X-DashScope-SSE": "disable",
+        }
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
         return headers
 
+    def _build_payload(self, comando: str, contexto: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """
+        Payload real da API Qwen (Alibaba DashScope).
+        Doc: https://help.aliyun.com/zh/dashscope/developer-reference/api-details
+        """
+        messages = []
+        if contexto and isinstance(contexto, dict):
+            system_prompt = contexto.get("system_prompt") or contexto.get("system")
+            if system_prompt:
+                messages.append({"role": "system", "content": str(system_prompt)})
+        messages.append({"role": "user", "content": comando})
+
+        return {
+            "model": self.cfg.get("model", "qwen-turbo"),
+            "input": {
+                "messages": messages
+            },
+            "parameters": {
+                "max_tokens": int(self.cfg.get("max_tokens", 1024)),
+                "temperature": float(self.cfg.get("temperature", 0.7)),
+                "result_format": "message",
+            }
+        }
+
     def _extract_text(self, data: Any) -> Optional[str]:
         """
-        Tenta extrair texto útil da resposta JSON.
-        Busca chaves comuns: output, response, text, result, generated_text, prediction, choices, data.
+        Extrai texto da resposta real da DashScope.
+        Estrutura: data.output.choices[0].message.content  OU  data.output.text
         """
         if data is None:
             return None
         if isinstance(data, str):
             return data
         if isinstance(data, dict):
-            for k in ("output", "response", "text", "result", "generated_text", "prediction"):
-                v = data.get(k)
-                if isinstance(v, str) and v.strip():
-                    return v.strip()
-                if isinstance(v, (list, dict)):
-                    try:
-                        return str(v)
-                    except Exception:
-                        pass
+            # Estrutura DashScope com result_format=message
+            output = data.get("output", {})
+            if isinstance(output, dict):
+                choices = output.get("choices")
+                if isinstance(choices, list) and choices:
+                    msg = choices[0].get("message", {})
+                    content = msg.get("content")
+                    if isinstance(content, str) and content.strip():
+                        return content.strip()
+                # Estrutura DashScope legada (result_format=text)
+                text = output.get("text")
+                if isinstance(text, str) and text.strip():
+                    return text.strip()
+            # Fallback genérico: choices estilo OpenAI
             choices = data.get("choices")
             if isinstance(choices, list) and choices:
                 first = choices[0]
                 if isinstance(first, dict):
-                    for ck in ("text", "message", "output", "content"):
-                        if ck in first and isinstance(first[ck], str):
-                            return first[ck].strip()
-            if "data" in data and isinstance(data["data"], list) and data["data"]:
-                d0 = data["data"][0]
-                if isinstance(d0, dict):
-                    for ck in ("text", "content", "output"):
-                        if ck in d0 and isinstance(d0[ck], str):
-                            return d0[ck].strip()
+                    msg = first.get("message", {})
+                    content = msg.get("content") or first.get("text")
+                    if isinstance(content, str) and content.strip():
+                        return content.strip()
+            # raw_text (resposta não-JSON)
+            raw = data.get("raw_text")
+            if isinstance(raw, str) and raw.strip():
+                return raw.strip()
         try:
             return str(data)
         except Exception:
@@ -102,7 +135,7 @@ class AliadaQwen:
     def _call_api(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """
         Faz POST para o endpoint com retries/backoff.
-        Lança LLMTimeoutError ou LLMExecutionError nas condições finais de falha.
+        Lana LLMTimeoutError ou LLMExecutionError nas condies finais de falha.
         """
         headers = self._build_headers()
         attempt = 0
@@ -147,9 +180,7 @@ class AliadaQwen:
             logger.error("AliadaQwen chamada após shutdown")
             return False, None, "error:shutdown"
 
-        payload: Dict[str, Any] = {"input": comando}
-        if contexto is not None:
-            payload["context"] = contexto
+        payload = self._build_payload(comando, contexto)
 
         try:
             data = self._call_api(payload)

@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 solicitador_arquivos.py - Gerenciador de Acesso a Arquivos
 
-IA solicita arquivo â†’ obtém path â†’ usa â†’ acesso é revogado
+IA solicita arquivo  obtm path  usa  acesso  revogado
 
-Nota: Lista de arquivos é simulada (mock) para teste.Em produção, vir de: sys.modules, site-packages, venv, etc
+Nota: Lista de arquivos  simulada (mock) para teste.Em produo, vir de: sys.modules, site-packages, venv, etc
 
 Responsabilidades:
-- Validar permissões
+- Validar permisses
 - Fornecer paths
 - Revogar acesso
 - Auditoria
 - Cleanup automático de acessos expirados
 """
-from __future__ import annotations
 
 
 import datetime
@@ -33,18 +33,18 @@ class SolicitadorArquivos:
     """
     Gerencia solicitação de arquivos/módulos pelas IAs.Fluxo:
     1.IA solicita arquivo
-    2.Sistema valida
+    2.Sistema válida
     3.Sistema fornece path
     4.IA usa
-    5.Acesso expirado após tempo
+    5.Acesso expirado aps tempo
     """
 
     def __init__(self, coracao_ref: Any):
-        """Args: coracao_ref - Ref ao Coração"""
+        """Args: coracao_ref - Ref ação Corao"""
         self.coracao = coracao_ref
         self.logger = logging.getLogger("SolicitadorArquivos")
         
-        # Buscar módulos disponíveis dinamicamente (código real)
+        # Buscar módulos disponíveis dinamicamente (cdigo real)
         self.arquivos_disponiveis = self._listar_modulos_reais()
         
         # Acessos concedidos
@@ -52,7 +52,7 @@ class SolicitadorArquivos:
         
         self._lock = threading.RLock()
         
-        # Iniciar cleanup periódico
+        # Iniciar cleanup peridico
         self.iniciar_cleanup_periodico(intervalo_horas=1)
 
     def _listar_modulos_reais(self) -> Dict[str, str]:
@@ -67,7 +67,7 @@ class SolicitadorArquivos:
         
         modulos = {}
         
-        # 1. De sys.modules (módulos já importados)
+        # 1. De sys.modules (módulos j importados)
         for nome, modulo in sys.modules.items():
             if hasattr(modulo, '__file__') and modulo.__file__:
                 caminho = Path(modulo.__file__).resolve()
@@ -96,13 +96,13 @@ class SolicitadorArquivos:
                     if item.is_dir() and not item.name.startswith('.'):
                         modulos[item.name] = str(item)
         
-        # Filtrar duplicatas e manter únicos
+        # Filtrar duplicatas e manter nicos
         modulos_filtrados = {}
         for nome, caminho in modulos.items():
             if nome not in modulos_filtrados:
                 modulos_filtrados[nome] = caminho
         
-        self.logger.info(f"ðŸ“¦ Encontrados {len(modulos_filtrados)} módulos reais disponíveis")
+        self.logger.info(f" Encontrados {len(modulos_filtrados)} módulos reais disponíveis")
         return modulos_filtrados
 
     def solicitar_arquivos(
@@ -134,7 +134,7 @@ class SolicitadorArquivos:
                 modulos_invalidos.append(modulo)
         
         if modulos_invalidos:
-            msg = f"âŒ Módulos não encontrados: {modulos_invalidos}"
+            msg = f"[ERRO] Módulos no encontrados: {modulos_invalidos}"
             self.logger.warning(msg)
             return False, {}, msg
         
@@ -153,7 +153,7 @@ class SolicitadorArquivos:
                 "paths": modulos_validos
             }
         
-        msg = f"âœ… Acesso concedido a {len(modulos_validos)} módulo(s) por {duracao_minutos} min"
+        msg = f"[OK] Acesso concedido a {len(modulos_validos)} módulo(s) por {duracao_minutos} min"
         self.logger.info(msg)
         
         # Notificar
@@ -166,7 +166,7 @@ class SolicitadorArquivos:
         return True, modulos_validos, msg
 
     def validar_acesso(self, acesso_id: str) -> Tuple[bool, Optional[Dict[str, str]]]:
-        """Valida se acesso ainda está válido."""
+        """válida se acesso ainda est vlido."""
         with self._lock:
             acesso = self.acessos_ativos.get(acesso_id)
         
@@ -186,7 +186,7 @@ class SolicitadorArquivos:
             if acesso_id in self.acessos_ativos:
                 acesso = self.acessos_ativos.pop(acesso_id)
                 self.logger.info(
-                    "âœ‚ï¸ Acesso revogado: IA=%s, módulos=%s",
+                    " Acesso revogado: IA=%s, módulos=%s",
                     acesso.get("ia_solicitante"),
                     acesso.get("modulos")
                 )
@@ -215,12 +215,12 @@ class SolicitadorArquivos:
                     self.acessos_ativos.pop(acesso_id)
         
         if expirados:
-            self.logger.info("ðŸ§¹ Limpeza: %d acessos expirados removidos", len(expirados))
+            self.logger.info(" Limpeza: %d acessos expirados removidos", len(expirados))
         
         return len(expirados)
 
     def iniciar_cleanup_periodico(self, intervalo_horas: int = 1) -> None:
-        """âœ… NOVO: Inicia limpeza automática de acessos expirados."""
+        """[OK] NOVO: Inicia limpeza automtica de acessos expirados."""
         def _cleanup_thread():
             while True:
                 try:
@@ -232,10 +232,10 @@ class SolicitadorArquivos:
         
         t = threading.Thread(target=_cleanup_thread, daemon=True, name="SolicitadorArquivosCleanup")
         t.start()
-        self.logger.debug("âœ… Cleanup automático iniciado (intervalo: %d h)", intervalo_horas)
+        self.logger.debug("[OK] Cleanup automático iniciado (intervalo: %d h)", intervalo_horas)
 
     def _notificar_coacao(self, tipo_evento: str, dados: Dict[str, Any]) -> None:
-        """Notifica Coração."""
+        """Notifica Corao."""
         try:
             if hasattr(self.coracao, "ui_queue"):
                 self.coracao.ui_queue.put_nowait({
@@ -244,11 +244,11 @@ class SolicitadorArquivos:
                     "timestamp": datetime.datetime.utcnow().isoformat()
                 })
         except Exception as e:
-            self.logger.debug("Erro ao notificar Coração: %s", e)
+            self.logger.debug("Erro ao notificar Corao: %s", e)
 
     def shutdown(self) -> None:
         """Desliga."""
-        self.logger.info("ðŸ›‘ Desligando SolicitadorArquivos...")
+        self.logger.info(" Desligando SolicitadorArquivos...")
         with self._lock:
             self.acessos_ativos.clear()
-        self.logger.info("âœ… SolicitadorArquivos desligado")
+        self.logger.info("[OK] SolicitadorArquivos desligado")

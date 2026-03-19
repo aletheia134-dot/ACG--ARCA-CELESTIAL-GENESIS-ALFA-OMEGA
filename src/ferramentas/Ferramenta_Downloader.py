@@ -1,5 +1,5 @@
 # Ferramenta: Downloader de Arquivos
-# Usa yt-dlp para vídeos/áudio e requests para arquivos
+# Usa yt-dlp para vdeos/udio e requests para arquivos
 
 import sys
 import os
@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS
 
 import customtkinter as ctk
@@ -22,7 +22,7 @@ try:
     YT_DLP_AVAILABLE = True
 except:
     YT_DLP_AVAILABLE = False
-    print("âš ï¸ yt-dlp não instalado. Instale com: pip install yt-dlp")
+    print("[AVISO] yt-dlp no instalado. Instale com: pip install yt-dlp")
 
 class FerramentaDownloader:
     def __init__(self):
@@ -31,10 +31,10 @@ class FerramentaDownloader:
         self.downloads_ativos = {}
         
     def is_youtube_url(self, url):
-        """Verifica se é URL do YouTube"""
+        """Verifica se  URL do YouTube"""
         youtube_patterns = [
-            r'(https?://)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)/',
-            r'(https?://)?(www\.)?(m\.)?(youtube|youtu)\.(com|be)/'
+            r'(https?://)?(www\\.)?(youtube|youtu|youtube-nocookie)\\.(com|be)/',
+            r'(https?://)?(www\\.)?(m\\.)?(youtube|youtu)\\.(com|be)/'
         ]
         for pattern in youtube_patterns:
             if re.match(pattern, url):
@@ -43,9 +43,9 @@ class FerramentaDownloader:
     
     def download_youtube(self, url, formato='mp4', qualidade='best', 
                          pasta=None, progress_callback=None):
-        """Download de vídeos do YouTube"""
+        """Download de vdeos do YouTube"""
         if not YT_DLP_AVAILABLE:
-            return None, "yt-dlp não instalado"
+            return None, "yt-dlp no instalado"
         
         try:
             if not pasta:
@@ -73,7 +73,7 @@ class FerramentaDownloader:
                         'preferredquality': '192',
                     }],
                 })
-            else:  # vídeo
+            else:  # vdeo
                 if qualidade == 'melhor':
                     ydl_opts['format'] = 'bestvideo+bestaudio/best'
                 elif qualidade == 'hd':
@@ -108,7 +108,7 @@ class FerramentaDownloader:
             
             pasta.mkdir(exist_ok=True, parents=True)
             
-            # Obtém nome do arquivo
+            # Obtm nome do arquivo
             if not nome:
                 nome = url.split('/')[-1]
                 if '?' in nome:
@@ -164,7 +164,7 @@ class FerramentaDownloader:
         """Extrai informações do URL sem baixar"""
         if self.is_youtube_url(url):
             if not YT_DLP_AVAILABLE:
-                return {"tipo": "youtube", "erro": "yt-dlp não instalado"}
+                return {"tipo": "youtube", "erro": "yt-dlp no instalado"}
             
             try:
                 with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
@@ -193,20 +193,20 @@ class FerramentaDownloader:
 
 class InterfaceDownloader(InterfaceBase):
     def __init__(self):
-        super().__init__("ðŸ“¥ Downloader de Arquivos", "800x700")
+        super().__init__(" Downloader de Arquivos", "800x700")
         self.ferramenta = FerramentaDownloader()
         self.setup_interface()
     
     def setup_interface(self):
         titulo = ctk.CTkLabel(
             self.frame,
-            text="ðŸ“¥ Downloader de Arquivos e Vídeos",
+            text=" Downloader de Arquivos e Vdeos",
             font=("Arial", 24, "bold")
         )
         titulo.pack(pady=10)
         
         # Status yt-dlp
-        status = "âœ… yt-dlp instalado" if YT_DLP_AVAILABLE else "âš ï¸ yt-dlp não instalado (YouTube não disponível)"
+        status = "[OK] yt-dlp instalado" if YT_DLP_AVAILABLE else "[AVISO] yt-dlp no instalado (YouTube no disponível)"
         self.lbl_status = ctk.CTkLabel(self.frame, text=status)
         self.lbl_status.pack(pady=5)
         
@@ -244,7 +244,7 @@ class InterfaceDownloader(InterfaceBase):
         
         self.btn_pasta = ctk.CTkButton(
             self.frame_pasta,
-            text="ðŸ“ Alterar",
+            text=" Alterar",
             command=self.alterar_pasta,
             width=80
         )
@@ -252,7 +252,7 @@ class InterfaceDownloader(InterfaceBase):
         
         self.btn_abrir_pasta = ctk.CTkButton(
             self.frame_pasta,
-            text="ðŸ“‚ Abrir",
+            text=" Abrir",
             command=self.abrir_pasta,
             width=60
         )
@@ -280,7 +280,7 @@ class InterfaceDownloader(InterfaceBase):
         
         self.btn_info = ctk.CTkButton(
             self.frame_url,
-            text="ðŸ” Info",
+            text=" Info",
             command=self.extrair_info,
             width=60
         )
@@ -292,12 +292,12 @@ class InterfaceDownloader(InterfaceBase):
         
         self.lbl_info = ctk.CTkLabel(
             self.frame_info,
-            text="Informações do vídeo aparecerão aqui",
+            text="informações do vdeo aparecero aqui",
             wraplength=600
         )
         self.lbl_info.pack(pady=5)
         
-        # Opções
+        # Opes
         self.frame_opcoes = ctk.CTkFrame(self.tab_youtube)
         self.frame_opcoes.pack(pady=10, padx=10, fill="x")
         
@@ -311,7 +311,7 @@ class InterfaceDownloader(InterfaceBase):
         self.formato_var = ctk.StringVar(value="mp4")
         self.radio_mp4 = ctk.CTkRadioButton(
             self.frame_formato,
-            text="MP4 (Vídeo)",
+            text="MP4 (Vdeo)",
             variable=self.formato_var,
             value="mp4"
         )
@@ -319,7 +319,7 @@ class InterfaceDownloader(InterfaceBase):
         
         self.radio_mp3 = ctk.CTkRadioButton(
             self.frame_formato,
-            text="MP3 (Íudio)",
+            text="MP3 (udio)",
             variable=self.formato_var,
             value="mp3"
         )
@@ -341,10 +341,10 @@ class InterfaceDownloader(InterfaceBase):
         )
         self.qualidade_combo.pack(side="left", padx=5)
         
-        # Botão download
+        # Boto download
         self.btn_download_yt = ctk.CTkButton(
             self.tab_youtube,
-            text="ðŸ“¥ Download YouTube",
+            text=" Download YouTube",
             command=self.download_youtube,
             width=200,
             height=40,
@@ -369,7 +369,7 @@ class InterfaceDownloader(InterfaceBase):
         
         self.btn_info_arq = ctk.CTkButton(
             self.frame_url_arq,
-            text="ðŸ” Info",
+            text=" Info",
             command=self.info_arquivo,
             width=60
         )
@@ -381,7 +381,7 @@ class InterfaceDownloader(InterfaceBase):
         
         self.lbl_info_arq = ctk.CTkLabel(
             self.frame_info_arq,
-            text="Informações do arquivo",
+            text="informações do arquivo",
             wraplength=600
         )
         self.lbl_info_arq.pack(pady=5)
@@ -400,10 +400,10 @@ class InterfaceDownloader(InterfaceBase):
         )
         self.entry_nome.pack(side="left", padx=5)
         
-        # Botão download
+        # Boto download
         self.btn_download_arq = ctk.CTkButton(
             self.tab_arquivo,
-            text="ðŸ“¥ Download Arquivo",
+            text=" Download Arquivo",
             command=self.download_arquivo,
             width=200,
             height=40,
@@ -442,25 +442,25 @@ class InterfaceDownloader(InterfaceBase):
             self.utils.mostrar_erro("Erro", "Digite uma URL")
             return
         
-        self.btn_info.configure(text="â³", state="disabled")
+        self.btn_info.configure(text="", state="disabled")
         
         def info_thread():
             info = self.ferramenta.extrair_info(url)
             
             if info.get('tipo') == 'youtube' and 'erro' not in info:
-                texto = f"ðŸ“¹ {info['titulo']}\n"
-                texto += f"ðŸ‘¤ {info['uploader']}\n"
-                texto += f"â±ï¸ {info['duracao']//60}:{info['duracao']%60:02d}\n"
-                texto += f"ðŸ‘ï¸ {info['views']:,} visualizações"
+                texto = f" {info['titulo']}\n"
+                texto += f" {info['uploader']}\n"
+                texto += f" {info['duracao']//60}:{info['duracao']%60:02d}\n"
+                texto += f" {info['views']:,} visualizaes"
             elif info.get('tipo') == 'arquivo':
-                texto = f"ðŸ“„ {info['nome']}\n"
-                texto += f"ðŸ“¦ {info['tamanho']/(1024*1024):.1f} MB\n"
-                texto += f"ðŸ“‹ {info['tipo_conteudo']}"
+                texto = f" {info['nome']}\n"
+                texto += f" {info['tamanho']/(1024*1024):.1f} MB\n"
+                texto += f" {info['tipo_conteudo']}"
             else:
-                texto = info.get('erro', 'Não foi possível obter informações')
+                texto = info.get('erro', 'No foi possível obter informações')
             
             self.lbl_info.configure(text=texto)
-            self.btn_info.configure(text="ðŸ” Info", state="normal")
+            self.btn_info.configure(text=" Info", state="normal")
         
         threading.Thread(target=info_thread).start()
     
@@ -477,9 +477,9 @@ class InterfaceDownloader(InterfaceBase):
                 tipo = response.headers.get('content-type', 'desconhecido')
                 nome = url.split('/')[-1]
                 
-                texto = f"ðŸ“„ Nome: {nome}\n"
-                texto += f"ðŸ“¦ Tamanho: {tamanho/(1024*1024):.1f} MB\n"
-                texto += f"ðŸ“‹ Tipo: {tipo}"
+                texto = f" Nome: {nome}\n"
+                texto += f" Tamanho: {tamanho/(1024*1024):.1f} MB\n"
+                texto += f" Tipo: {tipo}"
                 
                 self.lbl_info_arq.configure(text=texto)
             except Exception as e:
@@ -498,10 +498,10 @@ class InterfaceDownloader(InterfaceBase):
             return
         
         if not YT_DLP_AVAILABLE:
-            self.utils.mostrar_erro("Erro", "yt-dlp não instalado")
+            self.utils.mostrar_erro("Erro", "yt-dlp no instalado")
             return
         
-        self.btn_download_yt.configure(state="disabled", text="â³ Baixando...")
+        self.btn_download_yt.configure(state="disabled", text=" Baixando...")
         self.progress.set(0)
         
         def download_thread():
@@ -515,12 +515,12 @@ class InterfaceDownloader(InterfaceBase):
             
             if resultado:
                 tamanho_mb = resultado['tamanho'] / (1024 * 1024)
-                self.lista_downloads.insert('end', f"âœ… {Path(resultado['arquivo']).name} ({tamanho_mb:.1f} MB)\n")
-                self.utils.mostrar_info("Sucesso", f"Download concluído!\n{resultado['arquivo']}")
+                self.lista_downloads.insert('end', f"[OK] {Path(resultado['arquivo']).name} ({tamanho_mb:.1f} MB)\n")
+                self.utils.mostrar_info("Sucesso", f"Download concludo!\n{resultado['arquivo']}")
             else:
                 self.utils.mostrar_erro("Erro", msg)
             
-            self.btn_download_yt.configure(state="normal", text="ðŸ“¥ Download YouTube")
+            self.btn_download_yt.configure(state="normal", text=" Download YouTube")
             self.progress.set(0)
         
         threading.Thread(target=download_thread).start()
@@ -533,7 +533,7 @@ class InterfaceDownloader(InterfaceBase):
         
         nome = self.entry_nome.get().strip() or None
         
-        self.btn_download_arq.configure(state="disabled", text="â³ Baixando...")
+        self.btn_download_arq.configure(state="disabled", text=" Baixando...")
         self.progress.set(0)
         
         def download_thread():
@@ -546,12 +546,12 @@ class InterfaceDownloader(InterfaceBase):
             
             if resultado:
                 tamanho_mb = resultado['tamanho'] / (1024 * 1024)
-                self.lista_downloads.insert('end', f"âœ… {Path(resultado['arquivo']).name} ({tamanho_mb:.1f} MB)\n")
-                self.utils.mostrar_info("Sucesso", f"Download concluído!\n{resultado['arquivo']}")
+                self.lista_downloads.insert('end', f"[OK] {Path(resultado['arquivo']).name} ({tamanho_mb:.1f} MB)\n")
+                self.utils.mostrar_info("Sucesso", f"Download concludo!\n{resultado['arquivo']}")
             else:
                 self.utils.mostrar_erro("Erro", msg)
             
-            self.btn_download_arq.configure(state="normal", text="ðŸ“¥ Download Arquivo")
+            self.btn_download_arq.configure(state="normal", text=" Download Arquivo")
             self.progress.set(0)
         
         threading.Thread(target=download_thread).start()

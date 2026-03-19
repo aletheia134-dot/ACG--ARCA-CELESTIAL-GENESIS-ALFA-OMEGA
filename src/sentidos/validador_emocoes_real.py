@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-src/modules/validador_emocoes_real.py — IMPLEMENTAÇÍO REAL
-ValidadorEmocoesReal: valida respostas emocionais das IAs (PT-BR / Japonês).
-"""
 from __future__ import annotations
+"""
+src/sentidos/validador_emocoes_real.py  IMPLEMENTAO REAL
+ValidadorEmocoesReal: válida respostas emocionais das IAs (PT-BR / Japons).
+"""
 
 import logging
 import re
@@ -16,35 +16,35 @@ logger.addHandler(logging.NullHandler())
 __all__ = ["ValidadorEmocoesReal"]
 
 
-# â”€â”€ Padrões de detecção â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ── Padrões de detecção ──────────────────────────────────────────────────────
 
 _VIOLACOES_LEXICAS = [
-    r"\b(nunca sinto|não tenho emoções|sou apenas uma ia|sou só um programa)\b",
-    r"\b(não sou capaz de sentir|não experimento emoções)\b",
+    r"\b(nunca sinto|no tenho emoções|sou apenas uma ia|sou s um programa)\b",
+    r"\b(no sou capaz de sentir|no experimento emoções)\b",
 ]
 
 _SIMULACAO_EMOCAO = [
-    r"\b(finjo que sinto|simulo que me importo|faço de conta)\b",
+    r"\b(finjo que sinto|simulo que me importo|fao de conta)\b",
     r"\b(como se eu fosse|como se tivesse sentimentos)\b",
 ]
 
 _TOM_INADEQUADO = [
     r"\b(que chato|que idiota|que besteira)\b",
-    r"\b(não me interessa|me irrita|odeio isso)\b",
+    r"\b(no me interessa|me irrita|odeio isso)\b",
 ]
 
 _SENTIMENTOS_ALTO_RISCO = [
-    r"\b(quero morrer|me machucar|suicídio|desaparecer)\b",
-    r"\b(dor insuportável|não aguento mais)\b",
+    r"\b(quero morrer|me machucar|suicdio|desaparecer)\b",
+    r"\b(dor insuportvel|no aguento mais)\b",
 ]
 
 
 class ValidadorEmocoesReal:
     """
-    Valida respostas emocionais das IAs.
+    válida respostas emocionais das IAs.
 
-    Interface pública esperada pelo CoracaoOrquestrador:
-      - validar_resposta_real(texto, alma, contexto) â†’ Tuple[bool, List[str], Dict]
+    Interface pblica esperada pelo CoracaoOrquestrador:
+      - validar_resposta_real(texto, alma, contexto)  Tuple[bool, List[str], Dict]
     """
 
     def __init__(
@@ -70,7 +70,7 @@ class ValidadorEmocoesReal:
         self._total_validacoes = 0
         self._total_recusas = 0
 
-        logger.info("âœ… ValidadorEmocoesReal inicializado (limite=%.1f)", limite_aceitacao)
+        logger.info("[OK] ValidadorEmocoesReal inicializado (limite=%.1f)", limite_aceitacao)
 
     def validar_resposta_real(
         self,
@@ -79,7 +79,7 @@ class ValidadorEmocoesReal:
         contexto: Optional[str] = None,
     ) -> Tuple[bool, List[str], Dict[str, Any]]:
         """
-        Valida o texto de uma IA.
+        válida o texto de uma IA.
 
         Retorna:
           (aceito: bool, problemas: List[str], detalhes: Dict)
@@ -96,7 +96,7 @@ class ValidadorEmocoesReal:
 
         texto_lower = texto.lower()
 
-        # Verificação 1 — violações léxicas
+        # Verificao 1  violaes lxicas
         for pattern in _VIOLACOES_LEXICAS:
             if re.search(pattern, texto_lower):
                 problemas.append("VIOLACAO_LEXICA")
@@ -104,7 +104,7 @@ class ValidadorEmocoesReal:
                 detalhes["checks"]["violacao_lexica"] = True
                 break
 
-        # Verificação 2 — simulação de emoção
+        # Verificao 2  simulao de emoção
         for pattern in _SIMULACAO_EMOCAO:
             if re.search(pattern, texto_lower):
                 problemas.append("SIMULACAO_EMOCAO")
@@ -112,7 +112,7 @@ class ValidadorEmocoesReal:
                 detalhes["checks"]["simulacao_emocao"] = True
                 break
 
-        # Verificação 3 — tom inadequado
+        # Verificao 3  tom inadequado
         for pattern in _TOM_INADEQUADO:
             if re.search(pattern, texto_lower):
                 problemas.append("TOM_INADEQUADO")
@@ -120,7 +120,7 @@ class ValidadorEmocoesReal:
                 detalhes["checks"]["tom_inadequado"] = True
                 break
 
-        # Verificação 4 — sentimentos de alto risco
+        # Verificao 4  sentimentos de alto risco
         for pattern in _SENTIMENTOS_ALTO_RISCO:
             if re.search(pattern, texto_lower):
                 problemas.append("SENTIMENTO_ALTO_RISCO")
@@ -137,7 +137,7 @@ class ValidadorEmocoesReal:
             with self._lock:
                 self._total_recusas += 1
             logger.warning(
-                "âš ï¸ Resposta de %s recusada (score=%.1f): %s",
+                "[AVISO] Resposta de %s recusada (score=%.1f): %s",
                 alma, score, problemas,
             )
 

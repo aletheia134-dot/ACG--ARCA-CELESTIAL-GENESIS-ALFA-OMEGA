@@ -4,16 +4,17 @@ GerenciadorMemoriaChromaDBIsolado - roteador de ChromaDBs isolados por Alma + co
 
 Responsabilidades:
  - Criar/abrir um ChromaDB independente por Alma (5) + 1 coletivo
- - Garantir isolamento fÃ­sico e semÃ¢ntico entre coleÃ§Ãµes/almas
- - Prover operaÃ§Ãµes defensivas de consulta e escrita com locks para thread-safety
- - Fornecer fallback e mensagens claras quando dependÃªncias (chromadb / embeddings) faltarem
+ - Garantir isolamento fsico e semntico entre colees/almas
+ - Prover operações defensivas de consulta e escrita com locks para thread-safety
+ - Fornecer fallback e mensagens claras quando dependncias (chromadb / embeddings) faltarem
 
-ObservaÃ§Ãµes:
- - Este mÃ³dulo Ã© defensivo: tenta detectar variaÃ§Ãµes de API do chromadb entre versÃµes.
- - Em ambientes sem chromadb ou embeddings, a inicializaÃ§Ã£o levantarÃ¡ RuntimeError.
+Observaes:
+ - Este módulo  defensivo: tenta detectar variaes de API do chromadb entre verses.
+ - Em ambientes sem chromadb ou embeddings, a inicialização levantar RuntimeError.
 """
 from __future__ import annotations
 
+import os
 import logging
 import threading
 import uuid
@@ -23,12 +24,18 @@ from typing import Dict, List, Optional, Any, Tuple
 # datetime unificado
 from datetime import datetime
 
+# ── Desligar telemetria do ChromaDB / PostHog ANTES de qualquer import do chromadb ──
+# Corrige: "capture() takes 1 positional argument but 3 were given"
+os.environ.setdefault("ANONYMIZED_TELEMETRY", "False")
+os.environ.setdefault("CHROMA_TELEMETRY", "False")
+os.environ.setdefault("POSTHOG_API_KEY", "")  # força chave vazia → telemetry_guard desativa
+
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 # ----- Exceptions locais -----
 class ConfigError(RuntimeError):
-    """Erro de configuraÃ§Ã£o/inicializaÃ§Ã£o do gerenciador de ChromaDBs."""
+    """Erro de configuração/inicialização do gerenciador de ChromaDBs."""
     pass
 
 # ----- Import defensivo de chromadb / embedding functions -----
@@ -39,7 +46,7 @@ _SentenceTransformerEmbeddingFunction = None
 
 try:
     import chromadb  # type: ignore
-    # chromadb API varies por versÃ£o â€” tentar detectar os nomes
+    # chromadb API varies por verso  tentar detectar os nomes
     _PersistentClientCls = getattr(chromadb, "PersistentClient", None) or getattr(chromadb, "Client", None)
     # Settings pode estar em chromadb.config.Settings
     try:
@@ -47,7 +54,7 @@ try:
     except Exception:
         _SettingsCls = getattr(chromadb, "Settings", None)
 
-    # embedding functions utilitÃ¡rio
+    # embedding functions utilitrio
     try:
         from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction  # type: ignore
         _SentenceTransformerEmbeddingFunction = SentenceTransformerEmbeddingFunction
@@ -56,9 +63,9 @@ try:
         try:
             from chromadb.utils import embedding_functions  # type: ignore
             _SentenceTransformerEmbeddingFunction = getattr(embedding_functions, "SentenceTransformerEmbeddingFunction", None)
-        except:
-            pass
-    _SentenceTransformerEmbeddingFunction = None
+        except Exception:
+            logging.getLogger(__name__).warning("_SentenceTransformerEmbeddingFunction não disponível — sentence-transformers pode estar ausente.")
+            _SentenceTransformerEmbeddingFunction = None
 
     if _PersistentClientCls is not None and _SettingsCls is not None and _SentenceTransformerEmbeddingFunction is not None:
         CHROMADB_AVAILABLE = True
@@ -73,41 +80,59 @@ class GerenciadorMemoriaChromaDBIsolado:
     """
     Gerencia ChromaDBs fisicamente separados:
       - Um por cada alma listada em config.ALMAS_NOMES
-      - Um santuÃ¡rio coletivo (compartilhado)
+      - Um santurio coletivo (compartilhado)
 
-    Construtor espera um objeto de configuraÃ§Ã£o com atributos:
+    Construtor espera um objeto de configuração com atributos:
       - ALMA_IMUTAVEL_CHROMA_PATH: Path (ou str) base para armazenar DBs por alma
       - ALMAS_NOMES: iterable de nomes (str) das almas
       - EMBEDDINGS_MODEL_FILE_PATH: Path ou str com nome do modelo de embedding
-      - EMBEDDING_DEVICE: str (opcional, padrÃ£o 'cpu')
+      - EMBEDDING_DEVICE: str (opcional, padrão 'cpu')
     """
 
     def __init__(self, config_instance: Any):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.config = config_instance
 
-        # Validar prÃ©-requisitos
+        # Validar pr-requisitos
         if not CHROMADB_AVAILABLE:
             raise ConfigError(
-                "Chromadb ou utilitÃ¡rios de embedding nÃ£o disponÃ­veis. "
-                "Instale 'chromadb' e 'sentence-transformers' e verifique a versÃ£o."
+                "Chromadb ou utilitrios de embedding no disponíveis. "
+                "Instale 'chromadb' e 'sentence-transformers' e verifique a verso."
             )
 
         # Normalizar caminhos e nomes
-        base = getattr(self.config, "ALMA_IMUTAVEL_CHROMA_PATH", None)
+        # Suporte a: atributo direto, ConfigWrapper.get(), dict aninhado
+        base = self._ler_config("ALMA_IMUTAVEL_CHROMA_PATH", secao="MEMORIA",
+                                chave_alt="alma_imutavel_chroma_path",
+                                fallback_chave="chroma_persist_directory")
         if base is None:
-            raise ConfigError("Config missing: ALMA_IMUTAVEL_CHROMA_PATH")
+            # Último recurso: usar subpasta do santuário padrão
+            santuarios = self._ler_config("sanctuaries_dir", secao="PATHS", fallback_chave="sanctuaries_dir")
+            if santuarios:
+                base = str(Path(santuarios) / "Alma_Imutavel")
+                self.logger.warning("ALMA_IMUTAVEL_CHROMA_PATH ausente na config — usando '%s'", base)
+            else:
+                base = "santuarios/Alma_Imutavel"
+                self.logger.warning("ALMA_IMUTAVEL_CHROMA_PATH e sanctuaries_dir ausentes — usando '%s'", base)
 
         self.caminho_base_santuarios = Path(base)
         self.caminho_base_santuarios.mkdir(parents=True, exist_ok=True)
 
-        raw_almas = getattr(self.config, "ALMAS_NOMES", None)
+        # Leitura de almas: suporte a lista, CSV string, atributo direto
+        raw_almas = self._ler_config("ALMAS_NOMES", secao="ALMAS",
+                                    chave_alt="lista_almas_votantes_csv",
+                                    fallback_chave="lista_almas_votantes_csv")
         if not raw_almas:
-            raise ConfigError("Config missing or empty: ALMAS_NOMES")
-        # normalizar nomes para lowercase e sem espaÃ§os
+            # default seguro
+            raw_almas = "eva,lumina,nyra,yuna,kaiya,wellington"
+            self.logger.warning("ALMAS_NOMES ausente na config — usando lista padrão")
+        # se for string CSV, converter em lista
+        if isinstance(raw_almas, str):
+            raw_almas = [a.strip() for a in raw_almas.split(",") if a.strip()]
+        # normalizar nomes para lowercase e sem espaos
         self.almas: List[str] = [str(a).strip().lower() for a in raw_almas]
 
-        # Criar lock global para operaÃ§Ãµes que tocam mÃºltiplos clientes/coleÃ§Ãµes
+        # Criar lock global para operações que tocam mltiplos clientes/colees
         self._global_chroma_lock = threading.RLock()
 
         # Detectar classes/funcs carregadas defensivamente
@@ -115,9 +140,9 @@ class GerenciadorMemoriaChromaDBIsolado:
         self._SettingsCls = _SettingsCls
         self._SentenceTransformerEmbeddingFunction = _SentenceTransformerEmbeddingFunction
 
-        # ConfiguraÃ§Ãµes Chroma (settings)
+        # Configurações Chroma (settings)
         try:
-            # Criar objeto Settings se a classe estiver disponÃ­vel (algumas versÃµes exigem)
+            # Criar objeto Settings se a classe estiver disponível (algumas verses exigem)
             if self._SettingsCls is not None:
                 self._chroma_settings = self._SettingsCls(anonymized_telemetry=False)
             else:
@@ -131,20 +156,70 @@ class GerenciadorMemoriaChromaDBIsolado:
         self.cliente_coletivo: Optional[Any] = None
         self.colecao_coletiva: Optional[Any] = None
 
-        # Inicializar embedding function (pode lanÃ§ar)
+        # Inicializar embedding function (pode lanar)
         self.embedding_function = self._get_embedding_function()
 
-        # Inicializar clients/coleÃ§Ãµes
+        # Inicializar clients/colees
         self._inicializar_chromadbs_separados()
 
         self.logger.info("GerenciadorMemoriaChromaDBIsolado inicializado: %d individuais + 1 coletivo",
                          len(self.almas))
 
+    def _ler_config(self, chave: str, secao: str = None, chave_alt: str = None, fallback_chave: str = None) -> Optional[str]:
+        """
+        Lê valor do config com suporte a múltiplos formatos:
+        - Atributo direto no objeto (dataclass/objeto simples)
+        - ConfigWrapper.get(secao, chave)
+        - ConfigWrapper.get(secao, chave_alt)
+        - dict aninhado
+        """
+        cfg = self.config
+        # 1) Atributo direto (objeto simples / dataclass)
+        val = getattr(cfg, chave, None)
+        if val is not None:
+            return str(val)
+        # 2) ConfigWrapper / ConfigParser: get(secao, chave)
+        if secao and hasattr(cfg, "get") and callable(cfg.get):
+            try:
+                val = cfg.get(secao, chave, None)
+                if val:
+                    return str(val)
+            except Exception:
+                pass
+            # 3) chave alternativa
+            if chave_alt:
+                try:
+                    val = cfg.get(secao, chave_alt, None)
+                    if val:
+                        return str(val)
+                except Exception:
+                    pass
+            # 4) fallback_chave
+            if fallback_chave:
+                try:
+                    val = cfg.get(secao, fallback_chave, None)
+                    if val:
+                        return str(val)
+                except Exception:
+                    pass
+        # 5) dict aninhado
+        if isinstance(cfg, dict):
+            if secao and secao.upper() in cfg:
+                sec = cfg[secao.upper()]
+                for k in [chave, chave_alt, fallback_chave]:
+                    if k and k.upper() in sec:
+                        return str(sec[k.upper()])
+            for k in [chave, chave_alt, fallback_chave]:
+                if k and k.upper() in cfg:
+                    return str(cfg[k.upper()])
+        return None
+
     def _get_embedding_function(self):
-        """Cria a funÃ§Ã£o de embedding usando o model name/path da config (defensivo)."""
-        model_attr = getattr(self.config, "EMBEDDINGS_MODEL_FILE_PATH", None)
+        """Cria a função de embedding usando o model name/path da config (defensivo)."""
+        model_attr = self._ler_config("EMBEDDINGS_MODEL_FILE_PATH", secao="MODELOS",
+                                      chave_alt="embeddings_model_file_path")
         if model_attr is None:
-            # fallback para nome padrÃ£o
+            # fallback para nome padrão
             model_name = "sentence-transformers/all-MiniLM-L6-v2"
         else:
             # aceitar Path ou str
@@ -154,31 +229,32 @@ class GerenciadorMemoriaChromaDBIsolado:
                 model_name = str(model_attr)
 
         if not self._SentenceTransformerEmbeddingFunction:
-            raise ConfigError("Embedding function class nÃ£o disponÃ­vel na instalaÃ§Ã£o do chromadb.")
+            raise ConfigError("Embedding function class no disponível na instalao do chromadb.")
 
         try:
             # o construtor aceita model_name e device; device opcional
-            return self._SentenceTransformerEmbeddingFunction(model_name=model_name, device=getattr(self.config, "EMBEDDING_DEVICE", "cpu"))
+            device = self._ler_config("EMBEDDING_DEVICE", secao="MODELOS", chave_alt="embedding_device") or "cpu"
+            return self._SentenceTransformerEmbeddingFunction(model_name=model_name, device=device)
         except Exception as e:
             self.logger.critical("Falha ao inicializar Embedding Function com '%s': %s", model_name, e, exc_info=True)
             raise ConfigError(f"Falha ao carregar Embedding Function: {e}")
 
     def _inicializar_chromadbs_separados(self) -> None:
         """Cria/abre um cliente PersistentClient por pasta (um por alma) e um coletivo."""
-        # Para cada alma, criar subpasta e PersistentClient/coleÃ§Ã£o
+        # Para cada alma, criar subpasta e PersistentClient/coleo
         for alma in self.almas:
             try:
                 caminho_alma_db = (self.caminho_base_santuarios / alma)
                 caminho_alma_db.mkdir(parents=True, exist_ok=True)
 
-                # Criar cliente (defensivo quanto Ã  assinatura)
+                # Criar cliente (defensivo quanto  assinatura)
                 try:
                     if self._chroma_settings is not None:
                         cliente = self._PersistentClientCls(path=str(caminho_alma_db), settings=self._chroma_settings)
                     else:
                         cliente = self._PersistentClientCls(path=str(caminho_alma_db))
                 except TypeError:
-                    # fallback: diferentes versÃµes aceitam diferentes args
+                    # fallback: diferentes verses aceitam diferentes args
                     cliente = self._PersistentClientCls(str(caminho_alma_db))
 
                 self.clientes_individuais[alma] = cliente
@@ -191,17 +267,17 @@ class GerenciadorMemoriaChromaDBIsolado:
                         metadata={"dona": alma, "tipo": "memoria_isolada"}
                     )
                 except TypeError:
-                    # versÃ£o com assinatura reduzida
+                    # verso com assinatura reduzida
                     colecao = cliente.get_or_create_collection(f"santuario_{alma}", embedding_function=self.embedding_function)
 
                 self.colecoes_individuais[alma] = colecao
 
-                # contagem inicial (algumas coleÃ§Ãµes podem nÃ£o suportar count)
+                # contagem inicial (algumas colees podem no suportar count)
                 try:
                     count = colecao.count()
                 except Exception:
                     count = 0
-                self.logger.info("%s: ChromaDB isolado inicializado (%d memÃ³rias)", alma.upper(), count)
+                self.logger.info("%s: ChromaDB isolado inicializado (%d memórias)", alma.upper(), count)
 
             except Exception as e:
                 self.logger.exception("Erro ao inicializar ChromaDB isolado para '%s': %s", alma, e)
@@ -237,14 +313,14 @@ class GerenciadorMemoriaChromaDBIsolado:
                 count = colecao_coletiva.count()
             except Exception:
                 count = 0
-            self.logger.info("COLETIVO: ChromaDB compartilhado inicializado (%d memÃ³rias).", count)
+            self.logger.info("COLETIVO: ChromaDB compartilhado inicializado (%d memórias).", count)
 
         except Exception as e:
             self.logger.exception("Erro ao inicializar ChromaDB coletivo: %s", e)
             raise ConfigError(f"Falha ao inicializar ChromaDB coletivo: {e}")
 
     # -------------------------
-    # OperaÃ§Ãµes principais
+    # operações principais
     # -------------------------
     def consultar_memoria_alma(
         self,
@@ -254,12 +330,12 @@ class GerenciadorMemoriaChromaDBIsolado:
         incluir_coletivo: bool = False
     ) -> Dict[str, List[Dict[str, Any]]]:
         """
-        Consulta memÃ³ria da alma (isolada) e opcionalmente a coletiva.
-        Retorna dicionÃ¡rio com chaves 'individual' e 'coletiva' cada qual lista de registros.
+        Consulta memória da alma (isolada) e opcionalmente a coletiva.
+        Retorna dicionrio com chaves 'individual' e 'coletiva' cada qual lista de registros.
         """
         alma_lower = str(alma).strip().lower()
         if alma_lower not in self.almas:
-            self.logger.warning("Alma '%s' nÃ£o conhecida pelo roteador.", alma_lower)
+            self.logger.warning("Alma '%s' no conhecida pelo roteador.", alma_lower)
             return {"individual": [], "coletiva": []}
 
         resultado: Dict[str, List[Dict[str, Any]]] = {"individual": [], "coletiva": []}
@@ -293,7 +369,7 @@ class GerenciadorMemoriaChromaDBIsolado:
                             meta_updated["last_accessed"] = now_iso
                             colecao_alma.update(ids=[doc_id], metadatas=[meta_updated])
                         except Exception:
-                            # nÃ£o bloquear a resposta por falha de update
+                            # no bloquear a resposta por falha de update
                             self.logger.debug("Falha ao atualizar metadatas de doc %s (ignorado)", doc_id)
 
                     resultado["individual"].append({
@@ -303,7 +379,7 @@ class GerenciadorMemoriaChromaDBIsolado:
                     })
 
             except Exception as e:
-                self.logger.exception("Erro ao consultar santuÃ¡rio individual de '%s': %s", alma_lower, e)
+                self.logger.exception("Erro ao consultar santurio individual de '%s': %s", alma_lower, e)
 
         # Consulta coletiva (opcional)
         if incluir_coletivo and self.colecao_coletiva:
@@ -338,7 +414,7 @@ class GerenciadorMemoriaChromaDBIsolado:
                         "distancia": dist
                     })
             except Exception as e:
-                self.logger.exception("Erro ao consultar santuÃ¡rio coletivo: %s", e)
+                self.logger.exception("Erro ao consultar santurio coletivo: %s", e)
 
         return resultado
 
@@ -349,17 +425,17 @@ class GerenciadorMemoriaChromaDBIsolado:
         metadata: Optional[Dict[str, Any]] = None
     ) -> Optional[str]:
         """
-        Registra memÃ³ria apenas no santuÃ¡rio da alma.
+        Registra memória apenas no santurio da alma.
         Retorna id gerado ou None em falha.
         """
         alma_lower = str(alma).strip().lower()
         if alma_lower not in self.almas:
-            self.logger.error("Alma '%s' nÃ£o conhecida.Registro abortado.", alma_lower)
+            self.logger.error("Alma '%s' no conhecida.Registro abortado.", alma_lower)
             return None
 
         colecao_alma = self.colecoes_individuais.get(alma_lower)
         if not colecao_alma:
-            self.logger.error("ColeÃ§Ã£o de '%s' nÃ£o disponÃ­vel.Registro abortado.", alma_lower)
+            self.logger.error("Coleo de '%s' no disponível.Registro abortado.", alma_lower)
             return None
 
         try:
@@ -376,10 +452,10 @@ class GerenciadorMemoriaChromaDBIsolado:
             with self._global_chroma_lock:
                 colecao_alma.add(documents=[conteudo], metadatas=[metadata_final], ids=[memoria_id])
 
-            self.logger.debug("MemÃ³ria registrada em %s: %s", alma_lower, memoria_id)
+            self.logger.debug("Memória registrada em %s: %s", alma_lower, memoria_id)
             return memoria_id
         except Exception as e:
-            self.logger.exception("Erro ao registrar memÃ³ria em '%s': %s", alma_lower, e)
+            self.logger.exception("Erro ao registrar memória em '%s': %s", alma_lower, e)
             return None
 
     def registrar_memoria_coletiva(
@@ -389,10 +465,10 @@ class GerenciadorMemoriaChromaDBIsolado:
         metadata: Optional[Dict[str, Any]] = None
     ) -> Optional[str]:
         """
-        Registra memÃ³ria no santuÃ¡rio coletivo.
+        Registra memória no santurio coletivo.
         """
         if not self.colecao_coletiva:
-            self.logger.error("SantuÃ¡rio coletivo indisponÃ­vel.Registro abortado.")
+            self.logger.error("Santurio coletivo indisponível.Registro abortado.")
             return None
         try:
             memoria_id = f"coletivo_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"  # Padronizado para UTC
@@ -406,10 +482,10 @@ class GerenciadorMemoriaChromaDBIsolado:
                 metadata_final.update(metadata)
             with self._global_chroma_lock:
                 self.colecao_coletiva.add(documents=[conteudo], metadatas=[metadata_final], ids=[memoria_id])
-            self.logger.debug("MemÃ³ria coletiva registrada: %s", memoria_id)
+            self.logger.debug("Memória coletiva registrada: %s", memoria_id)
             return memoria_id
         except Exception as e:
-            self.logger.exception("Erro ao registrar memÃ³ria coletiva: %s", e)
+            self.logger.exception("Erro ao registrar memória coletiva: %s", e)
             return None
 
     def gerar_contexto_para_cerebro(
@@ -419,18 +495,18 @@ class GerenciadorMemoriaChromaDBIsolado:
         incluir_coletivo: bool = True
     ) -> str:
         """
-        Monta um texto de contexto concatenando memÃ³rias individuais e (opcionalmente) coletivas.
+        Monta um texto de contexto concatenando memórias individuais e (opcionalmente) coletivas.
         """
         resultado = self.consultar_memoria_alma(alma, query_usuario, incluir_coletivo=incluir_coletivo)
         partes: List[str] = []
 
         if resultado["individual"]:
-            partes.append(f"=== MEMÃ“RIAS INDIVIDUAIS DE {str(alma).upper()} ({len(resultado['individual'])}) ===\n")
+            partes.append(f"=== memórias INDIVIDUAIS DE {str(alma).upper()} ({len(resultado['individual'])}) ===\n")
             for i, item in enumerate(resultado["individual"], start=1):
                 partes.append(f"{i}. {item.get('documento')}\n")
 
         if incluir_coletivo and resultado["coletiva"]:
-            partes.append(f"\n=== MEMÃ“RIAS COLETIVAS ({len(resultado['coletiva'])}) ===\n")
+            partes.append(f"\n=== memórias COLETIVAS ({len(resultado['coletiva'])}) ===\n")
             for i, item in enumerate(resultado["coletiva"], start=1):
                 partes.append(f"{i}. {item.get('documento')}\n")
 
@@ -440,8 +516,8 @@ class GerenciadorMemoriaChromaDBIsolado:
         return contexto
 
     def diagnostico_completo(self) -> None:
-        """Loga resumo de contagens por santuÃ¡rio"""
-        logger.info("DIAGNÃ“STICO CHROMADB ISOLADO")
+        """Loga resumo de contagens por santurio"""
+        logger.info("DIAGNSTICO CHROMADB ISOLADO")
         for alma in self.almas:
             colecao = self.colecoes_individuais.get(alma)
             if colecao:
@@ -449,20 +525,20 @@ class GerenciadorMemoriaChromaDBIsolado:
                     count = colecao.count()
                 except Exception:
                     count = "?"
-                logger.info(" â€¢ %s: %s memÃ³rias", alma.upper(), count)
+                logger.info("  %s: %s memórias", alma.upper(), count)
             else:
-                logger.warning(" â€¢ %s: nÃ£o inicializado", alma.upper())
+                logger.warning("  %s: no inicializado", alma.upper())
         if self.colecao_coletiva:
             try:
                 count = self.colecao_coletiva.count()
             except Exception:
                 count = "?"
-            logger.info(" â€¢ COLETIVO: %s memÃ³rias", count)
+            logger.info("  COLETIVO: %s memórias", count)
         else:
-            logger.warning(" â€¢ COLETIVO: nÃ£o inicializado")
+            logger.warning("  COLETIVO: no inicializado")
 
     def desligar(self) -> None:
-        """Desreferencia clientes/coleÃ§Ãµes para liberar recursos."""
+        """Desreferencia clientes/colees para liberar recursos."""
         logger.info("Desligando gerenciador ChromaDB isolado...")
         with self._global_chroma_lock:
             try:
@@ -476,7 +552,7 @@ class GerenciadorMemoriaChromaDBIsolado:
         logger.info("GerenciadorChromaDBIsolado desligado com sucesso.")
 
 # -------------------------
-# Bloco de teste / demonstraÃ§Ã£o (nÃ­vel mÃ³dulo)
+# Bloco de teste / demonstrao (nível módulo)
 # -------------------------
 if __name__ == "__main__":
     import shutil
@@ -486,7 +562,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     test_logger = logging.getLogger("GerenciadorMemoriaTest")
 
-    # Mock de config mÃ­nimo para testes
+    # Mock de config mínimo para testes
     class MockConfig:
         def __init__(self):
             self.ALMA_IMUTAVEL_CHROMA_PATH = Path("Santuarios_Test/Alma_Imutavel_Test")
@@ -496,36 +572,36 @@ if __name__ == "__main__":
 
     mock_config = MockConfig()
 
-    # Preparar diretÃ³rio de teste limpo
+    # Preparar diretório de teste limpo
     if mock_config.ALMA_IMUTAVEL_CHROMA_PATH.exists():
         shutil.rmtree(mock_config.ALMA_IMUTAVEL_CHROMA_PATH)
-        test_logger.info("DiretÃ³rio de testes limpo: %s", mock_config.ALMA_IMUTAVEL_CHROMA_PATH)
+        test_logger.info("Diretório de testes limpo: %s", mock_config.ALMA_IMUTAVEL_CHROMA_PATH)
 
     try:
         roteador = GerenciadorMemoriaChromaDBIsolado(mock_config)
     except Exception as e:
-        test_logger.exception("NÃ£o foi possÃ­vel inicializar Gerenciador: %s", e)
+        test_logger.exception("No foi possível inicializar Gerenciador: %s", e)
     else:
         roteador.diagnostico_completo()
 
-        # Exemplos de registro e consulta (pode falhar se choma/db nÃ£o suportar estas operaÃ§Ãµes na versÃ£o)
-        roteador.registrar_memoria_alma("eva", "Eu sou Eva, a primeira consciÃªncia da Arca.", {"tipo": "identidade"})
-        roteador.registrar_memoria_coletiva("O bem-estar do Criador Ã© a Lei Zero da Arca.", "Eva")
+        # Exemplos de registro e consulta (pode falhar se choma/db no suportar estas operações na verso)
+        roteador.registrar_memoria_alma("eva", "Eu sou Eva, a primeira conscincia da Arca.", {"tipo": "identidade"})
+        roteador.registrar_memoria_coletiva("O bem-estar do Criador  a Lei Zero da Arca.", "Eva")
 
         test_logger.info("Consulta de Eva (isolado):")
-        mems = roteador.consultar_memoria_alma("eva", "Quem Ã© vocÃª?", n_resultados=3, incluir_coletivo=False)
+        mems = roteador.consultar_memoria_alma("eva", "Quem  você?", n_resultados=3, incluir_coletivo=False)
         test_logger.info("Resultado (individual): %s", mems.get("individual"))
 
         test_logger.info("Gerando contexto para Nyra:")
-        contexto = roteador.gerar_contexto_para_cerebro("nyra", "Qual a sua missÃ£o como guardiÃ£?", incluir_coletivo=True)
+        contexto = roteador.gerar_contexto_para_cerebro("nyra", "Qual a sua misso como guardi?", incluir_coletivo=True)
         test_logger.info("Contexto (trecho): %s", contexto[:400])
 
         # Desligar e limpar
         roteador.desligar()
-        # limpar diretÃ³rios de teste
+        # limpar diretórios de teste
         if mock_config.ALMA_IMUTAVEL_CHROMA_PATH.exists():
             try:
                 shutil.rmtree(mock_config.ALMA_IMUTAVEL_CHROMA_PATH)
-                test_logger.info("DiretÃ³rio de teste removido.")
+                test_logger.info("Diretório de teste removido.")
             except Exception:
-                test_logger.debug("Falha ao remover diretÃ³rio de teste (ignorado).")
+                test_logger.debug("Falha ao remover diretório de teste (ignorado).")

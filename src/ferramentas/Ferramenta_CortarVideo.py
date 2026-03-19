@@ -1,4 +1,4 @@
-# Ferramenta: Cortar/Editar Vídeo
+# Ferramenta: Cortar/Editar Vdeo
 # Usa MoviePy (CPU)
 
 import sys
@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent / "00_CORE"))
-from src.utils.utils import InterfaceBase, Utils
+from src.modulos.utils import InterfaceBase, Utils
 from src.config.config import PASTA_SAIDAS
 
 from moviepy import VideoFileClip, concatenate_videoclips
@@ -21,7 +21,7 @@ class FerramentaCortarVideo:
         self.caminho_video = None
     
     def carregar_video(self, caminho):
-        """Carrega vídeo para edição"""
+        """Carrega vdeo para edio"""
         try:
             self.video = VideoFileClip(caminho)
             self.caminho_video = caminho
@@ -35,9 +35,9 @@ class FerramentaCortarVideo:
             return None
     
     def cortar(self, inicio, fim, pasta_saida=None, nome_personalizado=None):
-        """Corta vídeo entre inicio e fim (segundos)"""
+        """Corta vdeo entre início e fim (segundos)"""
         if self.video is None:
-            return None, "Vídeo não carregado"
+            return None, "Vdeo no carregado"
         
         try:
             # Corta
@@ -51,7 +51,7 @@ class FerramentaCortarVideo:
                 nome_arquivo = f"{nome_personalizado}.mp4"
             else:
                 nome_original = Path(self.caminho_video).stem
-                nome_arquivo = f"{nome_original}_cortado_{int(inicio)}-{int(fim)}.mp4"
+                nome_arquivo = f"{nome_original}_cortado_{int(início)}-{int(fim)}.mp4"
             
             caminho_saida = Path(pasta_saida) / nome_arquivo
             
@@ -71,9 +71,9 @@ class FerramentaCortarVideo:
             return None, str(e)
     
     def dividir(self, tempos, pasta_saida=None):
-        """Divide vídeo em múltiplos clips nos tempos especificados"""
+        """Divide vdeo em mltiplos clips nos tempos especificados"""
         if self.video is None:
-            return None, "Vídeo não carregado"
+            return None, "Vdeo no carregado"
         
         try:
             resultados = []
@@ -87,7 +87,7 @@ class FerramentaCortarVideo:
                     continue
                 
                 clip = self.video.subclipped(inicio, fim)
-                nome_arquivo = f"parte_{i+1}_{int(inicio)}-{int(fim)}.mp4"
+                nome_arquivo = f"parte_{i+1}_{int(início)}-{int(fim)}.mp4"
                 caminho = Path(pasta_saida or PASTA_SAIDAS) / nome_arquivo
                 
                 clip.write_videofile(
@@ -107,7 +107,7 @@ class FerramentaCortarVideo:
 
 class InterfaceCortarVideo(InterfaceBase):
     def __init__(self):
-        super().__init__("âœ‚ï¸ Cortar Vídeo", "700x600")
+        super().__init__(" Cortar Vdeo", "700x600")
         self.ferramenta = FerramentaCortarVideo()
         self.caminho_video = None
         self.info_video = None
@@ -117,15 +117,15 @@ class InterfaceCortarVideo(InterfaceBase):
     def setup_interface(self):
         titulo = ctk.CTkLabel(
             self.frame,
-            text="âœ‚ï¸ Cortar e Editar Vídeo",
+            text=" Cortar e Editar Vdeo",
             font=("Arial", 24, "bold")
         )
         titulo.pack(pady=10)
         
-        # Seleção
+        # Seleo
         self.btn_video = ctk.CTkButton(
             self.frame,
-            text="ðŸ“ Selecionar Vídeo",
+            text=" Selecionar Vdeo",
             command=self.selecionar_video,
             width=200,
             height=40
@@ -134,7 +134,7 @@ class InterfaceCortarVideo(InterfaceBase):
         
         self.lbl_video = ctk.CTkLabel(
             self.frame,
-            text="Nenhum vídeo selecionado"
+            text="Nenhum vdeo selecionado"
         )
         self.lbl_video.pack(pady=5)
         
@@ -157,7 +157,7 @@ class InterfaceCortarVideo(InterfaceBase):
         self.frame_sliders = ctk.CTkFrame(self.tab_cortar)
         self.frame_sliders.pack(pady=10, padx=10, fill="x")
         
-        self.lbl_inicio = ctk.CTkLabel(self.frame_sliders, text="Início:")
+        self.lbl_inicio = ctk.CTkLabel(self.frame_sliders, text="Incio:")
         self.lbl_inicio.pack()
         
         self.slider_inicio = ctk.CTkSlider(
@@ -200,10 +200,10 @@ class InterfaceCortarVideo(InterfaceBase):
         )
         self.lbl_preview.pack(pady=10)
         
-        # Botão cortar
+        # Boto cortar
         self.btn_cortar = ctk.CTkButton(
             self.tab_cortar,
-            text="âœ‚ï¸ Cortar Vídeo",
+            text=" Cortar Vdeo",
             command=self.cortar,
             width=200,
             height=40,
@@ -215,7 +215,7 @@ class InterfaceCortarVideo(InterfaceBase):
         # ===== ABA DIVIDIR =====
         self.lbl_marcadores = ctk.CTkLabel(
             self.tab_dividir,
-            text="Marque os pontos de divisão (segundos):"
+            text="Marque os pontos de diviso (segundos):"
         )
         self.lbl_marcadores.pack(pady=5)
         
@@ -231,7 +231,7 @@ class InterfaceCortarVideo(InterfaceBase):
         
         self.btn_adicionar = ctk.CTkButton(
             self.frame_marcadores,
-            text="âž• Adicionar",
+            text=" Adicionar",
             command=self.adicionar_marcador,
             width=80
         )
@@ -242,7 +242,7 @@ class InterfaceCortarVideo(InterfaceBase):
         
         self.btn_limpar = ctk.CTkButton(
             self.tab_dividir,
-            text="ðŸ—‘ï¸ Limpar",
+            text=" Limpar",
             command=self.limpar_marcadores,
             width=100
         )
@@ -250,7 +250,7 @@ class InterfaceCortarVideo(InterfaceBase):
         
         self.btn_dividir = ctk.CTkButton(
             self.tab_dividir,
-            text="âœ‚ï¸ Dividir Vídeo",
+            text=" Dividir Vdeo",
             command=self.dividir,
             width=200,
             height=40,
@@ -266,19 +266,19 @@ class InterfaceCortarVideo(InterfaceBase):
     
     def selecionar_video(self):
         caminho = self.utils.selecionar_arquivo(
-            "Selecione um vídeo",
-            [("Vídeo", "*.mp4 *.avi *.mkv *.mov")]
+            "Selecione um vdeo",
+            [("Vdeo", "*.mp4 *.avi *.mkv *.mov")]
         )
         if caminho:
             self.caminho_video = caminho
-            self.lbl_video.configure(text=f"Vídeo: {Path(caminho).name}")
+            self.lbl_video.configure(text=f"Vdeo: {Path(caminho).name}")
             
             info = self.ferramenta.carregar_video(caminho)
             if info:
                 self.info_video = info
                 self.lbl_info.configure(
-                    text=f"Duração: {info['duracao']:.1f}s\n"
-                         f"Resolução: {info['largura']}x{info['altura']}"
+                    text=f"Durao: {info['duracao']:.1f}s\n"
+                         f"Resoluo: {info['largura']}x{info['altura']}"
                 )
                 
                 # Atualiza sliders
@@ -297,7 +297,7 @@ class InterfaceCortarVideo(InterfaceBase):
             self.lbl_inicio_valor.configure(text=f"{valor:.1f}s")
             duracao = self.slider_fim.get() - valor
             self.lbl_preview.configure(
-                text=f"Trecho: {duracao:.1f}s ({valor:.1f}s â†’ {self.slider_fim.get():.1f}s)"
+                text=f"Trecho: {duracao:.1f}s ({valor:.1f}s  {self.slider_fim.get():.1f}s)"
             )
     
     def atualizar_fim(self, valor):
@@ -305,7 +305,7 @@ class InterfaceCortarVideo(InterfaceBase):
             self.lbl_fim_valor.configure(text=f"{valor:.1f}s")
             duracao = valor - self.slider_inicio.get()
             self.lbl_preview.configure(
-                text=f"Trecho: {duracao:.1f}s ({self.slider_inicio.get():.1f}s â†’ {valor:.1f}s)"
+                text=f"Trecho: {duracao:.1f}s ({self.slider_inicio.get():.1f}s  {valor:.1f}s)"
             )
     
     def adicionar_marcador(self):
@@ -330,7 +330,7 @@ class InterfaceCortarVideo(InterfaceBase):
     
     def cortar(self):
         def cortar_thread():
-            self.btn_cortar.configure(state="disabled", text="â³ Cortando...")
+            self.btn_cortar.configure(state="disabled", text=" Cortando...")
             self.progress.set(0.3)
             
             caminho, msg = self.ferramenta.cortar(
@@ -341,12 +341,12 @@ class InterfaceCortarVideo(InterfaceBase):
             self.progress.set(0.8)
             
             if caminho:
-                self.utils.mostrar_info("Sucesso", f"Vídeo cortado:\n{caminho}")
+                self.utils.mostrar_info("Sucesso", f"Vdeo cortado:\n{caminho}")
             else:
                 self.utils.mostrar_erro("Erro", msg)
             
             self.progress.set(1)
-            self.btn_cortar.configure(state="normal", text="âœ‚ï¸ Cortar Vídeo")
+            self.btn_cortar.configure(state="normal", text=" Cortar Vdeo")
         
         threading.Thread(target=cortar_thread).start()
     
@@ -356,7 +356,7 @@ class InterfaceCortarVideo(InterfaceBase):
             return
         
         def dividir_thread():
-            self.btn_dividir.configure(state="disabled", text="â³ Dividindo...")
+            self.btn_dividir.configure(state="disabled", text=" Dividindo...")
             self.progress.set(0.3)
             
             resultados, msg = self.ferramenta.dividir(self.marcadores)
@@ -373,7 +373,7 @@ class InterfaceCortarVideo(InterfaceBase):
                 self.utils.mostrar_erro("Erro", msg)
             
             self.progress.set(1)
-            self.btn_dividir.configure(state="normal", text="âœ‚ï¸ Dividir Vídeo")
+            self.btn_dividir.configure(state="normal", text=" Dividir Vdeo")
         
         threading.Thread(target=dividir_thread).start()
 

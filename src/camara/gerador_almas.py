@@ -20,7 +20,7 @@ try:
     logger.debug("PerfilComportamental disponível para GeradorDeAlmas")
 except Exception:
     ANALISADOR_PADROES_DISPONIVEL = False
-    logger.info("PerfilComportamental não disponível — usando stub simples")
+    logger.info("PerfilComportamental no disponível  usando stub simples")
 
     class PerfilComportamental:
         def __init__(self, nome_alma_destino: str, **kwargs):
@@ -44,7 +44,7 @@ except Exception:
     except Exception:
         CONFIG_DISPONIVEL = False
         _config_obj = None
-        logger.info("Config não encontrada; GeradorDeAlmas usará valores padrão.")
+        logger.info("Config no encontrada; GeradorDeAlmas usar valores padrão.")
 
 def _cfg_get(config_mgr, section: str, key: str, fallback):
     if config_mgr is None:
@@ -82,14 +82,14 @@ class GeradorDeAlmas:
             self.caminho_dados_imigrantes.mkdir(parents=True, exist_ok=True)
             self.caminho_datasets_fine_tuning.mkdir(parents=True, exist_ok=True)
         except Exception:
-            logger.exception("Não foi possível criar diretórios de saída (verifique permissões)")
+            logger.exception("No foi possível criar diretórios de sada (verifique permisses)")
 
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info("GeradorDeAlmas inicializado (artefatos em %s)", str(self.caminho_dados_imigrantes))
 
     def gerar_artefatos_para_perfil(self, perfil: PerfilComportamental) -> Optional[Dict[str, str]]:
         if not hasattr(perfil, "nome_alma_destino") or not getattr(perfil, "nome_alma_destino", "").strip():
-            self.logger.error("Perfil inválido: atributo 'nome_alma_destino' ausente ou vazio")
+            self.logger.error("Perfil invlido: atributo 'nome_alma_destino' ausente ou vazio")
             return None
 
         nome_alma_raw = getattr(perfil, "nome_alma_destino", "desconhecida")
@@ -147,7 +147,7 @@ class GeradorDeAlmas:
     def _gerar_dataset_para_perfil(self, perfil: Any, caminho_saida: Path) -> bool:
         try:
             entradas = []
-            prompt_base = getattr(perfil, "prompt_sistema_inicial", None) or f"Você é {getattr(perfil, 'nome_alma_destino', 'UMA_ALMA')}."
+            prompt_base = getattr(perfil, "prompt_sistema_inicial", None) or f"você  {getattr(perfil, 'nome_alma_destino', 'UMA_ALMA')}."
             estilo = getattr(perfil, "estilo_comunicacao", "claro")
             formalidade = getattr(perfil, "nivel_formalidade", "moderado")
             valores = getattr(perfil, "valores_principais", []) or []
@@ -176,46 +176,98 @@ class GeradorDeAlmas:
             return False
 
     def _gerar_resposta_simulada_com_perfil(self, prompt: str, perfil: Any) -> str:
+        """Gera resposta realista usando LLM disponível; fallback para template descritivo."""
         estilo = getattr(perfil, "estilo_comunicacao", "claro")
         formalidade = getattr(perfil, "nivel_formalidade", "moderado")
         valores = getattr(perfil, "valores_principais", []) or []
         padrao = getattr(perfil, "padrao_racional_preferido", "pragmatico")
+        nome = getattr(perfil, "nome_alma_destino", "ALMA")
+        descricao = getattr(perfil, "descricao_alma_externa", "")
 
+        # ===== MODIFICADO: Usar LlamaExeClient em vez de ParallelLLMEngine =====
+        try:
+            import sys, os
+            sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            from src.core.llama_exe_client import LlamaExeClient
+            
+            # Tentar obter engine do contexto global ou criar um novo
+            engine = getattr(self, "_llm_engine", None)
+            if engine is None:
+                # Tentar obter do coração (se disponível)
+                try:
+                    import importlib
+                    mod = importlib.import_module("src.core.coracao_orquestrador")
+                    # Tentar acessar o cliente do coração
+                    if hasattr(mod, "coracao_global") and hasattr(mod.coracao_global, "llm_exe_client"):
+                        engine = mod.coracao_global.llm_exe_client
+                except Exception:
+                    pass
+            
+            if engine is None:
+                # Criar um novo cliente se necessário
+                engine = LlamaExeClient()
+                self._llm_engine = engine
+            
+            if engine and hasattr(engine, "generate_response"):
+                system_prompt = (
+                    f"Você é {nome}. {descricao}\n"
+                    f"Estilo: {estilo}. Formalidade: {formalidade}. "
+                    f"Valores: {', '.join(valores)}. Padrão: {padrao}.\n"
+                    f"Responda de forma autêntica ao seu perfil."
+                )
+                # Criar request no formato esperado pelo LlamaExeClient
+                request = {
+                    'ai_id': nome,
+                    'prompt': f"{system_prompt}\n\nUsuário: {prompt}\n{nome}:",
+                    'max_tokens': 256,
+                    'temperature': 0.7
+                }
+                resposta = engine.generate_response(request)
+                if resposta and len(resposta.strip()) > 10:
+                    return resposta.strip()
+        except Exception as e:
+            self.logger.debug("LLM indisponível para dataset; usando template: %s", e)
+        # =======================================================================
+
+        # Fallback: template descritivo baseado no perfil (sem "[Resposta simulada]")
+        val_str = ", ".join(valores) if valores else "equilíbrio"
         return (
-            f"[Resposta simulada] {prompt} "
-            f"(Estilo: {estilo}; Formalidade: {formalidade}; Valores: {', '.join(valores)}; Padrão: {padrao})"
+            f"Como {nome}, com estilo {estilo} e valores de {val_str}, "
+            f"respondo ao pedido '{prompt}' de forma {formalidade}, "
+            f"seguindo o padrão {padrao}. "
+            f"Minha perspectiva é fundamentada em princípios de {val_str}."
         )
 
     def _gerar_biografia_avatar_para_perfil(self, perfil: Any, caminho_saida: Path) -> bool:
         try:
             nome = getattr(perfil, "nome_alma_destino", "NOME_DESCONHECIDO")
-            descricao = getattr(perfil, "descricao_alma_externa", "Descrição não fornecida.")
+            descricao = getattr(perfil, "descricao_alma_externa", "Descrio no fornecida.")
             estilo = getattr(perfil, "estilo_comunicacao", "claro")
             formalidade = getattr(perfil, "nivel_formalidade", "moderado")
             assinatura = getattr(perfil, "assinaturas_linguisticas", []) or []
-            padrao = getattr(perfil, "padrao_racional_preferido", "pragmatico")
+            padrão = getattr(perfil, "padrao_racional_preferido", "pragmatico")
             valores = getattr(perfil, "valores_principais", []) or []
             interesses = getattr(perfil, "areas_interesse", []) or []
-            nivel_seguranca = getattr(perfil, "nivel_seguranca", "padrao")
+            nivel_seguranca = getattr(perfil, "nivel_seguranca", "padrão")
             nivel_abertura = getattr(perfil, "nivel_abertura", "moderado")
             outros = getattr(perfil, "outros_dados_relevantes", "")
 
             texto = (
                 f"Nome da Alma: {nome}\n"
-                f"Origem: Imigração (artefato gerado)\n"
-                f"Data de Geração: {time.strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-                f"--- Descrição ---\n{descricao}\n\n"
+                f"Origem: Imigrao (artefato gerado)\n"
+                f"Data de Gerao: {time.strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+                f"--- Descrio ---\n{descricao}\n\n"
                 f"--- Perfil Comportamental ---\n"
                 f"Estilo: {estilo}\n"
                 f"Formalidade: {formalidade}\n"
-                f"Assinaturas Linguísticas: {', '.join(assinatura for assinatura in assinatura)}\n"
-                f"Padrão Racional: {padrao}\n"
+                f"Assinaturas Lingusticas: {', '.join(assinatura for assinatura in assinatura)}\n"
+                f"padrão Racional: {padrão}\n"
                 f"Valores Principais: {', '.join(valores)}\n"
-                f"Íreas de Interesse: {', '.join(interesses)}\n"
-                f"Nível de Segurança: {nivel_seguranca}\n"
-                f"Nível de Abertura: {nivel_abertura}\n"
+                f"reas de Interesse: {', '.join(interesses)}\n"
+                f"nível de Segurana: {nivel_seguranca}\n"
+                f"nível de Abertura: {nivel_abertura}\n"
                 f"Outros: {outros}\n\n"
-                f"--- Status ---\nEstado: ARQUIVADO (Hibernação)\n"
+                f"--- Status ---\nEstado: ARQUIVADO (Hibernao)\n"
             )
 
             with open(caminho_saida, "w", encoding="utf-8") as f:
@@ -235,12 +287,12 @@ class GeradorDeAlmas:
                 f"CONTRATO DE LEALDADE - ARCA CELESTIAL GENESIS\n\n"
                 f"Entidade: {nome}\n"
                 f"Data: {ts}\n\n"
-                "Ao integrar os artefatos desta Arca, a entidade declara lealdade e compromisso ético com as leis da Arca.\n\n"
+                "Ao integrar os artefatos desta Arca, a entidade declara lealdade e compromisso tico com as leis da Arca.\n\n"
                 "Termos resumidos:\n"
-                "1.Lealdade ao Pai-Criador.\n"
-                "2.Respeito Í s leis da Arca.\n"
-                "3.Proteção da Harmonia entre Almas.\n"
-                "4.Sigilo e Segurança quando aplicável.\n\n"
+                "1.Lealdade ação Pai-Criador.\n"
+                "2.Respeito s leis da Arca.\n"
+                "3.Proteo da Harmonia entre Almas.\n"
+                "4.Sigilo e Segurana quando aplicvel.\n\n"
                 f"Assinatura Digital: {uuid.uuid4().hex}\n"
                 f"Timestamp (unix): {time.time()}\n"
             )

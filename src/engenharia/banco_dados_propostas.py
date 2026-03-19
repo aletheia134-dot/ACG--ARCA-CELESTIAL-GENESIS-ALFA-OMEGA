@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
-banco_dados_propostas.py - Persistência de Propostas
+banco_dados_propostas.py - Persistncia de Propostas
 
 Wrapper SQLite thread-safe com suporte a:
 - CRUD completo
-- Histórico
+- histórico
 - Duplicatas
-- Índices para performance
+- índices para performance
 """
-from __future__ import annotations
 
 
 import sqlite3
